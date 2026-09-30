@@ -1,0 +1,80 @@
+---
+title: Sorting & pagination UIs
+description: Sortable headers with aria-sort, a page window with gaps, and "21–40 of 57" — from the core's helpers.
+sidebar:
+  label: Sorting & pagination UIs
+  order: 6
+---
+
+import { Code } from '@astrojs/starlight/components';
+import paginationBar from '../../../../examples/pagination-bar.tsx?raw';
+import plainClick from '../../../../examples/plain-click.ts?raw';
+import resultRange from '../../../../examples/result-range.tsx?raw';
+import sortHeader from '../../../../examples/sort-header.tsx?raw';
+
+Four small helpers in `@qubeejs/core` do the arithmetic every list UI repeats. They are plain
+functions, so they work in Server Components too.
+
+| Helper | Answers |
+| --- | --- |
+| `toggleSort(sorts, field, { multiple })` | the sorts after a click on a column header |
+| `getAriaSort(sorts, field)` | the header's `aria-sort` value |
+| `getPageWindow(page, lastPage, { boundaries, siblings })` | which page numbers to show, and where the gaps go |
+| `getPageRange(result)` | the `from`, `to` and `total` behind "21–40 of 57" |
+
+## Sortable headers
+
+`useListState` wraps `toggleSort` for you, but only when the list declares exactly one `sortParam`.
+`field` is typed to the fields that param allows. A click on the primary sort flips its direction;
+a click on any other column sorts by it, ascending.
+
+<Code code={sortHeader} lang="tsx" title="src/articles/sort-header.tsx" />
+
+- **One column carries a direction.** ARIA allows a single sorted column, so `getAriaSort` reports a
+  direction for the primary sort and `'none'` for the others.
+- **A plain click sorts by one field.** It flips the direction when the field is the primary sort.
+  Any other field — unsorted, or a secondary sort — starts ascending and replaces the other sorts.
+- **Shift-click sorts by several fields.** `{ multiple: true }` keeps the other sorts and flips the
+  field in place, wherever it is, or appends it ascending. The URL reads
+  `?sort=-publishedAt,title`.
+
+## A page window
+
+`getPageWindow` returns page numbers and `'gap'` markers, **always the same number of them** for a
+given last page, so the buttons do not jump as the reader pages:
+
+```ts
+getPageWindow(1, 12); // [1, 2, 3, 4, 5, 'gap', 12]
+getPageWindow(5, 12); // [1, 'gap', 4, 5, 6, 'gap', 12]
+getPageWindow(12, 12); // [1, 'gap', 8, 9, 10, 11, 12]
+```
+
+A gap never hides a single page: that page's number is shown instead. `boundaries` sets how many
+pages stay at each end and `siblings` how many sit beside the current one; both default to 1.
+
+<Code code={paginationBar} lang="tsx" title="src/articles/pagination-bar.tsx" />
+
+Every page is a real link — `list.href({ page })` — so it opens in a new tab when asked to. A plain
+click navigates in place instead:
+
+<Code code={plainClick} lang="ts" title="src/articles/plain-click.ts" />
+
+## "21–40 of 57"
+
+`getPageRange` reads the counts the backend reported and works out the ones it left out. The words,
+the dash and the language stay yours:
+
+<Code code={resultRange} lang="tsx" title="src/articles/result-range.tsx" />
+
+When a backend reports no total — a cursor-paged API, say — `total` is `null`, and the example
+prints "21–40 articles".
+
+## Where the last page comes from
+
+Only a response knows the last page: pass `result.lastPage`, and `1` until the first page has
+arrived. `getPageWindow(page, lastPage)` takes a number, so a caller that may hold `undefined`
+passes `lastPage ?? 0`.
+
+A missing or unknown `lastPage` counts as 1: the window collapses to `[1]`, without even the current
+page. A backend that does not report a page count cannot drive a page window; give it previous and
+next links instead, and stop when a page comes back empty or short.

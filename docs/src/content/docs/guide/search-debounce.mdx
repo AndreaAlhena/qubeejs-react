@@ -1,0 +1,74 @@
+---
+title: Search, debounce & pending state
+description: A search box that stays responsive, navigates once per pause, and says when a new list is on its way.
+sidebar:
+  label: Search, debounce & pending state
+  order: 5
+---
+
+import { Code } from '@astrojs/starlight/components';
+import articleSearch from '../../../../examples/article-search.tsx?raw';
+
+A search box is the hardest input to bind to a URL: it changes on every keystroke, and each change
+could be a navigation and a request. `set()` has two options for it.
+
+<Code code={articleSearch} lang="tsx" title="src/articles/article-search.tsx" />
+
+## `debounce`
+
+`set(changes, { debounce: 300 })` updates `state` at once, and waits: the navigation happens 300 ms
+after the **last** call. Typing `react` is five calls and one navigation.
+
+Changes to different params within the same wait are merged — each call builds on the draft the
+previous one left — so nothing typed is lost. A call **without** `debounce` goes out at once and
+takes any waiting change with it: that is why *Clear* never waits.
+
+If the component unmounts while a change is waiting, the change is dropped. Nothing navigates after
+the component has gone.
+
+## `replace`
+
+`{ replace: true }` replaces the current history entry instead of adding one. With it, the back
+button leaves the search instead of stepping back through `r`, `re`, `rea`…
+
+## `isPending`
+
+`isPending` is `true` while a debounced change is waiting, **and** while the navigation it started
+is under way. Navigations run inside `startTransition`, so with a router that renders on the
+server — the Next.js App Router — `isPending` stays `true` until the new page has arrived. Use it to
+dim the results, or to announce that a search is running:
+
+```tsx
+<section aria-busy={list.isPending}>…</section>
+```
+
+With a router that reports the new URL only after a transition, a debounced change can fire after
+the user has started another navigation but before the router reports it, and pull them back. See
+[Routers that report the URL late](/guide/url-lists/#routers-that-report-the-url-late).
+
+## Keep the spaces
+
+The input's value is `state.q`, and `state` is parsed back from the draft on every change. A param
+that trimmed would remove the space the user has just typed, and `hello world` could never be
+entered. That is why `stringParam` keeps a value exactly as typed by default, and why `articleList`
+trims in `apply`, where the query for the API is built:
+
+```ts
+apply: (builder, { q }) => {
+  const search = q?.trim();
+  // …
+},
+```
+
+`stringParam('q', { trim: true })` exists for params no input is bound to. Don't use it for a live
+search box.
+
+## The back button
+
+Going back is a URL change the hook did not cause, so it wins: any waiting change is dropped, and
+the box shows the query the address holds.
+
+## Test it
+
+The [Debounced search recipe](/recipes/debounced-search/) includes the tests this box passes: one
+navigation per pause, *Clear* at once, and the space that stays.

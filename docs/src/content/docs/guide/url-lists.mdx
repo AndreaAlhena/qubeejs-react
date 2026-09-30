@@ -1,0 +1,126 @@
+---
+title: Lists in the URL
+description: useListState — a list whose query is the page URL, with typed state, one navigation per change, and an href for every link.
+sidebar:
+  label: Lists in the URL
+  order: 4
+---
+
+import { Code } from '@astrojs/starlight/components';
+import articleIndex from '../../../../examples/article-index.tsx?raw';
+import statusChips from '../../../../examples/status-chips.tsx?raw';
+
+`useListState(list, router)` connects a list declared with the core's `defineList` to the page URL.
+It reads the URL into typed state, writes changes back through your router, and builds the request
+for the current page. The URL is the only source of truth: a reload, a shared link and the back
+button all land on the same list.
+
+## What it needs
+
+- **A list**, declared once with `defineList` — the driver, the resource, the URL parameters and how
+  they become a query. The [Quick start](/introduction/quick-start/) declares `articleList`; every
+  param and the rules the URL follows are documented with the core:
+  [Lists & URL state ↗](https://qubeejs.andreatantimonaco.me/guide/lists/).
+- **A router**: any object with `navigate(href, { replace })`, `pathname` and `search`. Use
+  `useBrowserRouter()`, or an adapter for [React Router](/recipes/react-router/),
+  [TanStack Router](/recipes/tanstack-router/) or [Next.js](/introduction/frameworks/).
+
+## What it returns
+
+| Member | Type | What it is for |
+| --- | --- | --- |
+| `state` | `ListState<typeof list>` | The list's values: render from it, bind inputs to it. |
+| `set(changes, options?)` | `void` | Change any params at once. One call, one navigation. |
+| `setPage(page, options?)` | `void` | Shorthand for `set({ page })`. |
+| `toggleSort(field, options?)` | `void` | There only when the list declares exactly one `sortParam`: sorts by the field, flipping the direction where the core's rules say so. |
+| `href(changes?)` | `string` | The URL a change would lead to — for `<a>` and `<Link>`. |
+| `request` | `ListRequest` | `{ uri, headers, paginate }` for the page to fetch. |
+| `isPending` | `boolean` | A debounced change is waiting, or a navigation is under way. |
+
+`toggleSort` follows the core's rules. On its own, it flips the direction when the field is the
+**primary** sort — the first one — and any other field, unsorted or a secondary sort, starts
+ascending and replaces the other sorts. With `{ multiple: true }` it flips the field in place,
+wherever it is, or appends it ascending, and keeps the others.
+
+## A complete page
+
+<Code code={articleIndex} lang="tsx" title="src/articles/article-index.tsx" />
+
+Its parts — the search box, the chips, the sortable headers, the pager — are explained in
+[Search, debounce & pending state](/guide/search-debounce/) and
+[Sorting & pagination UIs](/guide/sorting-pagination/).
+
+## Links, not just handlers
+
+Anything that navigates should also be a link, so it can be opened in a new tab, prefetched and
+crawled. `href(changes)` returns the URL; a plain click can still change the list in place with
+`set`:
+
+<Code code={statusChips} lang="tsx" title="src/articles/status-chips.tsx" />
+
+To know whether a link is the current page — for an active style or `aria-current` — compare
+`list.href(changes)` with `list.href()`. Both are canonical, so they agree whenever the two lists
+are the same. Don't compare `toSearchParams(changes).toString()` with the raw URL: that evens out
+the encoding, not the order of the keys, so a hand-edited `?q=react&page=3` never matches
+`/articles?page=3&q=react`.
+
+## The rules the URL follows
+
+They come from the core, and hold for every change, whichever member makes it:
+
+- **Defaults stay out of the URL.** The first page, the default sort and an empty search leave no
+  trace: the unfiltered list is just `/articles`.
+- **A change goes back to page 1** when it changes anything but the page — the old page number means
+  nothing in a different list. Setting a value to what it already is keeps the page.
+- **Parameters the list does not own survive.** A `?panel=settings` put there by something else
+  stays put.
+- **A bad value falls back to its default.** A hand-edited `?page=abc` shows page 1; nothing throws.
+
+## One call, one navigation
+
+Clearing two filters is one history entry, and one request:
+
+```ts
+list.set({ q: undefined, status: undefined });
+```
+
+Setting a key to `undefined` returns it to its default. For a param with an empty default, such as
+`q` or `status`, that means no value; for a list or sort param with a non-empty default it means
+that default, not nothing. Give a multi-select an empty default if users must be able to clear it.
+
+A change adds a history entry; pass `{ replace: true }` to replace the current one instead — what a
+search box wants, so that the back button does not step through every search.
+
+## Three layers of state
+
+Between a keystroke and a fetched page, a change passes through three layers:
+
+1. **Draft** — `state`. Updated the moment you call `set()`, so an input bound to it never lags
+   behind a debounce or a slow server.
+2. **Committed** — `request`. Built from the last href handed to `navigate`, after any debounce. A
+   cache keyed on `request.uri` changes once per navigation, not once per keystroke.
+3. **URL** — what the router reports. The source of truth: when it catches up with the committed
+   href, the other two layers fall away.
+
+A URL change the hook did not cause — the back button, a link elsewhere on the page — wins: the
+draft and any waiting debounce are dropped, and `state` shows what the address says.
+
+### Routers that report the URL late
+
+Some routers report the new URL only after a transition — the Next.js App Router, for one. Two
+edge cases follow from the gap between calling `navigate` and hearing the new URL back:
+
+- A debounced change can fire after the user has started another navigation, but before the router
+  reports it. The change then goes out anyway, and pulls them back.
+- An external navigation to a URL that is canonically equal to the current one, made while the
+  hook's own navigation is in flight, can leave `state`, `request` and `isPending` on the
+  superseded navigation until the next change.
+
+Both are rare, and both clear on the next change to the list.
+
+## One hook per list, or one per component
+
+Every component that calls `useListState` with the same list reads the same URL, so no provider is
+needed to share the state. What is **not** shared is the draft and `isPending`: they belong to the
+hook that made the change. When a table should dim while the search box's change is pending, call
+the hook once in their common parent and pass the result down, as `ArticleIndex` does.
