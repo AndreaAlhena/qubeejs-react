@@ -71,9 +71,8 @@ prints "21–40 articles".
 
 ## Where the last page comes from
 
-Only a response knows the last page: pass `result.lastPage`, and `1` until the first page has
-arrived. `getPageWindow(page, lastPage)` takes a number, so a caller that may hold `undefined`
-passes `lastPage ?? 0`.
+Only a response knows the last page. `getPageWindow(page, lastPage)` takes a number, so pass
+`result?.lastPage ?? 1` — `lastPage` is `null` until a response reports it.
 
 A missing or unknown `lastPage` counts as 1: the window collapses to `[1]`, without even the current
 page. A backend that does not report a page count cannot drive a page window; give it previous and

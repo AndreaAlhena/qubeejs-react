@@ -23,7 +23,7 @@ after the last one, and *Clear* is immediate.
   searches out of the back button's history.
 - *Clear* calls `set` without a debounce: it goes out at once, taking any waiting keystrokes with it.
 - `articleList` keeps `q` exactly as typed and trims it in `apply`, so spaces can be typed.
-- `isPending` announces the search while it waits and while the new page loads.
+- `isPending` announces the search while it waits and while the navigation is under way (with the Next.js App Router, until the new page has arrived).
 
 ## Tests
 

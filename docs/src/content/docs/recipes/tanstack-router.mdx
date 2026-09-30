@@ -27,4 +27,6 @@ format, so the adapter reads the raw query string and writes whole hrefs through
 - If the route declares `validateSearch`, let it pass the list's keys through untouched: a validator
   that drops unknown keys drops the list's.
 - For links, render `<a href={list.href(…)}>` with a plain-click handler, as the
-  [Pagination bar](/recipes/pagination-bar/) does.
+  [Pagination bar](/recipes/pagination-bar/) does. Under a `basepath`, `list.href(…)` is the path
+  inside it (TanStack strips the basepath from `useLocation().pathname`), so give the anchor
+  `router.buildLocation({ href: list.href(…) }).publicHref`, which adds the basepath back.

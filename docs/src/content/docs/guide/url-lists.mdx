@@ -1,6 +1,6 @@
 ---
 title: Lists in the URL
-description: useListState — a list whose query is the page URL, with typed state, one navigation per change, and an href for every link.
+description: useListState — a list whose query is the page URL, with typed state, at most one navigation per change, and an href for every link.
 sidebar:
   label: Lists in the URL
   order: 4
@@ -30,17 +30,17 @@ button all land on the same list.
 | Member | Type | What it is for |
 | --- | --- | --- |
 | `state` | `ListState<typeof list>` | The list's values: render from it, bind inputs to it. |
-| `set(changes, options?)` | `void` | Change any params at once. One call, one navigation. |
+| `set(changes, options?)` | `void` | Change any params at once. One call, at most one navigation. |
 | `setPage(page, options?)` | `void` | Shorthand for `set({ page })`. |
 | `toggleSort(field, options?)` | `void` | There only when the list declares exactly one `sortParam`: sorts by the field, flipping the direction where the core's rules say so. |
 | `href(changes?)` | `string` | The URL a change would lead to — for `<a>` and `<Link>`. |
 | `request` | `ListRequest` | `{ uri, headers, paginate }` for the page to fetch. |
 | `isPending` | `boolean` | A debounced change is waiting, or a navigation is under way. |
 
-`toggleSort` follows the core's rules. On its own, it flips the direction when the field is the
-**primary** sort — the first one — and any other field, unsorted or a secondary sort, starts
-ascending and replaces the other sorts. With `{ multiple: true }` it flips the field in place,
-wherever it is, or appends it ascending, and keeps the others.
+`toggleSort` follows the core's rules. On its own it leaves exactly one sort: the field, flipped
+when it was the primary sort, ascending otherwise — even if a secondary sort named it. With
+`{ multiple: true }` it flips the field in place wherever it is, or appends it ascending, keeping
+the others.
 
 ## A complete page
 
@@ -60,9 +60,9 @@ crawled. `href(changes)` returns the URL; a plain click can still change the lis
 
 To know whether a link is the current page — for an active style or `aria-current` — compare
 `list.href(changes)` with `list.href()`. Both are canonical, so they agree whenever the two lists
-are the same. Don't compare `toSearchParams(changes).toString()` with the raw URL: that evens out
-the encoding, not the order of the keys, so a hand-edited `?q=react&page=3` never matches
-`/articles?page=3&q=react`.
+are the same. Don't compare raw query strings, even through `toSearchParams(…).toString()`: that
+evens out the encoding, not the key order, so a hand-edited `/articles?page=3&q=react` never matches
+the `/articles?q=react&page=3` the list writes.
 
 ## The rules the URL follows
 
@@ -76,7 +76,7 @@ They come from the core, and hold for every change, whichever member makes it:
   stays put.
 - **A bad value falls back to its default.** A hand-edited `?page=abc` shows page 1; nothing throws.
 
-## One call, one navigation
+## One call, at most one navigation
 
 Clearing two filters is one history entry, and one request:
 

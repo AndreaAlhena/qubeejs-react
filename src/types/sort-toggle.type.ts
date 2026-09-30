@@ -40,7 +40,7 @@ export type SortToggle<TList> =
       : {
           /**
            * Sort by `field` ascending, or flip it when it is already the primary sort; with
-           * `multiple`, keep the other sorts. One call is one navigation.
+           * `multiple`, keep the other sorts. One call is at most one navigation.
            */
           toggleSort: (
             field: SortFields<TParams, Single<SortKeys<TParams>>>,
