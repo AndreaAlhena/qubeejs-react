@@ -44,6 +44,32 @@ The instance is created on the first render and kept. Later changes to the confi
 remount the component with a `key` to switch drivers. The hook renders on the server with the
 store's initial state.
 
+## One instance for a subtree: `QubeeProvider`
+
+The filters, the table and the pager of one list can share an instance, as
+`provideNgQubeeInstance()` does in Angular:
+
+```tsx
+import { STRAPI_DRIVER } from '@qubeejs/core';
+import { QubeeProvider, useQubeeContext } from '@qubeejs/react';
+
+<QubeeProvider baseUrl="https://example.com/api" driver={STRAPI_DRIVER}>
+  <ArticleFilters />
+  <ArticleTable />
+</QubeeProvider>;
+
+function ArticleFilters(): ReactElement {
+  const { builder } = useQubeeContext();
+
+  return <button onClick={() => builder.addFilter('status', 'published')}>Published</button>;
+}
+```
+
+The context carries the instance, never its state, so the provider does not re-render its
+subtree: only components that call `useQubeeContext()` re-render. The nearest provider wins. Pass
+`value={qubee}` instead of a configuration to share an instance created elsewhere. Outside a
+provider, `useQubeeContext()` throws `MissingQubeeProviderError`.
+
 ## Contributing
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md) and [CODING-STANDARDS.md](./CODING-STANDARDS.md).
