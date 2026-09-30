@@ -1,4 +1,4 @@
-import type { ListDefinition, ListParams, ListState } from '@qubeejs/core';
+import type { ListDefinition, ListLocation, ListParams, ListState } from '@qubeejs/core';
 
 import { buildListHref, buildListRequest, readListState } from '@qubeejs/core';
 import {
@@ -17,7 +17,7 @@ import type { ListStateMachine } from '../types/list-state-machine.type';
 import type { SetOptions } from '../types/set-options.type';
 
 import { createLocalStore } from '../utils/create-local-store';
-import { normalizeHref, searchOfHref } from '../utils/href';
+import { normalizeHref, pathnameOfHref, searchOfHref } from '../utils/href';
 import {
   commitLocation,
   createListStateMachine,
@@ -41,11 +41,11 @@ type LooseChanges = Partial<ListState<LooseList>>;
  * reorders or re-encodes the query still compares equal to the href the hook navigated to.
  *
  * @param list - The list the location belongs to
- * @param router - The router
+ * @param location - The router, or the pathname and query of an href
  * @returns e.g. `/articles?page=2&q=react`
  */
-function locationOf(list: LooseList, router: ListRouter): string {
-  return normalizeHref(buildListHref(list, router));
+function locationOf(list: LooseList, location: ListLocation): string {
+  return normalizeHref(buildListHref(list, location));
 }
 
 /**
@@ -102,9 +102,13 @@ export function useListState<TList extends ListDefinition<ListParams>>(
 
   const commit = useCallback(
     (href: string, replace: boolean): void => {
-      // The machine compares normalised hrefs; the router gets the href as core built it.
+      // The machine compares canonical locations, as observed ones are; the router gets the href
+      // as core built it.
       const current = read();
-      const target = normalizeHref(href);
+      const target = locationOf(loose, {
+        pathname: pathnameOfHref(href),
+        search: searchOfHref(href),
+      });
 
       machine.update(() => commitLocation(current, target));
 
@@ -116,7 +120,7 @@ export function useListState<TList extends ListDefinition<ListParams>>(
         routerRef.current.navigate(href, { replace });
       });
     },
-    [machine, read]
+    [loose, machine, read]
   );
 
   const set = useCallback(

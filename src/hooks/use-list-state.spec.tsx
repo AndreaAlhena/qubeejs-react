@@ -301,6 +301,18 @@ describe('useListState', () => {
       expect(router.navigations).toEqual([]);
     });
 
+    it('should not navigate to a value the list cannot read back', () => {
+      const router = createTestRouter('/articles');
+      const { result } = renderList(router);
+
+      act(() => {
+        result.current.setPage(0);
+      });
+
+      expect(router.navigations).toEqual([]);
+      expect(result.current.isPending).toBe(false);
+    });
+
     it('should let a URL change it did not cause win', () => {
       const router = createTestRouter('/articles', { mode: 'manual' });
       const { result } = renderList(router);
