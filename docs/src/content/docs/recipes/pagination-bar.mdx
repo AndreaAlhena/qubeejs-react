@@ -1,0 +1,33 @@
+---
+title: Pagination bar
+description: A pager whose every page is a real link, with gaps that keep its width steady, and a "21–40 of 57" line.
+sidebar:
+  label: Pagination bar
+  order: 3
+---
+
+import { Code } from '@astrojs/starlight/components';
+import paginationBar from '../../../../examples/pagination-bar.tsx?raw';
+import plainClick from '../../../../examples/plain-click.ts?raw';
+import resultRange from '../../../../examples/result-range.tsx?raw';
+
+<Code code={paginationBar} lang="tsx" title="src/articles/pagination-bar.tsx" />
+
+<Code code={plainClick} lang="ts" title="src/articles/plain-click.ts" />
+
+<Code code={resultRange} lang="tsx" title="src/articles/result-range.tsx" />
+
+## How it works
+
+- `getPageWindow` returns the same number of items for a given last page, so the bar keeps its width
+  as the reader pages; a `'gap'` stands for two or more pages, never one.
+- Every page's href comes from `list.href({ page })`: it opens in a new tab, and search engines can
+  follow it. `isPlainClick` lets a plain click navigate in place with `setPage`.
+- At either end, previous or next is a `<span>` hidden from assistive technology: there is nowhere to
+  go.
+- `aria-current="page"` marks the page being shown.
+- Pass `lastPage={result?.lastPage ?? 1}` — the last page is only known once a response has reported
+  it.
+- `ResultRange` reads `from`, `to` and `total` from `getPageRange` and leaves the wording to you.
+
+With React Router's `<Link>` instead of anchors: [React Router](/recipes/react-router/).

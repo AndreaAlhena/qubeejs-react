@@ -1,0 +1,33 @@
+---
+title: Sortable table
+description: Column headers that sort, flip and multi-sort the list in the URL — with aria-sort on the right column.
+sidebar:
+  label: Sortable table
+  order: 1
+---
+
+import { Code } from '@astrojs/starlight/components';
+import articleTable from '../../../../examples/article-table.tsx?raw';
+import sortHeader from '../../../../examples/sort-header.tsx?raw';
+
+A table whose headers sort the list in the URL. A click sorts by the column; another click flips it;
+a shift-click adds it to the sorts already applied.
+
+<Code code={sortHeader} lang="tsx" title="src/articles/sort-header.tsx" />
+
+<Code code={articleTable} lang="tsx" title="src/articles/article-table.tsx" />
+
+## How it works
+
+- `list.toggleSort(field)` exists because `articleList` declares exactly one `sortParam`, and `field`
+  is typed to `'publishedAt' | 'title'` — the fields that param allows.
+- A plain click makes the field the only sort: flipped when it was the primary sort, ascending
+  otherwise — even if a secondary sort named it. `{ multiple: true }` (a shift-click) flips the field
+  in place wherever it is, or appends it ascending, keeping the other sorts.
+- The sort lives in the URL — `?sort=title`, or `?sort=-publishedAt,title` after a shift-click — and
+  changing it goes back to page 1.
+- `getAriaSort` gives the primary sort column its direction and every other column `'none'`.
+- Headers stay `<th aria-sort><button type="button">`: the button is reachable from the keyboard and
+  announced as a control.
+
+In a whole page: [Lists in the URL](/guide/url-lists/).

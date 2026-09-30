@@ -41,6 +41,7 @@ export default defineConfig({
           ],
           label: 'API',
         },
+        { items: [{ autogenerate: { directory: 'recipes' } }], label: 'Recipes' },
         {
           items: [
             core('Lists & URL state', 'guide/lists'),
