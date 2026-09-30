@@ -7,4 +7,9 @@
  * Nothing from `@qubeejs/core` is re-exported: list definitions, params, drivers and the
  * pagination helpers are imported from core, and documented there.
  */
-export {};
+
+// Types
+export type { QubeeHandle } from './types/qubee-handle.type';
+
+// Hooks
+export { useQubee } from './hooks/use-qubee';
