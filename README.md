@@ -70,6 +70,102 @@ subtree: only components that call `useQubeeContext()` re-render. The nearest pr
 `value={qubee}` instead of a configuration to share an instance created elsewhere. Outside a
 provider, `useQubeeContext()` throws `MissingQubeeProviderError`.
 
+## Lists in the URL: `useListState`
+
+Declare the list once, with `@qubeejs/core`, as a module-level constant:
+
+```ts
+// article-list.ts
+import { ArticleStatusEnum } from './article-status.enum';
+import {
+  defineList,
+  enumParam,
+  integerParam,
+  SortEnum,
+  sortParam,
+  STRAPI_DRIVER,
+  stringParam,
+} from '@qubeejs/core';
+
+export const articleList = defineList({
+  qubee: { baseUrl: 'https://example.com/api', driver: STRAPI_DRIVER },
+  resource: 'articles',
+  params: {
+    page: integerParam('page', { default: 1, min: 1 }),
+    q: stringParam('q'),
+    status: enumParam('status', ArticleStatusEnum),
+    sort: sortParam('sort', {
+      default: [{ field: 'publishedAt', order: SortEnum.DESC }],
+      fields: ['publishedAt', 'title'] as const,
+    }),
+  },
+  apply: (builder, { q, sort, status }) => {
+    builder.setLimit(20);
+    sort.forEach(({ field, order }) => builder.addSort(field, order));
+
+    if (q) {
+      builder.addFilter('title', q);
+    }
+
+    if (status) {
+      builder.addFilter('status', status);
+    }
+  },
+});
+```
+
+Then drive it from any component:
+
+```tsx
+import { getAriaSort } from '@qubeejs/core';
+import { useBrowserRouter, useListState } from '@qubeejs/react';
+
+function Articles(): ReactElement {
+  const list = useListState(articleList, useBrowserRouter());
+
+  return (
+    <>
+      <input
+        value={list.state.q ?? ''}
+        onChange={(e) => list.set({ q: e.target.value }, { debounce: 300, replace: true })}
+      />
+      <button onClick={() => list.set({ q: undefined, status: undefined })}>Clear filters</button>
+      <th
+        aria-sort={getAriaSort(list.state.sort, 'title')}
+        onClick={() => list.toggleSort('title')}
+      >
+        Title
+      </th>
+      <a
+        href={list.href({ page: 2 })}
+        onClick={(e) => {
+          e.preventDefault();
+          list.setPage(2);
+        }}
+      >
+        2
+      </a>
+    </>
+  );
+}
+```
+
+- `state` updates as soon as you call `set()`, so an input never lags behind a debounce or a
+  server round-trip.
+- `set()` navigates at most once per call. Values equal to their defaults stay out of the URL, a
+  change to anything but the page returns to page 1, and parameters the list does not own are
+  kept.
+- `request` — `{ uri, headers, paginate }` — changes once per navigation, never per keystroke: use
+  it as your cache key.
+- `isPending` is `true` while a debounce waits or a navigation is in flight.
+- The URL is the source of truth: Back, Forward or a link elsewhere cancel a pending debounce and
+  discard anything not yet in the URL. Unmounting cancels a pending debounce too.
+- `toggleSort(field)` exists when the list declares exactly one `sortParam`; `field` is typed to
+  its fields. In single mode it flips only the primary sort.
+
+No provider is needed: the URL is the shared state. When several components need the same draft
+or `isPending`, call the hook once in their common parent and pass the handle down.
+
 ## Routers
 
 `useListState` takes a `ListRouter`: the current `pathname` and `search`, and a
@@ -136,6 +232,46 @@ export function useNextRouterList(): ListRouter {
   };
 }
 ```
+
+## Fetching
+
+The adapter performs no I/O. `request` holds everything a fetch needs.
+
+**TanStack Query**:
+
+```tsx
+const { request } = useListState(articleList, router);
+
+const articles = useQuery({
+  placeholderData: keepPreviousData,
+  queryFn: async ({ signal }) => {
+    const response = await fetch(request.uri, { headers: request.headers ?? {}, signal });
+
+    return request.paginate<Article>(await response.json()).toPlain();
+  },
+  queryKey: ['articles', request.uri, request.headers],
+});
+```
+
+**SWR**:
+
+```tsx
+const { request } = useListState(articleList, router);
+
+const { data } = useSWR(
+  [request.uri, request.headers],
+  async ([uri, headers]) => {
+    const response = await fetch(uri, { headers: headers ?? {} });
+
+    return request.paginate<Article>(await response.json()).toPlain();
+  },
+  { keepPreviousData: true }
+);
+```
+
+`toPlain()` returns a plain object, which TanStack Query can share structurally and a Server
+Component can hand to a Client Component. `request.headers` is `null` unless the driver pages
+over headers (PostgREST in `RANGE` mode).
 
 ## Contributing
 

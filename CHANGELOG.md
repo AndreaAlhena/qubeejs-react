@@ -19,3 +19,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   a provider (#5)
 - `ListRouter`, the router contract of URL-driven lists, and `useBrowserRouter()` for apps
   without a router — every instance in sync, safe to render on the server (#6)
+- `useListState(list, router)`: a list whose state lives in the page URL — a draft `state` that
+  updates synchronously, a typed `set()` that navigates at most once per call, optional
+  debounce, `isPending`, `href()`, `setPage()`, `toggleSort()` when the list declares one
+  `sortParam`, and a `request` that changes once per navigation for fetching libraries (#7)
