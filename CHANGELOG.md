@@ -17,3 +17,5 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `QubeeProvider` and `useQubeeContext()`: one instance shared by a subtree, configured with flat
   `QubeeConfig` props or a `value`; only consumers re-render; `MissingQubeeProviderError` outside
   a provider (#5)
+- `ListRouter`, the router contract of URL-driven lists, and `useBrowserRouter()` for apps
+  without a router — every instance in sync, safe to render on the server (#6)

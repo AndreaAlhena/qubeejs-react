@@ -9,6 +9,8 @@
  */
 
 // Types
+export type { ListRouter } from './types/list-router.type';
+export type { NavigateOptions } from './types/navigate-options.type';
 export type { QubeeHandle } from './types/qubee-handle.type';
 export type { QubeeProviderProps } from './types/qubee-provider-props.type';
 
@@ -19,5 +21,6 @@ export { QubeeProvider } from './components/qubee-provider';
 export { MissingQubeeProviderError } from './errors/missing-qubee-provider.error';
 
 // Hooks
+export { useBrowserRouter } from './hooks/use-browser-router';
 export { useQubee } from './hooks/use-qubee';
 export { useQubeeContext } from './hooks/use-qubee-context';
