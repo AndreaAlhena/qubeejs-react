@@ -25,7 +25,7 @@ the URL do not:
 <Code code={viteMain} lang="tsx" title="src/main.tsx" />
 
 For URL-driven lists without a router library, `useBrowserRouter()` reads `location` and writes
-with `history.pushState` and `replaceState`. It observes only its own `navigate` plus Back and
+with `history.pushState` and `replaceState`. Every component that calls it stays in step, through the back and forward buttons too. It observes only its own `navigate` plus Back and
 Forward: a `pushState` by other code is not seen until the next `popstate`, so parameters that code
 added can be dropped by the next `set()`. When something else also writes the URL, use your
 router's adapter.
