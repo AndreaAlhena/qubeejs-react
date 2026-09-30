@@ -10,6 +10,14 @@
 
 // Types
 export type { QubeeHandle } from './types/qubee-handle.type';
+export type { QubeeProviderProps } from './types/qubee-provider-props.type';
+
+// Components
+export { QubeeProvider } from './components/qubee-provider';
+
+// Errors
+export { MissingQubeeProviderError } from './errors/missing-qubee-provider.error';
 
 // Hooks
 export { useQubee } from './hooks/use-qubee';
+export { useQubeeContext } from './hooks/use-qubee-context';
