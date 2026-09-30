@@ -162,4 +162,20 @@ describe('QubeeProvider', () => {
       expect(screen.getByTestId('base-url').textContent).toBe('https://inner.example.com');
     });
   });
+
+  describe('props', () => {
+    it('should reject a configuration with a value, and a missing children', () => {
+      const qubee = createQubee({ driver: STRAPI_DRIVER });
+      const rejected = [
+        // @ts-expect-error — a configuration and a value are exclusive: pass one or the other
+        <QubeeProvider driver={STRAPI_DRIVER} key="both" value={qubee}>
+          <span />
+        </QubeeProvider>,
+        // @ts-expect-error — children is required
+        <QubeeProvider key="empty" value={qubee} />,
+      ];
+
+      expect(rejected).toHaveLength(2);
+    });
+  });
 });
