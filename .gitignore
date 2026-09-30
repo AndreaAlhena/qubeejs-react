@@ -1,1 +1,14 @@
 docs/superpowers/
+.superpowers/
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
+npm-debug.log*
+
+# scratch files from local experiments
+.probe/

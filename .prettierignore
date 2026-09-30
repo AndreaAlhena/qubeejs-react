@@ -1,0 +1,8 @@
+coverage/
+dist/
+node_modules/
+package-lock.json
+
+# docs/ holds the design specs, the plans and the documentation site, which is a separate
+# workspace with its own toolchain.
+docs/
