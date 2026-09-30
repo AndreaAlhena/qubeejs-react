@@ -258,12 +258,13 @@ function membersTable(type) {
 /** A conditional type's members per branch, following a nested conditional in either branch. */
 function conditionalMembers(type) {
   const branch = (part) => (part?.type === 'conditional' ? conditionalMembers(part) : membersTable(part));
+  const whenTrue = branch(type.trueType);
   const otherwise = branch(type.falseType);
 
   return [
     `When \`${typeName(type.checkType)}\` extends \`${typeName(type.extendsType)}\`:`,
     '',
-    ...branch(type.trueType),
+    ...(whenTrue.length ? whenTrue : ['No members.', '']),
     'Otherwise:',
     '',
     ...(otherwise.length ? otherwise : ['No members.', '']),
