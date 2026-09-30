@@ -1,6 +1,6 @@
 import { createQubee, STRAPI_DRIVER } from '@qubeejs/core';
 
-import type { QubeeHandle, QubeeProviderProps } from '../src/index';
+import type { ListRouter, NavigateOptions, QubeeHandle, QubeeProviderProps } from '../src/index';
 
 import * as api from '../src/index';
 
@@ -9,12 +9,15 @@ describe('public API', () => {
     expect(Object.keys(api).sort()).toEqual([
       'MissingQubeeProviderError',
       'QubeeProvider',
+      'useBrowserRouter',
       'useQubee',
       'useQubeeContext',
     ]);
   });
 
   it('should export the documented types', () => {
+    expectTypeOf<ListRouter>().toHaveProperty('navigate');
+    expectTypeOf<NavigateOptions>().toHaveProperty('replace');
     expectTypeOf<QubeeHandle>().toHaveProperty('state');
     expectTypeOf<QubeeProviderProps>().toHaveProperty('children');
   });
