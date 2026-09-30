@@ -154,6 +154,10 @@ function typeName(t) {
   }
 }
 
+/** A type alias's type; TypeDoc leaves `type` unset for an object literal and lists its members as children. */
+const aliasedType = (node) =>
+  node.type ?? { declaration: { children: node.children ?? [] }, type: 'reflection' };
+
 /** The members an object type declares, across the parts of an intersection. */
 function membersOf(type) {
   if (!type) return [];
@@ -325,7 +329,7 @@ function seeAlso(node, pages) {
 /** The chips under the title: the source file and a count. */
 function chips(node) {
   const signature = signaturesOf(node)[0];
-  const members = membersOf(node.type).length;
+  const members = membersOf(node.kind === REFLECTION.TYPE_ALIAS ? aliasedType(node) : node.type).length;
   const labels = [
     node.sources?.[0]?.fileName ?? '',
     signature ? count(signature.parameters?.length ?? 0, 'parameter') : '',
@@ -368,16 +372,18 @@ function renderFunction(node, pages) {
 
 /** A type alias's page. */
 function renderType(node, pages) {
+  const aliased = aliasedType(node);
+
   return [
     summary(node.comment),
     '',
     '## Definition',
     '',
     '```ts',
-    `type ${node.name}${typeParameters(node)} = ${typeName(node.type)}`,
+    `type ${node.name}${typeParameters(node)} = ${typeName(aliased)}`,
     '```',
     '',
-    ...renderMembers(node.type),
+    ...renderMembers(aliased),
     ...remarks(node.comment),
     ...examples(node.comment),
     ...seeAlso(node, pages),
@@ -476,6 +482,11 @@ const nodes = JSON.parse(readFileSync(jsonPath, 'utf8')).children ?? [];
 const pages = new Map(
   nodes.map((node) => {
     const kind = kindOf(node);
+
+    if (node.kind === REFLECTION.TYPE_ALIAS && !node.type && !node.children?.length) {
+      fail(`type alias "${node.name}" has neither a type nor members — TypeDoc gave the generator nothing to render.`);
+    }
+
     const group = PROVIDER.has(node.name) ? 'provider' : GROUP_OF_KIND[kind];
 
     return [node.name, { group, href: `/api/${group}/${slugOf(node.name)}/`, kind, title: titleOf(node.name, kind) }];
