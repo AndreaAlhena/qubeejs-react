@@ -134,13 +134,13 @@ const CORE_LINKS = [
             <h1>Hook the query.<br /><span>Not the boilerplate.</span></h1>
             <p class="lede">
               <strong>@qubeejs/react</strong> connects <strong>@qubeejs/core</strong> to React. A hook
-              gives a component its own query, a provider shares one across a subtree, and
+              gives a component its own query, a provider shares one across a subtree, and{' '}
               <code>useListState</code> keeps a list's query in the page URL. Components re-render when
               the query changes; fetching stays yours.
             </p>
             <p class="aside">
               These pages cover only what the adapter adds. Drivers, filters, the builder API and the
-              list layer — <code>defineList</code>, its params, its hrefs — are documented once, in the
+              list layer — <code>defineList</code>, its params, its hrefs — are documented once, in the{' '}
               <a href={`${CORE}/`}>qubeejs core docs ↗</a>.
             </p>
             <div class="cta">
@@ -175,7 +175,7 @@ const CORE_LINKS = [
         <div class="setup-copy">
           <h2>One provider, then a hook</h2>
           <p>
-            Wrap a subtree in <code>&lt;QubeeProvider&gt;</code> with a driver and a base URL, then call
+            Wrap a subtree in <code>&lt;QubeeProvider&gt;</code> with a driver and a base URL, then call{' '}
             <code>useQubeeContext()</code> anywhere below it. Lists whose query lives in the URL need no
             provider at all: <code>useListState</code> reads the address directly.
           </p>
@@ -245,7 +245,7 @@ const CORE_LINKS = [
     </main>
 
     <footer>
-      Released under the MIT License · Copyright © 2026 Andrea Tantimonaco ·
+      Released under the MIT License · Copyright © 2026 Andrea Tantimonaco ·{' '}
       <a href={`${base}/changelog/`}>Changelog</a> · <a href={REPO}>GitHub</a>
     </footer>
 
