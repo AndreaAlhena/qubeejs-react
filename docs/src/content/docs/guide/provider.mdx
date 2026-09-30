@@ -32,8 +32,9 @@ Strict Mode and keep one result; each call builds a fresh instance, so nothing i
 
 :::caution[Server rendering with value]
 With `value`, you own the instance's lifetime. Create it per tree — per request on the server —
-never as a module-level singleton shared across requests. And do not write to it before hydration:
-a write made before hydrating gives the client a snapshot that differs from the server's HTML.
+never as a module-level instance shared across requests — and configure it the same way on both sides,
+as the initializer above does. A client-only write before hydration (from `localStorage`, say) makes the
+client's snapshot differ from the server HTML; make such writes in an effect.
 :::
 
 ## Who re-renders

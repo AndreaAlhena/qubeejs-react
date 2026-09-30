@@ -17,13 +17,13 @@ The store keeps a **snapshot** of its state and hands out the same object until 
 React compares snapshots by identity, so a component re-renders after a write, and only then.
 
 ```ts
-builder.addFilter('status', 'published'); // one write → one new snapshot
-builder.setLimit(50); // another write → another snapshot
+builder.addFilter('status', 'published'); // writes → a new snapshot
+builder.setLimit(50); // writes again → another snapshot
 ```
 
 Writes made together in an event handler re-render once: React 18 and 19 batch the updates. A chain
 such as `builder.setResource('articles').addSort('title', SortEnum.ASC).setLimit(20)` in a click
-handler is three writes and one render.
+handler is several writes (most query methods also reset the page) and one render.
 
 ## Consistent reads
 
@@ -67,8 +67,9 @@ server and while hydrating.
   and the server snapshot is that instance's initial state — the same on both sides, so a client
   component renders on the server and hydrates without a mismatch.
 - For `<QubeeProvider value={qubee}>`, the instance is yours: create it per tree or per request,
-  never as a module-level singleton shared across server requests, and do not write to it before
-  hydration — a write before hydration makes the client's snapshot differ from the server HTML.
+  never as a module-level instance shared across server requests — and configure it the same way on
+  both sides. A client-only write before hydration (from `localStorage`, say) makes the client's
+  snapshot differ from the server HTML; make such writes in an effect.
 - For `useBrowserRouter`, the server knows no URL: its server snapshot is an empty path and search.
   A URL-driven list therefore renders its defaults on the server, then re-renders with the real URL
   as soon as it hydrates. When the server should render the right page — in the Next.js App Router —
