@@ -136,15 +136,10 @@ function Articles(): ReactElement {
       >
         Title
       </th>
-      <a
-        href={list.href({ page: 2 })}
-        onClick={(e) => {
-          e.preventDefault();
-          list.setPage(2);
-        }}
-      >
-        2
-      </a>
+      <a href={list.href({ page: 2 })}>2</a>
+      <button onClick={() => list.setPage(2)} type="button">
+        Go to page 2
+      </button>
     </>
   );
 }
@@ -247,7 +242,7 @@ const articles = useQuery({
   queryFn: async ({ signal }) => {
     const response = await fetch(request.uri, { headers: request.headers ?? {}, signal });
 
-    return request.paginate<Article>(await response.json()).toPlain();
+    return request.paginate<Article>(await response.json(), response.headers).toPlain();
   },
   queryKey: ['articles', request.uri, request.headers],
 });
@@ -263,7 +258,7 @@ const { data } = useSWR(
   async ([uri, headers]) => {
     const response = await fetch(uri, { headers: headers ?? {} });
 
-    return request.paginate<Article>(await response.json()).toPlain();
+    return request.paginate<Article>(await response.json(), response.headers).toPlain();
   },
   { keepPreviousData: true }
 );
