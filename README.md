@@ -21,6 +21,29 @@ npm i @qubeejs/react @qubeejs/core
 
 React 18.3 or 19. No runtime dependencies.
 
+## An instance per component: `useQubee`
+
+For lists whose state stays in memory — a dialog, a picker, an app without routing:
+
+```tsx
+import { STRAPI_DRIVER } from '@qubeejs/core';
+import { useQubee } from '@qubeejs/react';
+
+function ArticlePicker(): ReactElement {
+  const { builder, state } = useQubee({
+    baseUrl: 'https://example.com/api',
+    driver: STRAPI_DRIVER,
+  });
+
+  // Every builder call re-renders the component with the new state.
+  return <button onClick={() => builder.nextPage()}>Page {state.page}</button>;
+}
+```
+
+The instance is created on the first render and kept. Later changes to the config are ignored —
+remount the component with a `key` to switch drivers. The hook renders on the server with the
+store's initial state.
+
 ## Contributing
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md) and [CODING-STANDARDS.md](./CODING-STANDARDS.md).
