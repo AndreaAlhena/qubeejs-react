@@ -70,6 +70,74 @@ subtree: only components that call `useQubeeContext()` re-render. The nearest pr
 `value={qubee}` instead of a configuration to share an instance created elsewhere. Outside a
 provider, `useQubeeContext()` throws `MissingQubeeProviderError`.
 
+## Routers
+
+`useListState` takes a `ListRouter`: the current `pathname` and `search`, and a
+`navigate(href, { replace })`. Build it from your router's hooks on every render.
+
+**No router** — `useBrowserRouter()` uses `history.pushState` / `replaceState` and `popstate`, and
+keeps every component on the page in sync:
+
+```tsx
+const list = useListState(articleList, useBrowserRouter());
+```
+
+**React Router v7** (on v6.4+ the same hooks come from `'react-router-dom'`):
+
+```ts
+import type { ListRouter } from '@qubeejs/react';
+import { useLocation, useNavigate, useSearchParams } from 'react-router';
+
+export function useReactRouterList(): ListRouter {
+  const [search] = useSearchParams();
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
+
+  return { navigate: (href, { replace }) => void navigate(href, { replace }), pathname, search };
+}
+```
+
+**TanStack Router**:
+
+```ts
+import type { ListRouter } from '@qubeejs/react';
+import { useRouter, useRouterState } from '@tanstack/react-router';
+
+export function useTanStackRouterList(): ListRouter {
+  const router = useRouter();
+  const { pathname, searchStr } = useRouterState({ select: (state) => state.location });
+
+  return {
+    navigate: (href, { replace }) =>
+      replace ? router.history.replace(href) : router.history.push(href),
+    pathname,
+    search: searchStr,
+  };
+}
+```
+
+**Next.js App Router** (until `@qubeejs/next` ships `useNextRouter()`):
+
+```ts
+'use client';
+
+import type { ListRouter } from '@qubeejs/react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+
+export function useNextRouterList(): ListRouter {
+  const router = useRouter();
+  const pathname = usePathname();
+  const search = useSearchParams();
+
+  return {
+    navigate: (href, { replace }) =>
+      replace ? router.replace(href, { scroll: false }) : router.push(href, { scroll: false }),
+    pathname,
+    search,
+  };
+}
+```
+
 ## Contributing
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md) and [CODING-STANDARDS.md](./CODING-STANDARDS.md).
