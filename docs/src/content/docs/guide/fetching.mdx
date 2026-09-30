@@ -64,6 +64,9 @@ Its `request.uri` carries no offset. `request.headers` carries `Range-Unit: item
 `Range: 0-19` for the first page, `Range: 20-39` for the second. `fetchPage` sends them without
 knowing which driver it is talking to.
 
+PostgREST reports the total only when asked: send `Prefer: count=exact` as well —
+`{ ...request.headers, Prefer: 'count=exact' }` — or `total` and `lastPage` stay `null`.
+
 ## Plain effects
 
 Without a query library, fetch in an effect keyed on `request` and abort in its cleanup, as the
