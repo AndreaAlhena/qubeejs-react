@@ -9,7 +9,8 @@ import { useQubeeHandle } from './use-qubee-handle';
 /**
  * Read the nearest {@link QubeeProvider}'s instance, and re-render when its query changes.
  *
- * Each caller subscribes on its own, so only the components that use the state re-render.
+ * Each caller subscribes on its own: every component that calls this hook re-renders on every
+ * write to the store, while the provider's other descendants do not.
  *
  * @returns The provider's builder, paginator and store, plus the store's current state
  * @throws {MissingQubeeProviderError} When no provider is above the calling component

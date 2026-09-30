@@ -1,4 +1,5 @@
 import {
+  cancelDraft,
   commitLocation,
   createListStateMachine,
   draftLocation,
@@ -27,6 +28,32 @@ describe('list-state machine', () => {
         inflight: [],
         location: '/articles',
       });
+    });
+  });
+
+  describe('cancelDraft', () => {
+    it('should return the same machine when nothing is debouncing', () => {
+      const machine = commitLocation(createListStateMachine('/articles'), '/articles?q=react');
+
+      expect(cancelDraft(machine)).toBe(machine);
+    });
+
+    it('should fall back to the last in-flight href when a debounce is dropped', () => {
+      const committed = commitLocation(createListStateMachine('/articles'), '/articles?q=react');
+      const machine = draftLocation(committed, '/articles?q=reactive');
+
+      expect(cancelDraft(machine)).toEqual({
+        debouncing: false,
+        draft: '/articles?q=react',
+        inflight: ['/articles?q=react'],
+        location: '/articles',
+      });
+    });
+
+    it('should clear the draft when nothing is in flight', () => {
+      const machine = draftLocation(createListStateMachine('/articles'), '/articles?q=r');
+
+      expect(cancelDraft(machine)).toEqual(createListStateMachine('/articles'));
     });
   });
 

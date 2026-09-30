@@ -130,11 +130,10 @@ function Articles(): ReactElement {
         onChange={(e) => list.set({ q: e.target.value }, { debounce: 300, replace: true })}
       />
       <button onClick={() => list.set({ q: undefined, status: undefined })}>Clear filters</button>
-      <th
-        aria-sort={getAriaSort(list.state.sort, 'title')}
-        onClick={() => list.toggleSort('title')}
-      >
-        Title
+      <th aria-sort={getAriaSort(list.state.sort, 'title')}>
+        <button onClick={() => list.toggleSort('title')} type="button">
+          Title
+        </button>
       </th>
       <a href={list.href({ page: 2 })}>2</a>
       <button onClick={() => list.setPage(2)} type="button">
@@ -154,9 +153,12 @@ function Articles(): ReactElement {
   it as your cache key.
 - `isPending` is `true` while a debounce waits or a navigation is in flight.
 - The URL is the source of truth: Back, Forward or a link elsewhere cancel a pending debounce and
-  discard anything not yet in the URL. Unmounting cancels a pending debounce too.
+  discard anything not yet in the URL. Unmounting cancels a pending debounce too, and so does
+  hiding the tree with React 19's `<Activity>`: the draft is dropped, not left pending.
 - `toggleSort(field)` exists when the list declares exactly one `sortParam`; `field` is typed to
-  its fields. In single mode it flips only the primary sort.
+  its fields. Single mode (the default) flips the primary sort, and any other field starts
+  ascending and replaces the others; `{ multiple: true }` flips the field in place, or appends it,
+  keeping the other sorts.
 
 No provider is needed: the URL is the shared state. When several components need the same draft
 or `isPending`, call the hook once in their common parent and pass the handle down.
@@ -172,6 +174,10 @@ keeps every component on the page in sync:
 ```tsx
 const list = useListState(articleList, useBrowserRouter());
 ```
+
+It observes only its own `navigate` and Back/Forward: a `history.pushState` by other code is not
+seen until the next `popstate`, so parameters that code added can be dropped by the next `set()`.
+When something else also writes the URL, use your router's adapter below.
 
 **React Router v7** (on v6.4+ the same hooks come from `'react-router-dom'`):
 
@@ -206,7 +212,11 @@ export function useTanStackRouterList(): ListRouter {
 }
 ```
 
-**Next.js App Router** (until `@qubeejs/next` ships `useNextRouter()`):
+**Next.js App Router** (until `@qubeejs/next` ships `useNextRouter()`): the package's hooks and
+`QubeeProvider` run on the client, so import `@qubeejs/react` only from `'use client'` modules and
+wrap `QubeeProvider` in your own client component — a server module that imports the package
+fails at import time. `useSearchParams` on a statically rendered route needs a `<Suspense>`
+boundary above it, or `next build` fails.
 
 ```ts
 'use client';
