@@ -22,6 +22,23 @@ export function draftLocation(machine: ListStateMachine, href: string): ListStat
 }
 
 /**
+ * Drop the draft a debounce was holding, because the debounce will never commit it.
+ *
+ * The draft falls back to the last href in flight, or to nothing when none is: the state reads the
+ * URL again instead of showing text that will never reach it.
+ *
+ * @param machine - The current machine
+ * @returns The same machine when nothing is debouncing, otherwise the machine without the draft
+ */
+export function cancelDraft(machine: ListStateMachine): ListStateMachine {
+  if (!machine.debouncing) {
+    return machine;
+  }
+
+  return { ...machine, debouncing: false, draft: machine.inflight.at(-1) ?? null };
+}
+
+/**
  * Record that `href` is being navigated to.
  *
  * Committing the URL the page is already on settles the machine: whatever was in flight has been

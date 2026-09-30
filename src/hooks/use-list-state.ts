@@ -27,6 +27,7 @@ import { createDebouncer } from '../utils/create-debouncer';
 import { createLocalStore } from '../utils/create-local-store';
 import { normalizeHref, pathnameOfHref, searchOfHref } from '../utils/href';
 import {
+  cancelDraft,
   commitLocation,
   createListStateMachine,
   draftLocation,
@@ -76,7 +77,7 @@ function locationOf(list: LooseList, location: ListLocation): string {
  * debounce; `request` follows the committed state, so a cache key built from it changes once per
  * navigation, never per keystroke; the URL stays the source of truth — a change the hook did not
  * cause (Back, Forward, a link elsewhere) cancels a pending debounce and discards anything not
- * yet in the URL. Unmounting cancels a pending debounce too. `toggleSort` is there when the list
+ * yet in the URL. Unmounting (or hiding the tree with `<Activity>`) cancels a pending debounce and drops its draft too. `toggleSort` is there when the list
  * declares exactly one `sortParam`.
  *
  * @param list - A list declared once with `defineList`, as a module-level constant
@@ -127,7 +128,15 @@ export function useListState<TList extends ListDefinition<ListParams>>(
     machine.update(() => after);
   }, [debouncer, location, machine]);
 
-  useEffect(() => debouncer.cancel, [debouncer]);
+  // Not only an unmount: `<Activity>` hiding the tree and Fast Refresh tear effects down and re-run
+  // them, and a debounce cancelled there would otherwise leave its draft — and `isPending` — behind.
+  useEffect(
+    () => (): void => {
+      debouncer.cancel();
+      machine.update(cancelDraft);
+    },
+    [debouncer, machine]
+  );
 
   const read = useCallback(
     (): ListStateMachine =>

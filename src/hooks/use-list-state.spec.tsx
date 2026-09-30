@@ -1,9 +1,10 @@
 import type { Sort } from '@qubeejs/core';
 import type { RenderHookResult } from '@testing-library/react';
-import type { ReactElement } from 'react';
+import type { ComponentType, ReactElement, ReactNode } from 'react';
 
 import { SortEnum } from '@qubeejs/core';
-import { act, renderHook } from '@testing-library/react';
+import { act, render, renderHook } from '@testing-library/react';
+import * as React from 'react';
 import { StrictMode } from 'react';
 import { renderToString } from 'react-dom/server';
 
@@ -16,6 +17,15 @@ import { tagList } from '../../test/fixtures/tag-list';
 import { createTestRouter } from '../../test/helpers/create-test-router';
 import { uriFor } from '../../test/helpers/uri-for';
 import { useListState } from './use-list-state';
+
+/**
+ * React 19.2's `Activity`; `undefined` on React 18, whose typings do not declare it.
+ */
+const Activity = (
+  React as unknown as {
+    Activity?: ComponentType<{ children: ReactNode; mode: 'hidden' | 'visible' }>;
+  }
+).Activity;
 
 type ArticleListHandle = ListStateHandle<typeof articleList>;
 
@@ -584,6 +594,45 @@ describe('useListState', () => {
       expect(result.current.state.q).toBeUndefined();
       expect(result.current.isPending).toBe(false);
     });
+
+    it.skipIf(!Activity)(
+      'should drop a pending draft when its effects are torn down without an unmount',
+      () => {
+        const router = createTestRouter('/articles');
+        let handle: ArticleListHandle | undefined;
+        const Page = (): ReactElement => {
+          handle = useListState(articleList, router.useRouter());
+
+          return <output>{handle.state.q ?? ''}</output>;
+        };
+        const tree = (mode: 'hidden' | 'visible'): ReactElement => (
+          <StrictMode>
+            {Activity && (
+              <Activity mode={mode}>
+                <Page />
+              </Activity>
+            )}
+          </StrictMode>
+        );
+        const { rerender } = render(tree('visible'));
+
+        act(() => {
+          handle?.set({ q: 'react' }, { debounce: 300 });
+        });
+        rerender(tree('hidden'));
+        act(() => {
+          vi.advanceTimersByTime(1000);
+        });
+        rerender(tree('visible'));
+        act(() => {
+          vi.advanceTimersByTime(1000);
+        });
+
+        expect(handle?.isPending).toBe(false);
+        expect(handle?.state.q).toBeUndefined();
+        expect(router.navigations).toEqual([]);
+      }
+    );
   });
 
   describe('toggleSort', () => {
