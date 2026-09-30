@@ -27,7 +27,7 @@ export function ArticleSearch({ list }: { list: ListStateHandle<typeof articleLi
           Clear
         </button>
       )}
-      {list.isPending && <span aria-live="polite">Searching…</span>}
+      <span aria-live="polite">{list.isPending ? 'Searching…' : ''}</span>
     </div>
   );
 }

@@ -35,11 +35,13 @@ export function ArticleIndex() {
   }, [request]);
 
   return (
-    <section aria-busy={list.isPending}>
+    <section>
       <ArticleSearch list={list} />
       <StatusChips list={list} />
-      <ArticleTable articles={result?.data ?? []} list={list} />
-      {result && <ResultRange result={result} />}
+      <div aria-busy={list.isPending}>
+        <ArticleTable articles={result?.data ?? []} list={list} />
+        {result && <ResultRange result={result} />}
+      </div>
       <PaginationBar lastPage={result?.lastPage ?? 1} list={list} />
     </section>
   );
