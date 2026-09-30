@@ -213,23 +213,31 @@ export function useListState<TList extends ListDefinition<ListParams>>(
   );
 
   return useMemo(() => {
-    const handle = { href, isPending, request, set, setPage, state };
+    const sortMember =
+      sortKey === undefined
+        ? {}
+        : {
+            toggleSort: (field: string, options: SetOptions & ToggleSortOptions = {}): void => {
+              const { multiple, ...setOptions } = options;
+              const current = read();
+              const search = searchOfHref(current.draft ?? current.location);
+              // `sortKey` names a sortParam, whose value is always a Sort array; `readListState`
+              // types it `unknown` because the loose list indexes its params by `string`.
+              const sorts = readListState(loose, search)[sortKey] as readonly Sort[];
+              const changes: LooseChanges = { [sortKey]: toggleSort(sorts, field, { multiple }) };
 
-    if (sortKey === undefined) {
-      return handle as unknown as ListStateHandle<TList>;
-    }
+              set(changes, setOptions);
+            },
+          };
 
-    const toggle = (field: string, options: SetOptions & ToggleSortOptions = {}): void => {
-      const { multiple, ...setOptions } = options;
-      const current = read();
-      const search = searchOfHref(current.draft ?? current.location);
-      // `sortKey` names a sortParam, whose value is always a Sort array.
-      const sorts = readListState(loose, search)[sortKey] as readonly Sort[];
-      const changes: LooseChanges = { [sortKey]: toggleSort(sorts, field, { multiple }) };
-
-      set(changes, setOptions);
-    };
-
-    return { ...handle, toggleSort: toggle } as unknown as ListStateHandle<TList>;
+    return {
+      href,
+      isPending,
+      request,
+      set,
+      setPage,
+      state,
+      ...sortMember,
+    } as unknown as ListStateHandle<TList>;
   }, [href, isPending, loose, read, request, set, setPage, sortKey, state]);
 }
