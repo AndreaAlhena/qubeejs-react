@@ -14,3 +14,6 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   Node 22/24 and React 18/19 (#3)
 - `useQubee(config)`: a qubee instance per component, created once, re-rendered through
   `useSyncExternalStore`, and safe to render on the server (#4)
+- `QubeeProvider` and `useQubeeContext()`: one instance shared by a subtree, configured with flat
+  `QubeeConfig` props or a `value`; only consumers re-render; `MissingQubeeProviderError` outside
+  a provider (#5)
