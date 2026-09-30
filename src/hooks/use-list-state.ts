@@ -1,6 +1,13 @@
-import type { ListDefinition, ListLocation, ListParams, ListState } from '@qubeejs/core';
+import type {
+  ListDefinition,
+  ListLocation,
+  ListParams,
+  ListState,
+  Sort,
+  ToggleSortOptions,
+} from '@qubeejs/core';
 
-import { buildListHref, buildListRequest, readListState } from '@qubeejs/core';
+import { buildListHref, buildListRequest, readListState, toggleSort } from '@qubeejs/core';
 import {
   useCallback,
   useEffect,
@@ -37,6 +44,18 @@ type LooseList = ListDefinition<ListParams>;
 type LooseChanges = Partial<ListState<LooseList>>;
 
 /**
+ * The key of the list's one `sortParam`, or `undefined` when it has none or several.
+ *
+ * @param list - The list
+ * @returns The key, e.g. `sort`
+ */
+function findSortKey(list: LooseList): string | undefined {
+  const keys = Object.keys(list.params).filter((key) => 'sortFields' in list.params[key]);
+
+  return keys.length === 1 ? keys[0] : undefined;
+}
+
+/**
  * The router's location as one comparable string: the href core would build for it, normalised.
  *
  * Going through `buildListHref` puts the query in the order core writes it, so a router that
@@ -57,7 +76,8 @@ function locationOf(list: LooseList, location: ListLocation): string {
  * debounce; `request` follows the committed state, so a cache key built from it changes once per
  * navigation, never per keystroke; the URL stays the source of truth — a change the hook did not
  * cause (Back, Forward, a link elsewhere) cancels a pending debounce and discards anything not
- * yet in the URL. Unmounting cancels a pending debounce too.
+ * yet in the URL. Unmounting cancels a pending debounce too. `toggleSort` is there when the list
+ * declares exactly one `sortParam`.
  *
  * @param list - A list declared once with `defineList`, as a module-level constant
  * @param router - The current location and a `navigate`, rebuilt every render
@@ -68,6 +88,8 @@ function locationOf(list: LooseList, location: ListLocation): string {
  * const list = useListState(articleList, useBrowserRouter());
  *
  * <input value={list.state.q ?? ''} onChange={(e) => list.set({ q: e.target.value }, { debounce: 300, replace: true })} />
+ * <th aria-sort={getAriaSort(list.state.sort, 'title')} onClick={() => list.toggleSort('title')}>Title</th>
+ * <a href={list.href({ page: 2 })}>2</a>
  * ```
  */
 export function useListState<TList extends ListDefinition<ListParams>>(
@@ -178,6 +200,7 @@ export function useListState<TList extends ListDefinition<ListParams>>(
   const draftSearch = searchOfHref(view.draft ?? view.location);
   const committedSearch = searchOfHref(view.inflight.at(-1) ?? view.location);
   const isPending = isNavigating || view.debouncing || view.inflight.length > 0;
+  const sortKey = useMemo(() => findSortKey(loose), [loose]);
   const state = useMemo(() => readListState(loose, draftSearch), [draftSearch, loose]);
   const request = useMemo(
     () => buildListRequest(loose, readListState(loose, committedSearch)),
@@ -189,8 +212,24 @@ export function useListState<TList extends ListDefinition<ListParams>>(
     [draftSearch, loose, router.pathname]
   );
 
-  return useMemo(
-    () => ({ href, isPending, request, set, setPage, state }) as unknown as ListStateHandle<TList>,
-    [href, isPending, request, set, setPage, state]
-  );
+  return useMemo(() => {
+    const handle = { href, isPending, request, set, setPage, state };
+
+    if (sortKey === undefined) {
+      return handle as unknown as ListStateHandle<TList>;
+    }
+
+    const toggle = (field: string, options: SetOptions & ToggleSortOptions = {}): void => {
+      const { multiple, ...setOptions } = options;
+      const current = read();
+      const search = searchOfHref(current.draft ?? current.location);
+      // `sortKey` names a sortParam, whose value is always a Sort array.
+      const sorts = readListState(loose, search)[sortKey] as readonly Sort[];
+      const changes: LooseChanges = { [sortKey]: toggleSort(sorts, field, { multiple }) };
+
+      set(changes, setOptions);
+    };
+
+    return { ...handle, toggleSort: toggle } as unknown as ListStateHandle<TList>;
+  }, [href, isPending, loose, read, request, set, setPage, sortKey, state]);
 }

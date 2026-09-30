@@ -15,6 +15,7 @@ export type { NavigateOptions } from './types/navigate-options.type';
 export type { QubeeHandle } from './types/qubee-handle.type';
 export type { QubeeProviderProps } from './types/qubee-provider-props.type';
 export type { SetOptions } from './types/set-options.type';
+export type { SortToggle } from './types/sort-toggle.type';
 
 // Components
 export { QubeeProvider } from './components/qubee-provider';

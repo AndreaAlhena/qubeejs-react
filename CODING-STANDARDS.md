@@ -90,9 +90,10 @@ index signatures → static props → private props → protected props → publ
   (`set(changes): void`), so a caller can destructure a handle without tripping
   `@typescript-eslint/unbound-method`.
 - **Casts** (`as`) only at a documented generic boundary, with a comment saying what the compiler
-  cannot see. Today there is one: `useListState` narrows its handle to `ListStateHandle<TList>`,
-  because `ListState<TList>` is a conditional type the compiler cannot evaluate while `TList` is
-  generic.
+  cannot see. Today there are two, both in `useListState`: `as unknown as ListStateHandle<TList>` narrows the
+  handle, because `ListState<TList>` is a conditional type the compiler cannot evaluate while
+  `TList` is generic; and `as readonly Sort[]` types the value at the list's `sortParam` key, which
+  the loose list view types as a union of every param's value.
 
 ## React
 

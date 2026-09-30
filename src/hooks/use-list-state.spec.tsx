@@ -12,6 +12,7 @@ import type { ListStateHandle } from '../types/list-state-handle.type';
 
 import { articleList } from '../../test/fixtures/article-list';
 import { ArticleStatusEnum } from '../../test/fixtures/article-status.enum';
+import { tagList } from '../../test/fixtures/tag-list';
 import { createTestRouter } from '../../test/helpers/create-test-router';
 import { uriFor } from '../../test/helpers/uri-for';
 import { useListState } from './use-list-state';
@@ -582,6 +583,86 @@ describe('useListState', () => {
       expect(router.navigations).toEqual([]);
       expect(result.current.state.q).toBeUndefined();
       expect(result.current.isPending).toBe(false);
+    });
+  });
+
+  describe('toggleSort', () => {
+    it('should sort by a new field, ascending', () => {
+      const router = createTestRouter('/articles');
+      const { result } = renderList(router);
+
+      act(() => {
+        result.current.toggleSort('title');
+      });
+
+      expect(router.navigations[0].href).toBe('/articles?sort=title');
+      expect(result.current.state.sort).toEqual([{ field: 'title', order: SortEnum.ASC }]);
+    });
+
+    it('should flip the direction of the field already sorted', () => {
+      const router = createTestRouter('/articles?sort=title');
+      const { result } = renderList(router);
+
+      act(() => {
+        result.current.toggleSort('title');
+      });
+
+      expect(router.navigations[0].href).toBe('/articles?sort=-title');
+    });
+
+    it('should keep the other sorts with multiple', () => {
+      const router = createTestRouter('/articles');
+      const { result } = renderList(router);
+
+      act(() => {
+        result.current.toggleSort('title', { multiple: true });
+      });
+
+      expect(router.navigations[0].href).toBe('/articles?sort=-publishedAt,title');
+    });
+
+    it('should forward the set() options', () => {
+      const router = createTestRouter('/articles');
+      const { result } = renderList(router);
+
+      act(() => {
+        result.current.toggleSort('title', { replace: true });
+      });
+
+      expect(router.navigations[0].options).toEqual({ replace: true });
+    });
+
+    it('should chain two toggles made in the same event', () => {
+      const router = createTestRouter('/articles');
+      const { result } = renderList(router);
+
+      act(() => {
+        result.current.toggleSort('title');
+        result.current.toggleSort('title');
+      });
+
+      expect(router.navigations.at(-1)?.href).toBe('/articles?sort=-title');
+      expect(result.current.state.sort).toEqual([{ field: 'title', order: SortEnum.DESC }]);
+    });
+
+    it('should type its field from the sortParam', () => {
+      const { result } = renderList(createTestRouter('/articles'));
+
+      expectTypeOf(result.current.toggleSort).parameter(0).toEqualTypeOf<'publishedAt' | 'title'>();
+      expectTypeOf(result.current.toggleSort).toBeCallableWith('title');
+      expectTypeOf(result.current.toggleSort).toBeCallableWith('publishedAt', { multiple: true });
+      // @ts-expect-error body is not a sortable field
+      expectTypeOf(result.current.toggleSort).toBeCallableWith('body');
+    });
+
+    it('should not exist on a list without a sortParam', () => {
+      const { result } = renderHook(
+        () => useListState(tagList, createTestRouter('/tags').useRouter()),
+        { wrapper: StrictMode }
+      );
+
+      expect('toggleSort' in result.current).toBe(false);
+      expectTypeOf(result.current).not.toHaveProperty('toggleSort');
     });
   });
 });

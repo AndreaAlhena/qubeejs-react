@@ -1,11 +1,13 @@
 import type { ListRequest, ListState } from '@qubeejs/core';
 
 import type { SetOptions } from './set-options.type';
+import type { SortToggle } from './sort-toggle.type';
 
 /**
  * What {@link useListState} returns for a list definition `TList`.
  *
- * Function members are properties, so the handle can be destructured.
+ * Function members are properties, so the handle can be destructured. `toggleSort` is present
+ * when the list declares exactly one `sortParam` — see {@link SortToggle}.
  */
 export type ListStateHandle<TList> = {
   /**
@@ -30,4 +32,4 @@ export type ListStateHandle<TList> = {
   setPage: (page: number, options?: Omit<SetOptions, 'debounce'>) => void;
   /** The list's state, including changes not yet in the URL. */
   state: ListState<TList>;
-};
+} & SortToggle<TList>;

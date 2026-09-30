@@ -7,6 +7,7 @@ import type {
   QubeeHandle,
   QubeeProviderProps,
   SetOptions,
+  SortToggle,
 } from '../src/index';
 
 import * as api from '../src/index';
@@ -30,6 +31,7 @@ describe('public API', () => {
     expectTypeOf<QubeeHandle>().toHaveProperty('state');
     expectTypeOf<QubeeProviderProps>().toHaveProperty('children');
     expectTypeOf<SetOptions>().toHaveProperty('debounce');
+    expectTypeOf<SortToggle<unknown>>().toEqualTypeOf<Record<never, never>>();
   });
 
   it('should accept either a configuration or a value, with children', () => {
