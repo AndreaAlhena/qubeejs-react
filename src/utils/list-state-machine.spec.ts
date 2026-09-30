@@ -78,6 +78,31 @@ describe('list-state machine', () => {
       });
     });
 
+    it('should settle when a cancelling router lands only the last of repeated hrefs', () => {
+      const first = commitLocation(createListStateMachine('/articles'), '/articles?page=2');
+      const second = commitLocation(first, '/articles?page=3');
+      const third = commitLocation(second, '/articles?page=2');
+
+      expect(observeLocation(third, '/articles?page=2')).toEqual({
+        debouncing: false,
+        draft: null,
+        inflight: [],
+        location: '/articles?page=2',
+      });
+    });
+
+    it('should settle a double commit on one landing', () => {
+      const first = commitLocation(createListStateMachine('/articles'), '/articles?page=2');
+      const second = commitLocation(first, '/articles?page=2');
+
+      expect(observeLocation(second, '/articles?page=2')).toEqual({
+        debouncing: false,
+        draft: null,
+        inflight: [],
+        location: '/articles?page=2',
+      });
+    });
+
     it('should keep the draft while later hrefs are still in flight', () => {
       const first = commitLocation(createListStateMachine('/articles'), '/articles?q=a');
       const second = commitLocation(first, '/articles?q=ab');

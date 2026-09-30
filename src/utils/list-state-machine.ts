@@ -42,8 +42,9 @@ export function commitLocation(machine: ListStateMachine, href: string): ListSta
 /**
  * Reconcile the machine with the URL the router reports.
  *
- * A URL the machine navigated to drops it and everything older from the in-flight list, and
- * settles the draft once nothing is pending. Any other URL — Back, Forward, a link elsewhere —
+ * A URL the machine navigated to drops its last occurrence and everything older from the in-flight
+ * list, so a router that cancels superseded navigations and lands only the last one still settles.
+ * The draft settles once nothing is pending. Any other URL — Back, Forward, a link elsewhere —
  * wins: the machine resets to it.
  *
  * @param machine - The current machine
@@ -55,7 +56,7 @@ export function observeLocation(machine: ListStateMachine, location: string): Li
     return machine;
   }
 
-  const at = machine.inflight.indexOf(location);
+  const at = machine.inflight.lastIndexOf(location);
 
   if (at === -1) {
     return createListStateMachine(location);
