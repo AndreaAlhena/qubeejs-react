@@ -108,8 +108,7 @@ export function useTanStackRouterList(): ListRouter {
   const { pathname, searchStr } = useRouterState({ select: (state) => state.location });
 
   return {
-    navigate: (href, { replace }) =>
-      replace ? router.history.replace(href) : router.history.push(href),
+    navigate: (href, { replace }) => void router.navigate({ href, replace }),
     pathname,
     search: searchStr,
   };
