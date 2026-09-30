@@ -7,14 +7,16 @@
     "astro": "^7.3.5",
     "react-router": "^8.4.0",
     "sharp": "^0.34.5",
+    "typedoc": "^0.28.20",
     "typescript": "~6.0.3"
   },
   "name": "@qubeejs/react-docs",
   "private": true,
   "scripts": {
-    "build": "npm run check && astro build && node scripts/check-site.mjs --pending",
+    "build": "npm run generate && npm run check && astro build && node scripts/check-site.mjs --pending",
     "check": "tsc -p examples/tsconfig.json && node ../node_modules/vitest/vitest.mjs run --config examples/vitest.config.ts --passWithNoTests",
-    "dev": "astro dev",
+    "dev": "npm run generate && astro dev",
+    "generate": "node scripts/generate-api.mjs && node scripts/generate-changelog.mjs",
     "preview": "astro preview"
   },
   "type": "module",

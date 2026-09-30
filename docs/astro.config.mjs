@@ -33,6 +33,15 @@ export default defineConfig({
         { items: [{ autogenerate: { directory: 'introduction' } }], label: 'Introduction' },
         {
           items: [
+            { items: [{ autogenerate: { directory: 'api/provider' } }], label: 'Provider' },
+            { items: [{ autogenerate: { directory: 'api/hooks' } }], label: 'Hooks' },
+            { items: [{ autogenerate: { directory: 'api/types' } }], label: 'Types' },
+            { items: [{ autogenerate: { directory: 'api/errors' } }], label: 'Errors' },
+          ],
+          label: 'API',
+        },
+        {
+          items: [
             core('Lists & URL state', 'guide/lists'),
             core('Filters & operators', 'guide/filters'),
             core('Building a query', 'guide/building-a-query'),
