@@ -1,0 +1,62 @@
+---
+title: Sharing via the provider
+description: One qubee instance for a subtree — filters, table and pager reading and writing the same query.
+sidebar:
+  label: Sharing via the provider
+  order: 2
+---
+
+import { Code } from '@astrojs/starlight/components';
+import articlesShell from '../../../../examples/articles-shell.tsx?raw';
+
+When a filter, a table and a pager live in separate components, they need one query between them.
+`<QubeeProvider>` holds one qubee instance for everything below it, and `useQubeeContext()` hands it
+to any component that asks — the React counterpart of ng-qubee's `provideNgQubeeInstance()`.
+
+## Two ways to provide
+
+Pass the configuration, and the provider creates the instance on its first render:
+
+```tsx
+<QubeeProvider baseUrl="https://example.com/api" driver={STRAPI_DRIVER}>
+  <ArticlesScreen />
+</QubeeProvider>
+```
+
+Or pass an instance you created with `value` — the way to start with a configured query:
+
+<Code code={articlesShell} lang="tsx" title="src/articles/articles-shell.tsx" />
+
+The instance is created inside a `useState` initializer. React may call that initializer twice in
+Strict Mode and keep one result; each call builds a fresh instance, so nothing is configured twice.
+
+:::caution[Server rendering with value]
+With `value`, you own the instance's lifetime. Create it per tree — per request on the server —
+never as a module-level singleton shared across requests. And do not write to it before hydration:
+a write made before hydrating gives the client a snapshot that differs from the server's HTML.
+:::
+
+## Who re-renders
+
+The context carries the **instance**, never its state, so the provider does not re-render its
+subtree when the query changes. Each `useQubeeContext()` subscribes to the store on its own: when
+`StatusFilter` adds a filter, `StatusFilter`, `ArticleRows` and `Pager` re-render — every component
+that called the hook — and the provider's other descendants do not.
+
+`useQubeeContext()` returns the same shape as `useQubee()`: `{ builder, paginator, store, state }`.
+
+## Scoping
+
+The nearest provider wins. Nest one to give a subtree a query of its own — a second table in a side
+panel, say — while the rest of the page keeps the outer one.
+
+## Outside a provider
+
+`useQubeeContext()` throws `MissingQubeeProviderError` when no provider is above it. That is a
+wiring mistake, reported the first time the component renders rather than as a list that quietly
+never loads.
+
+:::note[Lists in the URL need no provider]
+A list whose query lives in the page URL is already shared: every component that calls
+`useListState` reads the same address. See [Lists in the URL](/guide/url-lists/).
+:::

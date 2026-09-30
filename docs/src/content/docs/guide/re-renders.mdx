@@ -1,0 +1,76 @@
+---
+title: Re-renders & snapshots
+description: When components re-render, why what they read is always consistent, and how server rendering fits in.
+sidebar:
+  label: Re-renders & snapshots
+  order: 3
+---
+
+Every hook in the adapter reads an external store through React's
+[`useSyncExternalStore`](https://react.dev/reference/react/useSyncExternalStore): the qubee store for
+`useQubee` and `useQubeeContext`, the URL for `useBrowserRouter`. That one choice explains
+everything on this page.
+
+## One write, one snapshot
+
+The store keeps a **snapshot** of its state and hands out the same object until the next write.
+React compares snapshots by identity, so a component re-renders after a write, and only then.
+
+```ts
+builder.addFilter('status', 'published'); // one write → one new snapshot
+builder.setLimit(50); // another write → another snapshot
+```
+
+Writes made together in an event handler re-render once: React 18 and 19 batch the updates. A chain
+such as `builder.setResource('articles').addSort('title', SortEnum.ASC).setLimit(20)` in a click
+handler is three writes and one render.
+
+## Consistent reads
+
+During a render, everything you read comes from the same snapshot: `state`,
+`builder.generateUri()`, `builder.hasNextPage()`. There is no moment where the URI reflects a filter
+that `state` does not — the tearing `useSyncExternalStore` exists to prevent in concurrent
+rendering.
+
+The snapshot is **deeply frozen**. Mutating it throws in strict mode; change the query through the
+builder instead.
+
+## Who re-renders
+
+| Component | Re-renders when |
+| --- | --- |
+| Calls `useQubee()` | its own instance's store is written |
+| Calls `useQubeeContext()` | the store of the nearest provider's instance is written |
+| Renders `<QubeeProvider>` | never because of the query — the context holds the instance, not the state |
+| Calls `useListState()` | the URL changes, or its own draft does, on `set()` |
+| Calls `useBrowserRouter()` | its own `navigate`, another `useBrowserRouter` instance's `navigate` (they share one history fan-out), or Back/Forward — not when other code calls `history.pushState` |
+
+A component that only renders children re-renders with its parent, as always; wrap expensive rows
+in `memo` when a list is long.
+
+## The instance outlives its config
+
+`useQubee(config)` and `<QubeeProvider {...config}>` create their instance **once**. A later render
+with a different `driver` or `baseUrl` is ignored. To switch, give the component a new `key`, which
+remounts it with a fresh instance:
+
+```tsx
+<AuthorPicker key={apiUrl} onPick={setAuthor} />
+```
+
+## Server rendering
+
+`useSyncExternalStore` takes a third argument, the **server snapshot**, used while rendering on the
+server and while hydrating.
+
+- For `useQubee` and for `<QubeeProvider>` with a configuration, each tree gets a fresh instance,
+  and the server snapshot is that instance's initial state — the same on both sides, so a client
+  component renders on the server and hydrates without a mismatch.
+- For `<QubeeProvider value={qubee}>`, the instance is yours: create it per tree or per request,
+  never as a module-level singleton shared across server requests, and do not write to it before
+  hydration — a write before hydration makes the client's snapshot differ from the server HTML.
+- For `useBrowserRouter`, the server knows no URL: its server snapshot is an empty path and search.
+  A URL-driven list therefore renders its defaults on the server, then re-renders with the real URL
+  as soon as it hydrates. When the server should render the right page — in the Next.js App Router —
+  use the framework's router, which knows the URL there. See
+  [Server rendering](/guide/server-rendering/).

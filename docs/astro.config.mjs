@@ -31,6 +31,7 @@ export default defineConfig({
       lastUpdated: true,
       sidebar: [
         { items: [{ autogenerate: { directory: 'introduction' } }], label: 'Introduction' },
+        { items: [{ autogenerate: { directory: 'guide' } }], label: 'Guide' },
         {
           items: [
             { items: [{ autogenerate: { directory: 'api/provider' } }], label: 'Provider' },
