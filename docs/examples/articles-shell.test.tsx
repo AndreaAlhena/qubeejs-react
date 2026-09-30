@@ -1,6 +1,6 @@
 import { createQubee, STRAPI_DRIVER } from '@qubeejs/core';
 import { QubeeProvider } from '@qubeejs/react';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { describe, expect, it } from 'vitest';
 
@@ -27,7 +27,10 @@ describe('StatusFilter', () => {
   it('should go back to page 1 when the filter changes', () => {
     const qubee = renderWithQubee(<StatusFilter />);
 
-    qubee.builder.setPage(3);
+    act(() => {
+      qubee.builder.setPage(3);
+    });
+    expect(qubee.store.getSnapshot().page).toBe(3);
     fireEvent.click(screen.getByRole('checkbox', { name: 'Published only' }));
 
     expect(qubee.store.getSnapshot().page).toBe(1);
