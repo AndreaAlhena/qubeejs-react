@@ -1,0 +1,74 @@
+---
+title: Fetching
+description: The adapter builds requests and parses responses; you perform them — with fetch, TanStack Query, SWR, and header-paginated APIs.
+sidebar:
+  label: Fetching
+  order: 7
+---
+
+import { Code } from '@astrojs/starlight/components';
+import fetchPage from '../../../../examples/fetch-page.ts?raw';
+import postgrestList from '../../../../examples/postgrest-list.ts?raw';
+
+The adapter never performs a request. It gives you everything needed to perform one, and you choose
+how: `fetch`, TanStack Query, SWR, a server action. Authentication, retries, cancellation and caching
+stay in your code, where they already are.
+
+## The request
+
+For a URL-driven list, `list.request` describes the page to fetch:
+
+| Member | What it is |
+| --- | --- |
+| `uri` | The API address, `baseUrl` included — `https://example.com/api/articles?filters[title][$containsi]=react&…` |
+| `headers` | Headers the driver needs on the request, or `null`. Only header-paginated drivers set them. |
+| `paginate(body, headers?)` | Parses the response with the same driver, into a `PaginatedCollection`. |
+
+For an in-memory list, the same three come from the instance: `builder.generateUri()`,
+`builder.paginationHeaders()` and `paginator.paginate(body, headers)`.
+
+## One helper
+
+A single function serves every example on this site:
+
+<Code code={fetchPage} lang="ts" title="src/articles/fetch-page.ts" />
+
+- **It sends `request.headers`.** For most drivers they are `null`; for header-paginated ones they
+  carry the page.
+- **It passes `response.headers` to `paginate`**, for drivers that read counts from the response
+  headers.
+- **It returns `toPlain()`**, a plain object with every field present — `null` where the backend
+  reported nothing. A plain object can be cached, compared, serialised, and passed from a Server
+  Component to a Client Component; the `PaginatedCollection` class instance cannot.
+
+## Cache keys
+
+Key a cache on `request.uri` and `request.headers`. `request` is built from the **committed** state,
+so the key changes once per navigation — after the debounce — and a query library never sees the
+half-typed searches in between:
+
+```ts
+queryKey: ['articles', request.uri, request.headers];
+```
+
+Ready-made hooks: [TanStack Query](/recipes/tanstack-query/) · [SWR](/recipes/swr/).
+
+## Header-paginated APIs
+
+PostgREST in `RANGE` mode pages with headers rather than query parameters. The list is declared as
+usual, with the pagination mode in its qubee config:
+
+<Code code={postgrestList} lang="ts" title="src/articles/postgrest-list.ts" />
+
+Its `request.uri` carries no offset. `request.headers` carries `Range-Unit: items` and
+`Range: 0-19` for the first page, `Range: 20-39` for the second. `fetchPage` sends them without
+knowing which driver it is talking to.
+
+PostgREST reports the total only when asked: send `Prefer: count=exact` as well —
+`{ ...request.headers, Prefer: 'count=exact' }` — or `total` and `lastPage` stay `null`.
+
+## Plain effects
+
+Without a query library, fetch in an effect keyed on `request` and abort in its cleanup, as the
+[Quick start](/introduction/quick-start/) does. The abort matters: when a reader pages quickly, the
+answer to an older request must not overwrite a newer one.

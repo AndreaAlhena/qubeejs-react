@@ -1,0 +1,35 @@
+---
+title: TanStack Query
+description: Cache every page with TanStack Query, keyed on the list's committed request.
+sidebar:
+  label: TanStack Query
+  order: 6
+---
+
+import { Code } from '@astrojs/starlight/components';
+import queryRoot from '../../../../examples/query-root.tsx?raw';
+import useArticlesQuery from '../../../../examples/use-articles-query.ts?raw';
+
+<Code code={queryRoot} lang="tsx" title="src/query-root.tsx" />
+
+<Code code={useArticlesQuery} lang="ts" title="src/articles/use-articles-query.ts" />
+
+In a component under `QueryRoot`:
+
+```tsx
+const router = useBrowserRouter();
+const list = useListState(articleList, router);
+const { data, isFetching } = useArticlesQuery(list);
+```
+
+## How it works
+
+- The key is `['articles', request.uri, request.headers]`. `request` is built from the committed
+  state, so the key changes once per navigation — never for a keystroke still inside its debounce.
+- `placeholderData: keepPreviousData` keeps the current page on screen while the next one loads, so
+  the table does not flash empty.
+- `signal` cancels a request TanStack Query no longer needs.
+- `fetchPage` passes `response.headers` to `paginate`, so header-paginated drivers work too, and
+  returns `toPlain()`: a plain object TanStack Query can share structurally between refetches.
+- `list.isPending` covers the debounce and the navigation, `isFetching` the request. Dim the table
+  for either.

@@ -1,0 +1,48 @@
+---
+title: Testing
+description: Fake routers, fake timers, a provider with a known instance, and real requests answered by MSW.
+sidebar:
+  label: Testing
+  order: 9
+---
+
+import { Code } from '@astrojs/starlight/components';
+import articleSearchTest from '../../../../examples/article-search.test.tsx?raw';
+import articlesShellTest from '../../../../examples/articles-shell.test.tsx?raw';
+
+Every test on this page runs in this site's own build, with Vitest, jsdom and Testing Library.
+
+## URL-driven components: a fake router
+
+`ListRouter` is a plain object type, so a test can give `useListState` a router it controls: a fixed
+`pathname` and `search`, and a `navigate` spy. Fake timers step through a debounce without waiting
+for it.
+
+<Code code={articleSearchTest} lang="tsx" title="src/articles/article-search.test.tsx" />
+
+- Assert on `navigate`: the href and `{ replace }` are the whole contract between a list and its
+  router.
+- A fake router never changes its `search`, so the URL never catches up — which is what lets the test
+  see the committed navigation without a real history.
+
+## With the real History API
+
+jsdom implements `window.history`, so `useBrowserRouter()` works in tests as it does in a browser.
+Set the starting URL before rendering, and reset it after each test — jsdom keeps one `window` for a
+whole test file:
+
+```ts
+window.history.replaceState(null, '', '/articles?q=react');
+```
+
+## Components under a provider
+
+Hand the provider an instance the test created, then assert on its store:
+
+<Code code={articlesShellTest} lang="tsx" title="src/articles/articles-shell.test.tsx" />
+
+## Requests
+
+The adapter performs no requests, so there is nothing of it to mock: mock the API instead. The
+[Testing with MSW recipe](/recipes/testing-with-msw/) answers the list's requests with a Strapi
+payload and checks what the list asked for.

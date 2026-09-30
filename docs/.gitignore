@@ -1,0 +1,9 @@
+.astro/
+.typedoc.json
+dist/
+node_modules/
+
+# Generated at build time — see scripts/
+src/content/docs/api/
+src/content/docs/changelog.mdx
+src/data/

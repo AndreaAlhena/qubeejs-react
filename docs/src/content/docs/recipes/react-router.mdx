@@ -1,0 +1,27 @@
+---
+title: React Router
+description: useListState on React Router — its location in, its navigate out, and Link for every page.
+sidebar:
+  label: React Router
+  order: 4
+---
+
+import { Code } from '@astrojs/starlight/components';
+import reactRouterPager from '../../../../examples/react-router-pager.tsx?raw';
+import useReactRouter from '../../../../examples/use-react-router.ts?raw';
+
+<Code code={useReactRouter} lang="ts" title="src/routing/use-react-router.ts" />
+
+<Code code={reactRouterPager} lang="tsx" title="src/articles/article-pager.tsx" />
+
+## How it works
+
+- The `'react-router'` import is React Router 7 and later; on v6.4+ the same hooks come from
+  `'react-router-dom'`.
+- `useSearchParams()` returns a `URLSearchParams`, which a `ListRouter`'s `search` accepts as it is.
+- `navigate(href, { replace })` is all the list asks of any router. React Router's `navigate` may
+  return a promise; the list does not wait for it.
+- `<Link to={list.href(…)}>` navigates in place and keeps a real href, so no click handler is needed.
+- Every component under the route reads the same URL, so each can call
+  `useListState(articleList, useReactRouter())`. The draft and `isPending` stay with the component
+  that made a change — see [Lists in the URL](/guide/url-lists/).

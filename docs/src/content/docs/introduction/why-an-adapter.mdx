@@ -1,0 +1,51 @@
+---
+title: Why an adapter?
+description: What @qubeejs/react adds to @qubeejs/core, and what it deliberately leaves to you.
+sidebar:
+  label: Why an adapter?
+  order: 1
+---
+
+`@qubeejs/core` does pure work. It turns a query into an API address, a response body into a page
+of rows, and — since 1.3 — a page URL such as `/articles?q=react&page=2` into typed state and back.
+It never subscribes to anything, never navigates, and never performs a request.
+
+A React app needs exactly those three effects. `@qubeejs/react` supplies them, and nothing else:
+
+| You need | The adapter gives you |
+| --- | --- |
+| A component that re-renders when its query changes | `useQubee()` — a qubee instance per component, read through `useSyncExternalStore` |
+| Filters, a table and a pager sharing one query | `<QubeeProvider>` and `useQubeeContext()` — one instance for a subtree |
+| A list whose query lives in the page URL | `useListState()` — reads the URL, writes it back one navigation at a time |
+| Something to write the URL with | `useBrowserRouter()` for apps without a router, and the `ListRouter` type for any router you already use |
+
+## Two kinds of list
+
+**In-memory lists** — a picker in a dialog, a table in an app without routing. The query lives in a
+qubee store, and components drive it with the full builder API, exactly as ng-qubee components do:
+`builder.addFilter(…)`, `builder.addSort(…)`, `builder.nextPage()`. Start with
+[useQubee](/guide/use-qubee/).
+
+**URL-driven lists** — the query lives in the address bar, so it survives a reload, can be shared
+as a link, and works with the back button. You declare the list once, with the core's `defineList`;
+`useListState` reads the URL into typed state and writes every change back with a single
+`set({ … })`. Start with the [Quick start](/introduction/quick-start/).
+
+## What it leaves to you
+
+- **Requests.** The adapter hands you `{ uri, headers, paginate }`. `fetch`, TanStack Query or SWR
+  perform the request; authentication, retries and caching stay in your code. See
+  [Fetching](/guide/fetching/).
+- **Routing.** The adapter writes the URL through whichever router you give it. It never registers
+  routes or renders links for you — `href()` hands you the address, and your `<a>` or `<Link>`
+  renders it.
+- **The query language.** Filters, operators, sorts, drivers and the list layer are the core's, and
+  documented once, in the [core docs ↗](https://qubeejs.andreatantimonaco.me/). The rule of thumb:
+  a symbol imported from `@qubeejs/core` is documented there; a symbol imported from
+  `@qubeejs/react` is documented here.
+
+## And Next.js?
+
+The adapter works in any React app, the Next.js App Router included — see
+[Vite / Next.js / React Router](/introduction/frameworks/). A dedicated `@qubeejs/next` package is
+planned, to ship the router adapter and server helpers ready-made.

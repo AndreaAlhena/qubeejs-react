@@ -1,0 +1,60 @@
+---
+title: useQubee
+description: A qubee instance per component — the whole builder API, with re-renders.
+sidebar:
+  label: useQubee
+  order: 1
+---
+
+import { Code } from '@astrojs/starlight/components';
+import authorPicker from '../../../../examples/author-picker.tsx?raw';
+
+`useQubee(config)` gives a component its own qubee instance — a builder, a paginator and the store
+they share — and re-renders the component whenever that store changes. It is for lists whose query
+lives in memory: a picker in a dialog, a widget, an app without routing.
+
+```ts
+const { builder, paginator, store, state } = useQubee({
+  baseUrl: 'https://example.com/api',
+  driver: STRAPI_DRIVER,
+});
+```
+
+| Member | What it is |
+| --- | --- |
+| `builder` | The core's `QueryBuilder`: every filter, sort, field and page method, unchanged. |
+| `paginator` | The core's `Paginator`: `paginate(body)` parses a response and records its last page in the store. |
+| `store` | The `QubeeStore` both of them share. |
+| `state` | The store's current snapshot, a `QueryBuilderState` — read it to render. |
+
+`config` is the core's `QubeeConfig`: the `driver`, and optionally `baseUrl`, `pagination`,
+`request` and `response`. Every builder method, and what each driver makes of it, is documented
+with the core: [QueryBuilder API ↗](https://qubeejs.andreatantimonaco.me/api/services/query-builder/).
+
+## A picker, end to end
+
+<Code code={authorPicker} lang="tsx" title="src/authors/author-picker.tsx" />
+
+## Rules of the hook
+
+- **The instance is created once**, on the first render. Later changes to `config` are ignored; to
+  switch drivers or base URLs, remount the component with a new `key`.
+- **Write from events and effects; read anywhere.** A builder method that changes the query writes
+  to the store, and a write re-renders the component. Methods that only read — `generateUri()`,
+  `hasNextPage()`, `isFirstPage()`, `paginationHeaders()` — are safe during render and always agree
+  with `state`.
+- **Configure once, even in Strict Mode.** React runs effects twice in development. The picker's
+  first effect returns early when the store already has a resource, so the sort is not added twice.
+- **`paginate()` tells the builder where the end is.** Until a response has been parsed, the last
+  page is unknown: `hasNextPage()` answers `true` and `lastPage()` throws.
+
+:::caution[Bee aware]
+Calling a builder method that writes — `setResource()`, `addFilter()`, `nextPage()` — during render
+writes to the store, which re-renders the component, which writes again. Call it from an event
+handler or an effect.
+:::
+
+## When to reach for something else
+
+- Several components need the **same** instance: [Sharing via the provider](/guide/provider/).
+- The query should live in the **URL**: [Lists in the URL](/guide/url-lists/).

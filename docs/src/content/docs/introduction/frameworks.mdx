@@ -1,0 +1,73 @@
+---
+title: Vite / Next.js / React Router
+description: Where to provide a shared instance, and which router a URL-driven list writes through, in each setup.
+sidebar:
+  label: Vite / Next.js / React Router
+  order: 4
+---
+
+import { Code } from '@astrojs/starlight/components';
+import nextListRouter from '../../../../examples/next/use-next-list-router.ts?raw';
+import nextProviders from '../../../../examples/next/providers.tsx?raw';
+import reactRouter from '../../../../examples/use-react-router.ts?raw';
+import viteMain from '../../../../examples/vite-main.tsx?raw';
+
+The adapter brings no router and no bundler of its own. Two things change from one setup to the
+next: where a shared instance is provided, and which router a URL-driven list writes through. A
+router is any object with `navigate(href, { replace })`, `pathname` and `search` — the
+`ListRouter` type.
+
+## Vite, or any client-rendered app
+
+Provide a shared instance at the root, if parts of your app need one — lists whose query lives in
+the URL do not:
+
+<Code code={viteMain} lang="tsx" title="src/main.tsx" />
+
+For URL-driven lists without a router library, `useBrowserRouter()` reads `location` and writes
+with `history.pushState` and `replaceState`. Every component that calls it stays in step, through the back and forward buttons too. It observes only its own `navigate` plus Back and
+Forward: a `pushState` by other code is not seen until the next `popstate`, so parameters that code
+added can be dropped by the next `set()`. When something else also writes the URL, use your
+router's adapter.
+
+## React Router
+
+Wrap React Router's hooks in a `ListRouter` once, and pass it to `useListState`. The hooks below are
+imported from `'react-router'` in React Router 7 and later; on v6.4+ the same hooks come from
+`'react-router-dom'`.
+
+<Code code={reactRouter} lang="ts" title="src/routing/use-react-router.ts" />
+
+Render pagination and filter links with React Router's `<Link to={list.href({ page: 2 })}>`: it
+navigates in place, and the href stays crawlable. The [React Router recipe](/recipes/react-router/)
+shows a complete pager.
+
+## Next.js (App Router)
+
+Import `@qubeejs/react` only from `'use client'` modules, and wrap `QubeeProvider` in your own
+client component, as below. Separately, `useSearchParams` on a statically rendered route needs a
+`<Suspense>` boundary above it, or `next build` fails.
+
+### Server Components import the core
+
+A Server Component never imports `@qubeejs/react` — hooks and context exist only in client
+components. It imports `@qubeejs/core`, which never imports React: `readListState`,
+`buildListRequest` and `buildListHref` all run on the server. See
+[Server rendering](/guide/server-rendering/).
+
+### Client files import the adapter
+
+The adapter carries no `'use client'` directive, so import it from files that do:
+
+<Code code={nextProviders} lang="tsx" title="app/providers.tsx" />
+
+### Next's router, as a `ListRouter`
+
+<Code code={nextListRouter} lang="ts" title="app/articles/use-next-list-router.ts" />
+
+`@qubeejs/next` is planned. It will ship this router adapter and server helpers, with its
+`'use client'` boundaries in place. Until it exists, the two files above are the whole integration.
+
+## TanStack Router
+
+See the [TanStack Router recipe](/recipes/tanstack-router/).

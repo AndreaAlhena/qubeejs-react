@@ -1,0 +1,32 @@
+---
+title: TanStack Router
+description: useListState on TanStack Router — the raw query string in, whole hrefs out through router.navigate.
+sidebar:
+  label: TanStack Router
+  order: 5
+---
+
+import { Code } from '@astrojs/starlight/components';
+import useTanStackRouter from '../../../../examples/use-tanstack-router.ts?raw';
+
+TanStack Router parses search params into typed objects of its own. A qubee list keeps its own URL
+format, so the adapter reads the raw query string and writes whole hrefs through `router.navigate`.
+
+<Code code={useTanStackRouter} lang="ts" title="src/routing/use-tanstack-router.ts" />
+
+## How it works
+
+- `searchStr` is the raw query string — `?q=react&sort=title` — which a `ListRouter`'s `search`
+  accepts as it is.
+- `router.navigate({ href })` takes a fully built href and applies the router's basepath and
+  rewrites, so the list's URL rules — defaults left out, foreign parameters kept — apply unchanged.
+  TanStack's typed `navigate({ search })` would serialise a search object its own way instead.
+- TanStack's default search serialiser re-types JSON-looking values (`?q=1.50` lands as `1.5`), so
+  the list's state follows what the router wrote back: it settles, with no loop. Configure TanStack's
+  `parseSearch` and `stringifySearch` to keep strings if that matters.
+- If the route declares `validateSearch`, let it pass the list's keys through untouched: a validator
+  that drops unknown keys drops the list's.
+- For links, render `<a href={list.href(…)}>` with a plain-click handler, as the
+  [Pagination bar](/recipes/pagination-bar/) does. Under a `basepath`, `list.href(…)` is the path
+  inside it (TanStack strips the basepath from `useLocation().pathname`), so give the anchor
+  `router.buildLocation({ href: list.href(…) }).publicHref`, which adds the basepath back.

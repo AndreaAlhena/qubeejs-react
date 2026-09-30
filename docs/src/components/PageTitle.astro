@@ -1,0 +1,44 @@
+---
+/**
+ * PageTitle override — the breadcrumb the mockup shows above every title and,
+ * on generated API pages, the kind badge beside it.
+ *
+ * The badge reads the page's `kind` frontmatter, which `content.config.ts` adds
+ * to Starlight's schema and `scripts/generate-api.mjs` writes. Everything else
+ * on a doc page — sidebar, table of contents, previous/next — is Starlight's
+ * own, styled through its public class names.
+ */
+import Default from '@astrojs/starlight/components/PageTitle.astro';
+
+import type { SidebarEntry } from '@astrojs/starlight/schema';
+
+const { entry, sidebar } = Astro.locals.starlightRoute;
+
+/** Every href reachable from a sidebar entry, flattened. */
+function hrefs(item: SidebarEntry): string[] {
+  return item.type === 'group' ? item.entries.flatMap(hrefs) : [item.href];
+}
+
+const here = Astro.url.pathname.replace(/\/$/, '');
+
+const section = sidebar.find(
+  (item) => item.type === 'group' && hrefs(item).some((href) => href.replace(/\/$/, '') === here)
+)?.label;
+
+const kind = entry.data.kind;
+---
+
+{
+  section && (
+    <div class="qb-crumb">
+      <span>{section}</span>
+      <span class="sep">/</span>
+      <span class="current">{entry.data.title}</span>
+    </div>
+  )
+}
+
+<div class="qb-title-row">
+  <Default><slot /></Default>
+  {kind && <span class="qb-kind">{kind}</span>}
+</div>
