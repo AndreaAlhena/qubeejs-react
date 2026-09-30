@@ -1,0 +1,929 @@
+---
+/**
+ * The home page, after the Qubee React Docs mockup: the hero, four cards, the
+ * provider-then-hook sample with its measured sizes, and the way into the core
+ * docs.
+ *
+ * Standalone rather than a Starlight splash page, as on qubeejs-core's site:
+ * this layout is not one Starlight's templates express. It shares the site's
+ * tokens and fonts through the same stylesheet, and the reader's theme through
+ * Starlight's `starlight-theme` key (ThemeScript). The sizes come from
+ * src/data/sizes.json, written by scripts/generate-sizes.mjs on every build;
+ * the two setup samples are the type-checked files in examples/.
+ */
+import { Code } from 'astro:components';
+
+import nextProviders from '../../examples/next/providers.tsx?raw';
+import viteMain from '../../examples/vite-main.tsx?raw';
+import ThemeScript from '../components/ThemeScript.astro';
+import sizes from '../data/sizes.json';
+import '../styles/qubee-react.css';
+import pkg from '../../../package.json';
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const CORE = 'https://qubeejs.andreatantimonaco.me';
+const INSTALL = 'npm i @qubeejs/react @qubeejs/core';
+const REPO = 'https://github.com/AndreaAlhena/qubeejs-react';
+
+/** Bytes as the size table prints them. */
+const kb = (bytes: number): string => `${(bytes / 1000).toFixed(1)} kB`;
+
+const FEATURES = [
+  {
+    html: '<code>useQubee</code> and <code>useQubeeContext</code> read the core store through <code>useSyncExternalStore</code>: a new snapshot per write, no tearing, and a server snapshot, so client components render on the server too.',
+    title: 'Store-backed hooks',
+  },
+  {
+    html: '<code>useListState</code> reads a list from the page URL and writes it back: one navigation per change, a draft that keeps inputs responsive while a search debounces, and a back button that simply works.',
+    title: 'The URL is the state',
+  },
+  {
+    html: 'The adapter hands you <code>{ uri, headers, paginate }</code>. <code>fetch</code>, TanStack Query or SWR perform the request; authentication, retries and caching stay yours.',
+    title: 'Bring your own fetch',
+  },
+  {
+    html: `${kb(sizes.adapter.min)} minified for the whole adapter, measured with esbuild when this site was built. Zero runtime dependencies, and the core's drivers still tree-shake.`,
+    title: `${kb(sizes.adapter.gzip)} over the core`,
+  },
+];
+
+const CORE_LINKS = [
+  {
+    description: 'defineList, the six params, and the URL rules useListState follows.',
+    href: `${CORE}/guide/lists/`,
+    title: 'Lists & URL state',
+  },
+  {
+    description: 'How each driver spells filters, and the sixteen operators.',
+    href: `${CORE}/guide/filters/`,
+    title: 'Filters & operators',
+  },
+  {
+    description: 'Resource, filters, sorts, fields and includes, in one chain.',
+    href: `${CORE}/guide/building-a-query/`,
+    title: 'Building a query',
+  },
+  {
+    description: 'All eighteen backends, and what each one supports.',
+    href: `${CORE}/drivers/`,
+    title: 'Drivers',
+  },
+  {
+    description: 'Every builder method, generated from its source.',
+    href: `${CORE}/api/services/query-builder/`,
+    title: 'QueryBuilder API',
+  },
+  {
+    description: 'Pages, lastPage sync and header-based paging.',
+    href: `${CORE}/guide/pagination/`,
+    title: 'Pagination',
+  },
+  {
+    description: 'Error codes, and which call throws which.',
+    href: `${CORE}/guide/errors/`,
+    title: 'Errors',
+  },
+  {
+    description: 'Request and response strategies for a backend no driver covers.',
+    href: `${CORE}/extending/writing-a-driver/`,
+    title: 'Writing a driver',
+  },
+];
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1" name="viewport" />
+    <title>qubeejs/react — hook the query, not the boilerplate</title>
+    <meta
+      content="React hooks for @qubeejs/core: a query per component or per subtree, and lists whose query lives in the page URL."
+      name="description"
+    />
+    <link href={`${base}/mark-react.png`} rel="icon" />
+    <ThemeScript />
+  </head>
+
+  <body>
+    <header class="nav">
+      <a class="brand" href={`${base}/`}>
+        <img alt="" height="26" src={`${base}/mark-react.png`} width="40" />
+        <span>qubeejs<span class="slash">/react</span></span>
+      </a>
+      <span class="chip">v{pkg.version}</span>
+      <nav aria-label="Sections">
+        <a href={`${base}/introduction/why-an-adapter/`}>Guide</a>
+        <a href={`${base}/api/hooks/use-qubee/`}>API</a>
+        <a href={`${base}/recipes/sortable-table/`}>Recipes</a>
+        <a href={`${CORE}/`} rel="noopener" target="_blank">Core docs <span aria-hidden="true">↗</span></a>
+      </nav>
+      <span class="spacer"></span>
+      <button aria-label="Switch between light and dark theme" class="icon-button" data-theme-toggle type="button">
+        <span aria-hidden="true" class="moon">☾</span>
+        <span aria-hidden="true" class="sun">☀</span>
+      </button>
+      <a aria-label="qubeejs/react on GitHub" class="icon-button mono" href={REPO}>GH</a>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="glow"></div>
+        <div class="hero-inner">
+          <div class="hero-copy">
+            <div class="pill"><span class="dot"></span>react 18.3+ · ssr-safe · zero runtime deps</div>
+            <h1>Hook the query.<br /><span>Not the boilerplate.</span></h1>
+            <p class="lede">
+              <strong>@qubeejs/react</strong> connects <strong>@qubeejs/core</strong> to React. A hook
+              gives a component its own query, a provider shares one across a subtree, and
+              <code>useListState</code> keeps a list's query in the page URL. Components re-render when
+              the query changes; fetching stays yours.
+            </p>
+            <p class="aside">
+              These pages cover only what the adapter adds. Drivers, filters, the builder API and the
+              list layer — <code>defineList</code>, its params, its hrefs — are documented once, in the
+              <a href={`${CORE}/`}>qubeejs core docs ↗</a>.
+            </p>
+            <div class="cta">
+              <a class="btn primary" href={`${base}/introduction/quick-start/`}>Get started</a>
+              <a class="btn" href={`${base}/api/hooks/use-qubee/`}>Adapter API</a>
+              <button class="install" data-copy={INSTALL} type="button">
+                <span class="prompt">$</span>
+                {INSTALL}
+                <span class="copy">copy</span>
+              </button>
+            </div>
+          </div>
+          <div class="hero-mark">
+            <img alt="The qubee bee, in React blue" height="206" src={`${base}/mark-react.png`} width="320" />
+          </div>
+        </div>
+      </section>
+
+      <section class="features">
+        {
+          FEATURES.map((feature) => (
+            <article>
+              <span class="hex" />
+              <h3>{feature.title}</h3>
+              <p set:html={feature.html} />
+            </article>
+          ))
+        }
+      </section>
+
+      <section class="setup">
+        <div class="setup-copy">
+          <h2>One provider, then a hook</h2>
+          <p>
+            Wrap a subtree in <code>&lt;QubeeProvider&gt;</code> with a driver and a base URL, then call
+            <code>useQubeeContext()</code> anywhere below it. Lists whose query lives in the URL need no
+            provider at all: <code>useListState</code> reads the address directly.
+          </p>
+          <table>
+            <thead>
+              <tr><th>package</th><th>min / gzip</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>@qubeejs/react</td>
+                <td>{kb(sizes.adapter.min)} / <strong>{kb(sizes.adapter.gzip)}</strong></td>
+              </tr>
+              <tr>
+                <td>with @qubeejs/core <span class="muted">(1 driver)</span></td>
+                <td>{kb(sizes.withCore.min)} / {kb(sizes.withCore.gzip)}</td>
+              </tr>
+            </tbody>
+          </table>
+          <p class="measured">Measured with esbuild when this site was built: minified ES2022, React external.</p>
+        </div>
+
+        <div class="tabs">
+          <input aria-label="Vite" checked id="setup-vite" name="setup" type="radio" />
+          <input aria-label="Next.js" id="setup-next" name="setup" type="radio" />
+          <div class="tab-bar">
+            <span class="dot"></span>
+            <span class="file vite">src/main.tsx</span>
+            <span class="file next">app/providers.tsx</span>
+            <span class="spacer"></span>
+            <label for="setup-vite">Vite</label>
+            <label for="setup-next">Next.js</label>
+          </div>
+          <div class="panel vite"><Code code={viteMain} lang="tsx" theme="github-dark-default" /></div>
+          <div class="panel next"><Code code={nextProviders} lang="tsx" theme="github-dark-default" /></div>
+        </div>
+      </section>
+
+      <section class="core">
+        <h2>Everything else lives in the core docs</h2>
+        <p>
+          The adapter documents nothing the core already documents. Query semantics are the same in
+          every framework binding — read them once, over there.
+        </p>
+        <div class="grid">
+          {
+            CORE_LINKS.map((link) => (
+              <a href={link.href} rel="noopener" target="_blank">
+                <span class="hex small" />
+                <span>
+                  <span class="title">
+                    {link.title} <span class="arrow">↗</span>
+                  </span>
+                  <span class="description">{link.description}</span>
+                </span>
+              </a>
+            ))
+          }
+        </div>
+        <div class="rule">
+          <span class="label">Rule of thumb</span>
+          <span>
+            If a symbol is imported from <code>@qubeejs/core</code>, its reference page is in the core
+            docs — not here.
+          </span>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      Released under the MIT License · Copyright © 2026 Andrea Tantimonaco ·
+      <a href={`${base}/changelog/`}>Changelog</a> · <a href={REPO}>GitHub</a>
+    </footer>
+
+    <script>
+      /** How long the install button says "copied". */
+      const COPIED_FOR_MS = 1500;
+
+      const toggle = document.querySelector<HTMLButtonElement>('[data-theme-toggle]');
+
+      toggle?.addEventListener('click', () => {
+        const next = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light';
+
+        document.documentElement.dataset.theme = next;
+
+        try {
+          localStorage.setItem('starlight-theme', next);
+        } catch {
+          // Storage unavailable: the choice lasts until the reader leaves the page.
+        }
+      });
+
+      for (const button of document.querySelectorAll<HTMLButtonElement>('[data-copy]')) {
+        const label = button.querySelector('.copy');
+
+        button.addEventListener('click', () => {
+          void navigator.clipboard.writeText(button.dataset.copy ?? '').then(() => {
+            if (!label) {
+              return;
+            }
+
+            label.textContent = 'copied';
+            setTimeout(() => {
+              label.textContent = 'copy';
+            }, COPIED_FOR_MS);
+          });
+        });
+      }
+    </script>
+
+    <style is:global>
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        -webkit-font-smoothing: antialiased;
+        background: var(--qb-bg);
+        color: var(--qb-text);
+        font-family: var(--qb-font-body);
+        font-size: 15px;
+        line-height: 1.7;
+        margin: 0;
+      }
+
+      a {
+        color: var(--qb-accent-ink);
+        text-decoration: none;
+      }
+
+      a:hover {
+        color: var(--qb-accent);
+        text-decoration: underline;
+        text-underline-offset: 3px;
+      }
+
+      ::selection {
+        background: rgba(10, 165, 224, 0.32);
+      }
+
+      code {
+        font-family: var(--qb-font-mono);
+        font-size: 0.9em;
+      }
+
+      :focus-visible {
+        outline: 2px solid var(--qb-accent);
+        outline-offset: 2px;
+      }
+
+      /* --- header --- */
+      .nav {
+        align-items: center;
+        backdrop-filter: blur(12px);
+        background: var(--qb-bg-blur);
+        border-bottom: 1px solid var(--qb-border);
+        display: flex;
+        gap: 20px;
+        height: 62px;
+        padding: 0 22px;
+        position: sticky;
+        top: 0;
+        z-index: 20;
+      }
+
+      .brand,
+      .brand:hover {
+        align-items: center;
+        color: var(--qb-text);
+        display: flex;
+        font-family: var(--qb-font-display);
+        font-size: 19px;
+        font-weight: 700;
+        gap: 9px;
+        letter-spacing: -0.02em;
+        text-decoration: none;
+      }
+
+      .brand img {
+        display: block;
+        height: 26px;
+        width: auto;
+      }
+
+      .slash {
+        color: var(--qb-accent-ink);
+      }
+
+      .chip {
+        background: var(--qb-accent-soft);
+        border-radius: 5px;
+        color: var(--qb-accent-ink);
+        font-family: var(--qb-font-mono);
+        font-size: 10.5px;
+        font-weight: 500;
+        padding: 3px 6px;
+      }
+
+      .nav nav {
+        display: flex;
+        gap: 4px;
+        margin-left: 8px;
+      }
+
+      .nav nav a {
+        border-radius: 7px;
+        color: var(--qb-muted);
+        font-size: 14px;
+        font-weight: 500;
+        padding: 7px 11px;
+        white-space: nowrap;
+      }
+
+      .nav nav a:hover {
+        background: var(--qb-hover);
+        color: var(--qb-text);
+        text-decoration: none;
+      }
+
+      .spacer {
+        flex: 1;
+      }
+
+      .icon-button {
+        align-items: center;
+        background: transparent;
+        border: 1px solid var(--qb-border);
+        border-radius: 8px;
+        color: var(--qb-muted);
+        cursor: pointer;
+        display: flex;
+        font-size: 14px;
+        height: 34px;
+        justify-content: center;
+        width: 34px;
+      }
+
+      .icon-button:hover {
+        border-color: var(--qb-accent);
+        color: var(--qb-accent-ink);
+        text-decoration: none;
+      }
+
+      .icon-button.mono {
+        font-family: var(--qb-font-mono);
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      [data-theme='dark'] .sun,
+      [data-theme='light'] .moon {
+        display: none;
+      }
+
+      @media (max-width: 720px) {
+        .nav nav {
+          display: none;
+        }
+      }
+
+      /* --- hero --- */
+      .hero {
+        background: var(--qb-alt);
+        border-bottom: 1px solid var(--qb-border);
+        overflow: hidden;
+        padding: 84px 22px 72px;
+        position: relative;
+      }
+
+      .glow {
+        background-image:
+          radial-gradient(circle at 18% 12%, rgba(10, 165, 224, 0.2), transparent 42%),
+          radial-gradient(circle at 78% 78%, rgba(255, 176, 32, 0.08), transparent 46%);
+        inset: 0;
+        opacity: var(--qb-glow-opacity);
+        pointer-events: none;
+        position: absolute;
+      }
+
+      .hero-inner {
+        align-items: center;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 48px;
+        margin: 0 auto;
+        max-width: 1080px;
+        position: relative;
+      }
+
+      .hero-copy {
+        flex: 1 1 420px;
+        min-width: 0;
+      }
+
+      .hero-mark {
+        display: flex;
+        flex: 1 1 220px;
+        justify-content: center;
+      }
+
+      .hero-mark img {
+        animation: qb-bob 6s ease-in-out infinite;
+        filter: drop-shadow(0 24px 44px rgba(10, 165, 224, 0.28));
+        height: auto;
+        max-width: 320px;
+        width: 100%;
+      }
+
+      @keyframes qb-bob {
+        0%,
+        100% {
+          transform: translateY(0) rotate(-2deg);
+        }
+
+        50% {
+          transform: translateY(-7px) rotate(2deg);
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .hero-mark img {
+          animation: none;
+        }
+      }
+
+      .pill {
+        align-items: center;
+        background: var(--qb-accent-soft);
+        border: 1px solid var(--qb-accent-line);
+        border-radius: 999px;
+        color: var(--qb-accent-ink);
+        display: inline-flex;
+        font-family: var(--qb-font-mono);
+        font-size: 11.5px;
+        gap: 8px;
+        letter-spacing: 0.04em;
+        margin-bottom: 22px;
+        padding: 5px 11px;
+        text-transform: uppercase;
+      }
+
+      .pill .dot {
+        background: var(--qb-accent);
+        border-radius: 50%;
+        height: 6px;
+        width: 6px;
+      }
+
+      .hero h1 {
+        font-family: var(--qb-font-display);
+        font-size: clamp(38px, 5.4vw, 64px);
+        font-weight: 700;
+        letter-spacing: -0.035em;
+        line-height: 1.02;
+        margin: 0 0 20px;
+      }
+
+      .hero h1 span {
+        color: var(--qb-accent-ink);
+      }
+
+      .lede {
+        color: var(--qb-muted);
+        font-size: 18.5px;
+        line-height: 1.6;
+        margin: 0 0 18px;
+        max-width: 30em;
+        text-wrap: pretty;
+      }
+
+      .lede strong {
+        color: var(--qb-text);
+        font-weight: 600;
+      }
+
+      .aside {
+        border-left: 2px solid var(--qb-accent-line);
+        color: var(--qb-muted);
+        font-size: 15.5px;
+        line-height: 1.6;
+        margin: 0 0 30px;
+        max-width: 32em;
+        padding-left: 14px;
+        text-wrap: pretty;
+      }
+
+      .cta {
+        align-items: center;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+
+      .btn,
+      .btn:hover {
+        border: 1px solid var(--qb-border);
+        border-radius: 9px;
+        color: var(--qb-text);
+        font-size: 15px;
+        font-weight: 600;
+        padding: 12px 22px;
+        text-decoration: none;
+      }
+
+      .btn:hover {
+        border-color: var(--qb-accent);
+      }
+
+      .btn.primary {
+        background: var(--qb-accent);
+        border-color: var(--qb-accent);
+        color: #04141c;
+      }
+
+      .btn.primary:hover {
+        background: var(--qb-accent-hi);
+      }
+
+      .install {
+        align-items: center;
+        background: var(--qb-code-bg);
+        border: 1px solid var(--qb-border);
+        border-radius: 9px;
+        color: #c9cfd8;
+        cursor: pointer;
+        display: flex;
+        font-family: var(--qb-font-mono);
+        font-size: 13px;
+        gap: 10px;
+        padding: 11px 15px;
+      }
+
+      .install .prompt {
+        color: #6b7280;
+      }
+
+      .install .copy {
+        color: var(--qb-accent);
+        font-size: 11px;
+      }
+
+      /* --- hexagons --- */
+      .hex {
+        background: var(--qb-accent);
+        clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+        display: block;
+        height: 38px;
+        margin-bottom: 16px;
+        width: 34px;
+      }
+
+      .hex.small {
+        flex: none;
+        height: 15px;
+        margin: 4px 0 0;
+        width: 13px;
+      }
+
+      /* --- features --- */
+      .features {
+        display: grid;
+        gap: 18px;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        margin: 0 auto;
+        max-width: 1080px;
+        padding: 64px 22px;
+      }
+
+      .features article {
+        background: var(--qb-surface);
+        border: 1px solid var(--qb-border);
+        border-radius: 14px;
+        padding: 24px;
+      }
+
+      .features article:hover {
+        border-color: var(--qb-accent-line);
+      }
+
+      .features h3 {
+        font-family: var(--qb-font-display);
+        font-size: 17px;
+        letter-spacing: -0.01em;
+        margin: 0 0 8px;
+      }
+
+      .features p {
+        color: var(--qb-muted);
+        font-size: 14.5px;
+        line-height: 1.6;
+        margin: 0;
+      }
+
+      /* --- setup --- */
+      .setup {
+        align-items: start;
+        display: grid;
+        gap: 22px;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        margin: 0 auto;
+        max-width: 1080px;
+        padding: 0 22px 72px;
+      }
+
+      .setup h2,
+      .core h2 {
+        font-family: var(--qb-font-display);
+        font-size: 27px;
+        letter-spacing: -0.025em;
+        margin: 0 0 12px;
+      }
+
+      .setup-copy > p {
+        color: var(--qb-muted);
+        font-size: 15.5px;
+        margin: 0 0 20px;
+        max-width: 34em;
+        text-wrap: pretty;
+      }
+
+      .setup-copy code {
+        color: var(--qb-accent-ink);
+      }
+
+      .setup table {
+        border: 1px solid var(--qb-border);
+        border-collapse: separate;
+        border-radius: 12px;
+        border-spacing: 0;
+        font-family: var(--qb-font-mono);
+        font-size: 13px;
+        overflow: hidden;
+        width: 100%;
+      }
+
+      .setup th {
+        background: var(--qb-surface);
+        color: var(--qb-muted);
+        font-size: 12px;
+        font-weight: 400;
+        text-align: left;
+      }
+
+      .setup th,
+      .setup td {
+        border-bottom: 1px solid var(--qb-border);
+        padding: 10px 14px;
+      }
+
+      .setup tr:last-child td {
+        border-bottom: 0;
+      }
+
+      .setup td:last-child,
+      .setup th:last-child {
+        color: var(--qb-muted);
+        text-align: right;
+      }
+
+      .setup td strong {
+        color: var(--qb-accent-ink);
+      }
+
+      .muted {
+        color: var(--qb-muted);
+      }
+
+      .measured {
+        color: var(--qb-muted);
+        font-size: 12.5px;
+        margin: 10px 0 0;
+      }
+
+      /* --- setup tabs: radio inputs, no script --- */
+      .tabs {
+        background: var(--qb-code-bg);
+        border: 1px solid var(--qb-border);
+        border-radius: 14px;
+        overflow: hidden;
+        position: relative;
+      }
+
+      .tabs input {
+        opacity: 0;
+        pointer-events: none;
+        position: absolute;
+      }
+
+      .tab-bar {
+        align-items: center;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+        display: flex;
+        gap: 10px;
+        padding: 9px 12px;
+      }
+
+      .tab-bar .dot {
+        background: var(--qb-accent);
+        border-radius: 50%;
+        flex: none;
+        height: 9px;
+        width: 9px;
+      }
+
+      .tab-bar .file,
+      .tab-bar label {
+        color: #8d949e;
+        font-family: var(--qb-font-mono);
+      }
+
+      .tab-bar .file {
+        font-size: 12px;
+      }
+
+      .tab-bar label {
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 11px;
+        padding: 4px 9px;
+      }
+
+      .file.next,
+      .panel.next,
+      #setup-next:checked ~ .tab-bar .file.vite,
+      #setup-next:checked ~ .panel.vite {
+        display: none;
+      }
+
+      #setup-next:checked ~ .tab-bar .file.next {
+        display: inline;
+      }
+
+      #setup-next:checked ~ .panel.next {
+        display: block;
+      }
+
+      #setup-vite:checked ~ .tab-bar label[for='setup-vite'],
+      #setup-next:checked ~ .tab-bar label[for='setup-next'] {
+        background: var(--qb-accent);
+        color: #04141c;
+      }
+
+      #setup-vite:focus-visible ~ .tab-bar label[for='setup-vite'],
+      #setup-next:focus-visible ~ .tab-bar label[for='setup-next'] {
+        outline: 2px solid var(--qb-accent-hi);
+        outline-offset: 2px;
+      }
+
+      .panel pre {
+        border-radius: 0;
+        font-size: 12.8px;
+        line-height: 1.85;
+        margin: 0;
+        overflow-x: auto;
+        padding: 18px 16px 22px;
+      }
+
+      /* --- core docs --- */
+      .core {
+        margin: 0 auto;
+        max-width: 1080px;
+        padding: 0 22px 90px;
+      }
+
+      .core > p {
+        color: var(--qb-muted);
+        font-size: 15.5px;
+        margin: 0 0 24px;
+        max-width: 46em;
+        text-wrap: pretty;
+      }
+
+      .grid {
+        display: grid;
+        gap: 12px;
+        grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+      }
+
+      .grid a,
+      .grid a:hover {
+        background: var(--qb-surface);
+        border: 1px solid var(--qb-border);
+        border-radius: 12px;
+        display: flex;
+        gap: 11px;
+        padding: 16px 16px 17px;
+        text-decoration: none;
+        transition: border-color 0.15s, transform 0.15s;
+      }
+
+      .grid a:hover {
+        border-color: var(--qb-accent);
+        transform: translateY(-2px);
+      }
+
+      .grid .title {
+        color: var(--qb-text);
+        display: block;
+        font-family: var(--qb-font-display);
+        font-size: 15px;
+        font-weight: 600;
+        margin-bottom: 3px;
+      }
+
+      .grid .arrow {
+        color: var(--qb-accent-ink);
+        font-size: 11px;
+      }
+
+      .grid .description {
+        color: var(--qb-muted);
+        display: block;
+        font-size: 13.5px;
+        line-height: 1.5;
+      }
+
+      .rule {
+        align-items: center;
+        border: 1px dashed var(--qb-accent-line);
+        border-radius: 12px;
+        color: var(--qb-muted);
+        display: flex;
+        flex-wrap: wrap;
+        font-size: 14.5px;
+        gap: 12px;
+        margin-top: 22px;
+        padding: 15px 18px;
+      }
+
+      .rule .label {
+        color: var(--qb-accent-ink);
+        font-family: var(--qb-font-mono);
+        font-size: 12px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+
+      .rule code {
+        color: var(--qb-text);
+      }
+
+      footer {
+        background: var(--qb-alt);
+        border-top: 1px solid var(--qb-border);
+        color: var(--qb-muted);
+        font-size: 13.5px;
+        padding: 34px 22px;
+        text-align: center;
+      }
+    </style>
+  </body>
+</html>
