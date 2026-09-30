@@ -16,11 +16,13 @@ import type { ListStateHandle } from '../types/list-state-handle.type';
 import type { ListStateMachine } from '../types/list-state-machine.type';
 import type { SetOptions } from '../types/set-options.type';
 
+import { createDebouncer } from '../utils/create-debouncer';
 import { createLocalStore } from '../utils/create-local-store';
 import { normalizeHref, pathnameOfHref, searchOfHref } from '../utils/href';
 import {
   commitLocation,
   createListStateMachine,
+  draftLocation,
   observeLocation,
 } from '../utils/list-state-machine';
 
@@ -51,10 +53,11 @@ function locationOf(list: LooseList, location: ListLocation): string {
 /**
  * Drive a list whose state lives in the page URL.
  *
- * `state` updates synchronously on every `set()`, so a controlled input never lags; `request`
- * follows the committed state, so a cache key built from it changes once per navigation; the
- * URL stays the source of truth — a change the hook did not cause (Back, Forward, a link
- * elsewhere) discards anything not yet in it.
+ * `state` updates synchronously on every `set()`, so a controlled input never lags behind a
+ * debounce; `request` follows the committed state, so a cache key built from it changes once per
+ * navigation, never per keystroke; the URL stays the source of truth — a change the hook did not
+ * cause (Back, Forward, a link elsewhere) cancels a pending debounce and discards anything not
+ * yet in the URL. Unmounting cancels a pending debounce too.
  *
  * @param list - A list declared once with `defineList`, as a module-level constant
  * @param router - The current location and a `navigate`, rebuilt every render
@@ -77,6 +80,7 @@ export function useListState<TList extends ListDefinition<ListParams>>(
   const loose: LooseList = list;
   const location = locationOf(loose, router);
   const [machine] = useState(() => createLocalStore(createListStateMachine(location)));
+  const [debouncer] = useState(createDebouncer);
   const snapshot = useSyncExternalStore(
     machine.subscribe,
     machine.getSnapshot,
@@ -91,8 +95,17 @@ export function useListState<TList extends ListDefinition<ListParams>>(
   });
 
   useEffect(() => {
-    machine.update((current) => observeLocation(current, location));
-  }, [location, machine]);
+    const before = machine.getSnapshot();
+    const after = observeLocation(before, location);
+
+    if (before.debouncing && !after.debouncing) {
+      debouncer.cancel();
+    }
+
+    machine.update(() => after);
+  }, [debouncer, location, machine]);
+
+  useEffect(() => debouncer.cancel, [debouncer]);
 
   const read = useCallback(
     (): ListStateMachine =>
@@ -125,6 +138,7 @@ export function useListState<TList extends ListDefinition<ListParams>>(
 
   const set = useCallback(
     (changes: LooseChanges, options: SetOptions = {}): void => {
+      const { debounce = 0, replace = false } = options;
       const current = read();
       const href = buildListHref(
         loose,
@@ -135,9 +149,23 @@ export function useListState<TList extends ListDefinition<ListParams>>(
         changes
       );
 
-      commit(href, options.replace ?? false);
+      debouncer.cancel();
+
+      if (debounce <= 0) {
+        commit(href, replace);
+
+        return;
+      }
+
+      machine.update(() =>
+        draftLocation(
+          current,
+          locationOf(loose, { pathname: pathnameOfHref(href), search: searchOfHref(href) })
+        )
+      );
+      debouncer.schedule(() => commit(href, replace), debounce);
     },
-    [commit, loose, read]
+    [commit, debouncer, loose, machine, read]
   );
 
   const setPage = useCallback(

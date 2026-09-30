@@ -427,4 +427,161 @@ describe('useListState', () => {
       ).toBe('<output>react</output>');
     });
   });
+
+  describe('debounce', () => {
+    beforeEach(() => {
+      vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it('should collapse calls within the window into one navigation', () => {
+      const router = createTestRouter('/articles');
+      const { result } = renderList(router);
+
+      act(() => {
+        result.current.set({ q: 'r' }, { debounce: 300 });
+      });
+      act(() => {
+        vi.advanceTimersByTime(100);
+      });
+      act(() => {
+        result.current.set({ q: 're' }, { debounce: 300 });
+      });
+      act(() => {
+        vi.advanceTimersByTime(299);
+      });
+
+      expect(router.navigations).toEqual([]);
+
+      act(() => {
+        vi.advanceTimersByTime(1);
+      });
+
+      expect(router.navigations).toEqual([{ href: '/articles?q=re', options: { replace: false } }]);
+    });
+
+    it('should update the state at once and report pending while waiting', () => {
+      const router = createTestRouter('/articles');
+      const { result } = renderList(router);
+
+      act(() => {
+        result.current.set({ q: 'r' }, { debounce: 300 });
+      });
+
+      expect(result.current.state.q).toBe('r');
+      expect(result.current.isPending).toBe(true);
+
+      act(() => {
+        vi.advanceTimersByTime(300);
+      });
+
+      expect(result.current.isPending).toBe(false);
+    });
+
+    it('should keep the request until the debounce commits', () => {
+      const router = createTestRouter('/articles');
+      const { result } = renderList(router);
+      const before = result.current.request;
+
+      act(() => {
+        result.current.set({ q: 'r' }, { debounce: 300 });
+      });
+
+      expect(result.current.request).toBe(before);
+
+      act(() => {
+        vi.advanceTimersByTime(300);
+      });
+
+      expect(result.current.request.uri).toBe(uriFor('q=r'));
+    });
+
+    it('should merge changes to different keys', () => {
+      const router = createTestRouter('/articles');
+      const { result } = renderList(router);
+
+      act(() => {
+        result.current.set({ q: 'react' }, { debounce: 300 });
+        result.current.set({ status: ArticleStatusEnum.DRAFT }, { debounce: 300 });
+      });
+      act(() => {
+        vi.advanceTimersByTime(300);
+      });
+
+      expect(router.navigations.map(({ href }) => href)).toEqual([
+        '/articles?q=react&status=draft',
+      ]);
+    });
+
+    it('should commit at once when an immediate set() follows', () => {
+      const router = createTestRouter('/articles');
+      const { result } = renderList(router);
+
+      act(() => {
+        result.current.set({ q: 'react' }, { debounce: 300 });
+      });
+      act(() => {
+        result.current.set({ status: ArticleStatusEnum.DRAFT });
+      });
+      act(() => {
+        vi.advanceTimersByTime(300);
+      });
+
+      expect(router.navigations.map(({ href }) => href)).toEqual([
+        '/articles?q=react&status=draft',
+      ]);
+    });
+
+    it('should use the replace option of the last call', () => {
+      const router = createTestRouter('/articles');
+      const { result } = renderList(router);
+
+      act(() => {
+        result.current.set({ q: 'r' }, { debounce: 300 });
+        result.current.set({ q: 're' }, { debounce: 300, replace: true });
+      });
+      act(() => {
+        vi.advanceTimersByTime(300);
+      });
+
+      expect(router.navigations[0].options).toEqual({ replace: true });
+    });
+
+    it('should not navigate after unmounting', () => {
+      const router = createTestRouter('/articles');
+      const { result, unmount } = renderList(router);
+
+      act(() => {
+        result.current.set({ q: 'r' }, { debounce: 300 });
+      });
+      unmount();
+      act(() => {
+        vi.advanceTimersByTime(300);
+      });
+
+      expect(router.navigations).toEqual([]);
+    });
+
+    it('should cancel when the user navigates elsewhere', () => {
+      const router = createTestRouter('/articles');
+      const { result } = renderList(router);
+
+      act(() => {
+        result.current.set({ q: 'r' }, { debounce: 300 });
+      });
+      act(() => {
+        router.external('/authors');
+      });
+      act(() => {
+        vi.advanceTimersByTime(300);
+      });
+
+      expect(router.navigations).toEqual([]);
+      expect(result.current.state.q).toBeUndefined();
+      expect(result.current.isPending).toBe(false);
+    });
+  });
 });
