@@ -18,7 +18,7 @@
   "name": "@qubeejs/react-docs",
   "private": true,
   "scripts": {
-    "build": "npm run generate && npm run check && astro build && node scripts/check-site.mjs --pending",
+    "build": "npm run generate && npm run check && astro build && node scripts/check-site.mjs",
     "check": "tsc -p examples/tsconfig.json && node ../node_modules/vitest/vitest.mjs run --config examples/vitest.config.ts",
     "dev": "npm run generate && astro dev",
     "generate": "node scripts/generate-api.mjs && node scripts/generate-changelog.mjs && node scripts/generate-sizes.mjs",
