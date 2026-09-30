@@ -15,7 +15,7 @@ import { useQubeeHandle } from './use-qubee-handle';
  * remount the component with a `key` to switch drivers. To share one instance between
  * components, use {@link QubeeProvider}.
  *
- * @param config - The driver, plus an optional base URL and request/response key overrides
+ * @param config - The driver, plus an optional base URL, wire-level `pagination` mode (only PostgREST honours it) and request/response key overrides
  * @returns The builder, paginator and store, plus the store's current state
  *
  * @example
