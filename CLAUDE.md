@@ -40,7 +40,7 @@ src/
 ├─ contexts/    qubeeContext (internal)
 ├─ errors/      MissingQubeeProviderError
 ├─ hooks/       useQubee · useQubeeContext · useBrowserRouter · useListState · useQubeeHandle (internal)
-├─ types/       public handles and props, plus internal machine / store / debouncer shapes
+├─ types/       public handles and props, plus internal machine / store / debouncer / loose-list shapes
 └─ utils/       href, browser history, local store, list-state machine, debouncer (all internal)
 ```
 
