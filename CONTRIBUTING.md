@@ -10,18 +10,12 @@ the build rather than a review.
 
 ## Setup
 
-Until `@qubeejs/core` 1.3.0 is on npm, this package builds against a sibling checkout of core:
-
 ```bash
-git clone https://github.com/AndreaAlhena/qubeejs-core.git ../qubeejs-core
-(cd ../qubeejs-core && git checkout develop && npm ci && npm run build)
 npm ci
 npm test
 ```
 
-After pulling new core commits, run `npm run build` in `../qubeejs-core` again.
-
-Node `^22.12 || ^24 || >=26` — the range CI covers.
+Node `^22.12 || ^24 || >=26`; CI runs on 22.12 and 24.
 
 ## Before opening a pull request
 

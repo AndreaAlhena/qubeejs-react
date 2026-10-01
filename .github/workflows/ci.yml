@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [master, develop]
 
+permissions:
+  contents: read
+
 concurrency:
   cancel-in-progress: true
   group: ci-${{ github.ref }}
@@ -28,13 +31,6 @@ jobs:
         with:
           cache: npm
           node-version: ${{ matrix.node }}
-
-      # Until @qubeejs/core 1.3.0 is on npm, the devDependency is `file:../qubeejs-core`.
-      - name: Build @qubeejs/core from develop
-        run: |
-          git clone --depth 1 --branch develop https://github.com/AndreaAlhena/qubeejs-core.git ../qubeejs-core
-          npm ci --prefix ../qubeejs-core
-          npm run build --prefix ../qubeejs-core
 
       - run: npm ci
 
