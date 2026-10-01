@@ -28,3 +28,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   lists whose query lives in the URL, eight recipes, and an API reference generated from JSDoc.
   Every usage sample is type-checked against the build, and the testing samples run, on each
   build (#8)
+
+### Changed
+
+- Build against `@qubeejs/core` 1.3.0 from npm instead of a sibling checkout (#9)
