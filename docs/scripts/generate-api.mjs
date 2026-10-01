@@ -456,7 +456,7 @@ if (!existsSync(join(repo, 'node_modules', '@qubeejs', 'core', 'package.json')))
 }
 
 if (!existsSync(join(repo, 'node_modules', '@qubeejs', 'core', 'dist', 'index.d.ts'))) {
-  fail('@qubeejs/core has no build — run `npm run build` in ../qubeejs-core first.');
+  fail('@qubeejs/core has no build — run `npm ci` at the repository root again.');
 }
 
 execFileSync(
