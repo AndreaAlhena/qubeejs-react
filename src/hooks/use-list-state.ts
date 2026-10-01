@@ -18,11 +18,11 @@ import {
 } from 'react';
 
 import type { ListRouter } from '../types/list-router.type';
+import type { ListSetOptions } from '../types/list-set-options.type';
 import type { ListStateHandle } from '../types/list-state-handle.type';
 import type { ListStateMachine } from '../types/list-state-machine.type';
 import type { LooseChanges } from '../types/loose-changes.type';
 import type { LooseList } from '../types/loose-list.type';
-import type { SetOptions } from '../types/set-options.type';
 
 import { createDebouncer } from '../utils/create-debouncer';
 import { createLocalStore } from '../utils/create-local-store';
@@ -159,7 +159,7 @@ export function useListState<TList extends ListDefinition<ListParams>>(
   );
 
   const set = useCallback(
-    (changes: LooseChanges, options: SetOptions = {}): void => {
+    (changes: LooseChanges, options: ListSetOptions = {}): void => {
       const { debounce = 0, replace = false } = options;
       const current = read();
       const href = buildListHref(
@@ -191,7 +191,7 @@ export function useListState<TList extends ListDefinition<ListParams>>(
   );
 
   const setPage = useCallback(
-    (page: number, options: Omit<SetOptions, 'debounce'> = {}): void => {
+    (page: number, options: Omit<ListSetOptions, 'debounce'> = {}): void => {
       set({ page }, options);
     },
     [set]
@@ -217,7 +217,7 @@ export function useListState<TList extends ListDefinition<ListParams>>(
       sortKey === undefined
         ? {}
         : {
-            toggleSort: (field: string, options: SetOptions & ToggleSortOptions = {}): void => {
+            toggleSort: (field: string, options: ListSetOptions & ToggleSortOptions = {}): void => {
               const { multiple, ...setOptions } = options;
               const current = read();
               const search = searchOfHref(current.draft ?? current.location);

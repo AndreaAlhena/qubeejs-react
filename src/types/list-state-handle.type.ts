@@ -1,6 +1,6 @@
 import type { ListRequest, ListState } from '@qubeejs/core';
 
-import type { SetOptions } from './set-options.type';
+import type { ListSetOptions } from './list-set-options.type';
 import type { SortToggle } from './sort-toggle.type';
 
 /**
@@ -27,9 +27,9 @@ export type ListStateHandle<TList> = {
    * Apply `changes` to the state and navigate — at most one navigation per call. A change to
    * anything but the page returns to page 1; a key set to `undefined` returns to its default.
    */
-  set: (changes: Partial<ListState<TList>>, options?: SetOptions) => void;
+  set: (changes: Partial<ListState<TList>>, options?: ListSetOptions) => void;
   /** `set({ page })`. */
-  setPage: (page: number, options?: Omit<SetOptions, 'debounce'>) => void;
+  setPage: (page: number, options?: Omit<ListSetOptions, 'debounce'>) => void;
   /** The list's state, including changes not yet in the URL. */
   state: ListState<TList>;
 } & SortToggle<TList>;
