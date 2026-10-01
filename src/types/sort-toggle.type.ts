@@ -1,6 +1,6 @@
 import type { ListDefinition, SortParam, ToggleSortOptions } from '@qubeejs/core';
 
-import type { SetOptions } from './set-options.type';
+import type { ListSetOptions } from './list-set-options.type';
 
 /**
  * The keys of a list's params whose param is a `sortParam`.
@@ -44,7 +44,7 @@ export type SortToggle<TList> =
            */
           toggleSort: (
             field: SortFields<TParams, Single<SortKeys<TParams>>>,
-            options?: SetOptions & ToggleSortOptions
+            options?: ListSetOptions & ToggleSortOptions
           ) => void;
         }
     : Record<never, never>;

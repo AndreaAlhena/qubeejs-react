@@ -1,7 +1,7 @@
 /**
  * Options of {@link ListStateHandle}'s `set`.
  */
-export type SetOptions = {
+export type ListSetOptions = {
   /**
    * Wait this many milliseconds before navigating, restarting on every call — for a search box.
    * The state updates at once regardless. `0` or absent navigates immediately.
