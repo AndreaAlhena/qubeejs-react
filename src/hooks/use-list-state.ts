@@ -2,7 +2,6 @@ import type {
   ListDefinition,
   ListLocation,
   ListParams,
-  ListState,
   Sort,
   ToggleSortOptions,
 } from '@qubeejs/core';
@@ -21,6 +20,8 @@ import {
 import type { ListRouter } from '../types/list-router.type';
 import type { ListStateHandle } from '../types/list-state-handle.type';
 import type { ListStateMachine } from '../types/list-state-machine.type';
+import type { LooseChanges } from '../types/loose-changes.type';
+import type { LooseList } from '../types/loose-list.type';
 import type { SetOptions } from '../types/set-options.type';
 
 import { createDebouncer } from '../utils/create-debouncer';
@@ -33,16 +34,6 @@ import {
   draftLocation,
   observeLocation,
 } from '../utils/list-state-machine';
-
-/**
- * The hook's non-generic view of a list. See the cast at the top of {@link useListState}.
- */
-type LooseList = ListDefinition<ListParams>;
-
-/**
- * Changes to a {@link LooseList}'s state.
- */
-type LooseChanges = Partial<ListState<LooseList>>;
 
 /**
  * The key of the list's one `sortParam`, or `undefined` when it has none or several.
