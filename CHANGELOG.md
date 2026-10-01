@@ -24,9 +24,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   to render on the server (#6, #13)
 - `useListState(list, router)`: a list whose state lives in the page URL. Its `ListStateHandle`
   has a draft `state` that updates synchronously, a typed `set()` that navigates at most once per
-  call, optional debounce (`SetOptions`), `isPending`, `href()`, `setPage()`, `toggleSort()` when
-  the list declares one `sortParam` (`SortToggle`), and a `request` that changes once per
-  navigation for fetching libraries (#7)
+  call, optional debounce (`ListSetOptions`), `isPending`, `href()`, `setPage()`, `toggleSort()`
+  when the list declares one `sortParam` (`SortToggle`), and a `request` that changes once per
+  navigation for fetching libraries (#7, #15)
 - **Documentation site** at https://qubeejs-react.andreatantimonaco.me: guides for the hooks and for
   lists whose query lives in the URL, eight recipes, and an API reference generated from JSDoc.
   Every usage sample is type-checked against the build, and the testing samples run, on each
