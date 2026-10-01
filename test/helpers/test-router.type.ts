@@ -1,12 +1,12 @@
+import type { ListNavigateOptions } from '../../src/types/list-navigate-options.type';
 import type { ListRouter } from '../../src/types/list-router.type';
-import type { NavigateOptions } from '../../src/types/navigate-options.type';
 
 /**
  * One call to a test router's `navigate`.
  */
 export type TestNavigation = {
   href: string;
-  options: NavigateOptions;
+  options: ListNavigateOptions;
 };
 
 /**

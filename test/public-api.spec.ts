@@ -1,9 +1,9 @@
 import { createQubee, STRAPI_DRIVER } from '@qubeejs/core';
 
 import type {
+  ListNavigateOptions,
   ListRouter,
   ListStateHandle,
-  NavigateOptions,
   QubeeHandle,
   QubeeProviderProps,
   SetOptions,
@@ -25,9 +25,9 @@ describe('public API', () => {
   });
 
   it('should export the documented types', () => {
+    expectTypeOf<ListNavigateOptions>().toHaveProperty('replace');
     expectTypeOf<ListRouter>().toHaveProperty('navigate');
     expectTypeOf<ListStateHandle<unknown>>().toHaveProperty('set');
-    expectTypeOf<NavigateOptions>().toHaveProperty('replace');
     expectTypeOf<QubeeHandle>().toHaveProperty('state');
     expectTypeOf<QubeeProviderProps>().toHaveProperty('children');
     expectTypeOf<SetOptions>().toHaveProperty('debounce');

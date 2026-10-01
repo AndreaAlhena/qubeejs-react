@@ -1,7 +1,7 @@
 import { useSyncExternalStore } from 'react';
 
+import type { ListNavigateOptions } from '../../src/types/list-navigate-options.type';
 import type { ListRouter } from '../../src/types/list-router.type';
-import type { NavigateOptions } from '../../src/types/navigate-options.type';
 import type { TestRouter, TestRouterOptions } from './test-router.type';
 
 import { createLocalStore } from '../../src/utils/create-local-store';
@@ -47,7 +47,7 @@ export function createTestRouter(initialHref: string, options: TestRouterOptions
       );
 
       return {
-        navigate: (target: string, navigateOptions: NavigateOptions): void => {
+        navigate: (target: string, navigateOptions: ListNavigateOptions): void => {
           navigations.push({ href: target, options: navigateOptions });
 
           if (mode === 'manual') {
