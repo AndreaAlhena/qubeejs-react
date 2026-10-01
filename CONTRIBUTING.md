@@ -59,5 +59,6 @@ Branch from `develop` as `feature/<issue-number>`; `master` is release-only.
 2. Merge `develop` into `master`.
 3. Tag `v<version>` and publish a GitHub Release.
 
-The publish workflow verifies that the tag matches `package.json`, re-runs every gate, and
-publishes to npm with provenance via OIDC trusted publishing — there is no npm token.
+The publish workflow verifies that the tag matches `package.json`, re-runs the type check, the
+linter, the tests and the build, and publishes to npm with provenance via OIDC trusted publishing
+— there is no npm token.
