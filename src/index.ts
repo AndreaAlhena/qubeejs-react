@@ -9,9 +9,9 @@
  */
 
 // Types
+export type { ListNavigateOptions } from './types/list-navigate-options.type';
 export type { ListRouter } from './types/list-router.type';
 export type { ListStateHandle } from './types/list-state-handle.type';
-export type { NavigateOptions } from './types/navigate-options.type';
 export type { QubeeHandle } from './types/qubee-handle.type';
 export type { QubeeProviderProps } from './types/qubee-provider-props.type';
 export type { SetOptions } from './types/set-options.type';
