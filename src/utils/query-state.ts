@@ -29,6 +29,10 @@ export function createQueryState<T extends PaginatedObject>(
  * A failure discards the data, so a page is never shown under the state of another request —
  * unless the failed request is the one the data answers, fetched again: then the data stays.
  *
+ * A fetch that starts for another request sets the answer aside: its page stays, to be shown as
+ * the previous page, but it no longer answers anything. Coming back to its request therefore
+ * fetches again, whichever of the two requests would have been answered first.
+ *
  * @typeParam T - The shape of a row
  * @param state - The last answer
  * @param action - What happened
@@ -42,7 +46,7 @@ export function reduceQueryState<T extends PaginatedObject>(
     case 'answered':
       return { attempt: action.attempt, data: action.data, error: undefined, key: action.key };
     case 'cleared':
-      return state.key === null
+      return state.key === null && state.data === undefined
         ? state
         : { attempt: state.attempt, data: undefined, error: undefined, key: null };
     case 'failed':
@@ -52,5 +56,9 @@ export function reduceQueryState<T extends PaginatedObject>(
         error: action.error,
         key: action.key,
       };
+    case 'started':
+      return state.key === null || state.key === action.key
+        ? state
+        : { attempt: state.attempt, data: state.data, error: undefined, key: null };
   }
 }

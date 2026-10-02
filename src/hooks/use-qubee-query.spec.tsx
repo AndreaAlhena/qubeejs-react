@@ -273,6 +273,28 @@ describe('useQubeeQuery', () => {
       expect(result.current.data).toEqual(pageOf(2));
     });
 
+    it('should fetch a request again when the list comes back to it before its replacement answered', async () => {
+      const { calls, fetcher } = createFetcher();
+      const options = { fetcher };
+      const { rerender, result } = renderQuery({ options, request: requestFor('page=1') });
+
+      await answer(calls[0], 1);
+      rerender({ options, request: requestFor('page=2') });
+      rerender({ options, request: requestFor('page=1') });
+
+      // Whether the page is fetched again must not depend on which request answered first.
+      expect(calls.map((call) => call.uri)).toEqual([
+        requestFor('page=1').uri,
+        requestFor('page=2').uri,
+        requestFor('page=1').uri,
+      ]);
+      expect(result.current).toMatchObject({ data: pageOf(1), isFetching: true, isLoading: false });
+
+      await answer(calls[2], 1);
+
+      expect(result.current).toMatchObject({ data: pageOf(1), isFetching: false });
+    });
+
     it('should not report the abort of a replaced request as an error', async () => {
       const { calls, fetcher } = createFetcher();
       const options = { fetcher };
@@ -325,6 +347,23 @@ describe('useQubeeQuery', () => {
         'The request was rejected with a value that is not an Error.'
       );
       expect(result.current.error?.cause).toBe('offline');
+    });
+
+    it('should try again when the list comes back to a request that failed', async () => {
+      const { calls, fetcher } = createFetcher();
+      const options = { fetcher };
+      const { rerender, result } = renderQuery({ options, request: requestFor('page=1') });
+
+      await fail(calls[0], new Error('offline'));
+      rerender({ options, request: requestFor('page=2') });
+      rerender({ options, request: requestFor('page=1') });
+
+      expect(calls).toHaveLength(3);
+      expect(result.current).toMatchObject({ error: undefined, isFetching: true, isLoading: true });
+
+      await answer(calls[2], 1);
+
+      expect(result.current).toMatchObject({ data: pageOf(1), error: undefined });
     });
 
     it('should drop the error when the next request starts', async () => {
@@ -469,6 +508,21 @@ describe('useQubeeQuery', () => {
 
       expect(result.current).toMatchObject({ data: undefined, isFetching: true, isLoading: true });
       expect(calls).toHaveLength(2);
+    });
+
+    it('should not show the page from before it was disabled as the previous page', async () => {
+      const { calls, fetcher } = createFetcher();
+      const { rerender, result } = renderQuery({
+        options: { fetcher },
+        request: requestFor('page=1'),
+      });
+
+      await answer(calls[0], 1);
+      rerender({ options: { fetcher }, request: requestFor('page=2') });
+      rerender({ options: { enabled: false, fetcher }, request: requestFor('page=2') });
+      rerender({ options: { fetcher }, request: requestFor('page=3') });
+
+      expect(result.current).toMatchObject({ data: undefined, isFetching: true, isLoading: true });
     });
 
     it('should abort the request in flight when it is disabled', () => {

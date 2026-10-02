@@ -52,7 +52,7 @@ How it behaves:
 - **A request is its address and its headers.** A new `request` object for the same page does not
   fetch again.
 - **A new request replaces the old one.** The old one is aborted; if its answer still arrives, it
-  is ignored. An abort is never an error.
+  is ignored. An abort is never an error. Coming back to an earlier request fetches it again.
 - **The previous page stays** while the next one loads, so the table does not flash empty. Pass
   `keepPreviousData: false` to show nothing instead.
 - **A failure discards the page**, so rows are never shown under another request's filters. Only a
