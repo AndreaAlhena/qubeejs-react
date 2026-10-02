@@ -69,6 +69,7 @@
   },
   "scripts": {
     "build": "tsup",
+    "check:dist": "node scripts/check-dist.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "eslint .",

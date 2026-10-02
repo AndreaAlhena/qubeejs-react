@@ -53,20 +53,8 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Verify the published entry points load
-        run: |
-          node --input-type=module -e "await import('./dist/index.js')"
-          node --input-type=commonjs -e "require('./dist/index.cjs')"
-
-      - name: Verify server/client boundaries are left to @qubeejs/next
-        run: |
-          if grep -q "use client" dist/index.js dist/index.cjs; then echo "unexpected 'use client' directive"; exit 1; fi
-          if grep -qE "from ['\"]next|require\(['\"]next" dist/index.js dist/index.cjs; then echo "unexpected next import"; exit 1; fi
-
-      - name: Verify the package has no runtime dependencies
-        run: |
-          node -e "
-            const { dependencies = {} } = require('./package.json');
-            const names = Object.keys(dependencies);
-            if (names.length) throw new Error('unexpected runtime dependencies: ' + names.join(', '));
-          "
+      # Every entry of entries.json: both formats and their types exist and load, the client
+      # directive is on the client entries only, each entry imports nothing but react, the core
+      # and its own optional peer, and the package has no runtime dependencies.
+      - name: Check the built package
+        run: npm run check:dist
