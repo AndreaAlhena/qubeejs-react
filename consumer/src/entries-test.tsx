@@ -3,6 +3,7 @@ import type { ReactElement } from 'react';
 
 import { useQubeeList } from '@qubeejs/react';
 import { ReactRouterAdapter, useReactRouterAdapter } from '@qubeejs/react/react-router';
+import * as tanstackRouter from '@qubeejs/react/tanstack-router';
 import { version } from 'react';
 import { renderToString } from 'react-dom/server';
 import { MemoryRouter } from 'react-router';
@@ -47,5 +48,12 @@ const passed = renderToString(
 );
 
 check('the react-router adapter hook drives a list', passed === '<output>7</output>', passed);
+
+check(
+  'the tanstack-router entry exports its provider and its hook',
+  typeof tanstackRouter.TanStackRouterAdapter === 'function' &&
+    typeof tanstackRouter.useTanStackRouterAdapter === 'function',
+  Object.keys(tanstackRouter)
+);
 
 finish(`Entries (React ${version})`);
