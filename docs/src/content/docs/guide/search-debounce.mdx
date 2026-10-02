@@ -42,8 +42,9 @@ dim the results, or to announce that a search is running:
 <section aria-busy={list.isPending}>…</section>
 ```
 
-With a router that reports the new URL only after a transition, a debounced change can fire after
-the user has started another navigation but before the router reports it, and pull them back. See
+A click on a link while a debounce is waiting commits the change at once. Without that, on a
+router that reports the new URL only after a transition, a search still waiting could fire after
+the user followed the link, and pull them back. See
 [Routers that report the URL late](/guide/url-lists/#routers-that-report-the-url-late).
 
 ## Keep the spaces

@@ -155,6 +155,8 @@ function Articles(): ReactElement {
 - The URL is the source of truth: Back, Forward or a link elsewhere cancel a pending debounce and
   discard anything not yet in the URL. Unmounting cancels a pending debounce too, and so does
   hiding the tree with React 19's `<Activity>`: the draft is dropped, not left pending.
+- A click on a link while a debounce waits commits it at once, so the link the user follows is
+  never overtaken by a search that was still waiting.
 - `reset()` returns every param to its default in one navigation, keeping parameters the list
   does not own.
 - `toggleSort(field)` exists when the list declares exactly one `sortParam`; `field` is typed to
