@@ -2,14 +2,13 @@ import type { ListRegistry } from '../types/list-registry.type';
 import type { LooseList } from '../types/loose-list.type';
 import type { ParamClaim } from '../types/param-claim.type';
 
-import { isProduction } from './is-production';
-
 /**
  * Record that a mounted list owns its URL names, and warn when another list already owns one.
  *
  * Two different lists that name a parameter the same read and write the same URL value, so
  * paging one pages the other. Lists that share the same param object share it on purpose and do
- * not warn; neither does the same list mounted twice. Nothing is logged in a production build.
+ * not warn; neither does the same list mounted twice. A development aid: {@link useRouterAdapter}
+ * does not call it in a production build.
  *
  * @param registry - The registry of the adapter provider the list is under
  * @param list - The list that mounted
@@ -25,7 +24,7 @@ export function claimListParams(registry: ListRegistry, list: LooseList): () => 
     );
     const report = `${key}|${other?.list.resource}|${list.resource}`;
 
-    if (other && !registry.reported.has(report) && !isProduction()) {
+    if (other && !registry.reported.has(report)) {
       registry.reported.add(report);
       console.warn(
         `[@qubeejs/react] The lists "${other.list.resource}" and "${list.resource}" both own the URL parameter "${key}", so changing one changes the other. Give one of them another name, or declare the param once and use the same object in both lists if this is intended.`
