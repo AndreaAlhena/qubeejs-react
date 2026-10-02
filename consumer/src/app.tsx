@@ -3,6 +3,7 @@ import type { ReactElement } from 'react';
 
 import { getAriaSort, STRAPI_DRIVER } from '@qubeejs/core';
 import {
+  BrowserAdapter,
   QubeeProvider,
   useBrowserAdapter,
   useQubeeList,
@@ -93,9 +94,12 @@ export function Articles(): ReactElement {
   );
 }
 
-/** A second, independent reader of the same URL: it must stay in sync with <Articles>. */
+/**
+ * A second, independent reader of the same URL. It takes its adapter from the provider, while
+ * <Articles> passes its own: both must stay in sync.
+ */
 export function PageLabel(): ReactElement {
-  const { state } = useQubeeList(articleList, useBrowserAdapter());
+  const { state } = useQubeeList(articleList);
 
   return <output id="label">{state.page}</output>;
 }
@@ -111,14 +115,21 @@ export function Tags(): ReactElement {
   );
 }
 
+/** A list with neither a provider above it nor an adapter passed in. */
+export function NoAdapter(): ReactElement {
+  const { state } = useQubeeList(articleList);
+
+  return <output>{state.page}</output>;
+}
+
 export function App(): ReactElement {
   return (
-    <>
+    <BrowserAdapter>
       <ArticlePicker />
       <Shared />
       <Articles />
       <PageLabel />
       <Tags />
-    </>
+    </BrowserAdapter>
   );
 }

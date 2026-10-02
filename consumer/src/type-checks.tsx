@@ -2,6 +2,7 @@
 // `@ts-expect-error` line must be an error (tsc fails if one is not).
 import type {
   AdapterNavigateOptions,
+  AdapterProviderProps,
   RouterAdapter,
   QubeeListHandle,
   QubeeHandle,
@@ -11,7 +12,14 @@ import type {
 } from '@qubeejs/react';
 
 import { createQubee, STRAPI_DRIVER } from '@qubeejs/core';
-import { QubeeProvider, useBrowserAdapter, useQubeeList, useQubee } from '@qubeejs/react';
+import {
+  BrowserAdapter,
+  createAdapterProvider,
+  QubeeProvider,
+  useBrowserAdapter,
+  useQubee,
+  useQubeeList,
+} from '@qubeejs/react';
 
 import { articleList, tagList } from './article-list.js';
 import { ArticleStatusEnum } from './article-status.enum.js';
@@ -76,7 +84,13 @@ export function Checks(): null {
   };
 
   void [page, status, uri, pending, href, handle, options, navigateOptions, withRecord, withString];
-  void [sortToggle, qubee, props, QubeeProvider];
+  // The adapter is optional: a provider can supply it.
+  const provided = useQubeeList(articleList);
+  const providerProps: AdapterProviderProps = { children: null };
+  const CustomAdapter = createAdapterProvider(useBrowserAdapter);
+
+  void [sortToggle, qubee, props, QubeeProvider, provided, providerProps, BrowserAdapter];
+  void CustomAdapter;
 
   return null;
 }
