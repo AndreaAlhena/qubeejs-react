@@ -612,6 +612,46 @@ describe('useQubeeList', () => {
       host.remove();
     });
 
+    it('should commit the waiting change before a link that changes the same list, in two navigations', () => {
+      const router = createTestRouter('/articles');
+
+      function Page(): ReactElement {
+        const list = useQubeeList(articleList, router.useRouter());
+
+        return (
+          <>
+            <button onClick={() => list.set({ q: 'react' }, { debounce: 300 })} type="button">
+              type
+            </button>
+            <a
+              href={list.href({ page: 2 })}
+              onClick={(event) => {
+                event.preventDefault();
+                list.setPage(2);
+              }}
+            >
+              2
+            </a>
+          </>
+        );
+      }
+
+      const { getByRole } = render(<Page />, { wrapper: StrictMode });
+
+      act(() => getByRole('button', { name: 'type' }).click());
+      act(() => getByRole('link', { name: '2' }).click());
+      act(() => {
+        vi.advanceTimersByTime(300);
+      });
+
+      // A page link is a link: the search is committed first, then the page. They end where one
+      // navigation would have.
+      expect(router.navigations.map((navigation) => navigation.href)).toEqual([
+        '/articles?q=react',
+        '/articles?page=2&q=react',
+      ]);
+    });
+
     it('should leave a click that is not on a link to the debounce', () => {
       const router = createTestRouter('/articles');
       const { result } = renderList(router);
