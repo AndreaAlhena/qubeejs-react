@@ -46,6 +46,7 @@ const PLANNED = new Set([
   'api/types/router-adapter',
   'api/types/sort-toggle',
   'changelog',
+  'guide/adapters',
   'guide/fetching',
   'guide/provider',
   'guide/re-renders',

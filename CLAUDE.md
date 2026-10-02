@@ -42,13 +42,20 @@ list definitions, page URL ⇄ state ⇄ API request, pagination and sort helper
 
 ```
 src/
-├─ components/  QubeeProvider
-├─ contexts/    qubeeContext (internal)
-├─ errors/      MissingQubeeProviderError
-├─ hooks/       useQubee · useQubeeContext · useBrowserAdapter · useQubeeList · useQubeeHandle (internal)
-├─ types/       public handles and props, plus internal machine / store / debouncer / loose-list shapes
-└─ utils/       href, browser history, local store, list-state machine, debouncer (all internal)
+├─ components/  QubeeProvider · BrowserAdapter · AdapterScopeProvider (internal)
+├─ contexts/    qubeeContext · adapterContext (both internal)
+├─ errors/      MissingQubeeProviderError · MissingRouterAdapterError
+├─ hooks/       useQubee · useQubeeContext · useBrowserAdapter · useQubeeList, plus internal
+│               useQubeeHandle · useRouterAdapter · useNoAdapter
+├─ types/       public handles and props, plus internal machine / store / debouncer / loose-list /
+│               adapter-scope / list-registry shapes
+└─ utils/       createAdapterProvider, plus internal href, browser history, local store,
+                list-state machine, debouncer, list registry
 ```
+
+A list finds its router adapter in the second argument of `useQubeeList`, else in the nearest
+adapter provider; with neither it throws. A provider puts its adapter **hook** in context, never a
+router value, so only list components subscribe to the URL.
 
 `useQubeeList` keeps three layers: the **draft** (updated synchronously by `set()`), the
 **in-flight** hrefs handed to `navigate()`, and the **URL**, which always wins.

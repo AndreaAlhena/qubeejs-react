@@ -165,8 +165,41 @@ or `isPending`, call the hook once in their common parent and pass the handle do
 
 ## Routers
 
-`useQubeeList` takes a `RouterAdapter`: the current `pathname` and `search`, and a
-`navigate(href, { replace })`. Build it from your router's hooks on every render.
+`useQubeeList` reads and writes the URL through a `RouterAdapter`: the current `pathname` and
+`search`, and a `navigate(href, { replace })`.
+
+### Set the adapter once
+
+Wrap the app in an adapter provider, and every list below it finds its adapter by itself:
+
+```tsx
+import { BrowserAdapter, useQubeeList } from '@qubeejs/react';
+
+<BrowserAdapter>
+  <Articles />
+</BrowserAdapter>;
+
+function Articles(): ReactElement {
+  const list = useQubeeList(articleList);
+
+  return <a href={list.href({ page: 2 })}>2</a>;
+}
+```
+
+- An adapter passed as the second argument wins over the provider.
+- With neither, `useQubeeList` throws `MissingRouterAdapterError`. It never falls back to browser
+  history by itself: inside a router library, that would leave the router out of step.
+- The provider hands down the adapter _hook_, so only the components that use a list re-render
+  when the URL changes.
+- For a router this package ships no provider for, `createAdapterProvider(useMyAdapter)` makes
+  one from a hook that returns a `RouterAdapter`.
+- In development, two different lists under one provider that name a URL parameter the same log
+  a warning: paging one would page the other. To share a value on purpose, declare the param once
+  and use the same object in both lists.
+
+### Or pass it to the hook
+
+Build the adapter from your router's hooks on every render, and pass it as the second argument.
 
 **No router** — `useBrowserAdapter()` uses `history.pushState` / `replaceState` and `popstate`, and
 keeps every component on the page in sync:
