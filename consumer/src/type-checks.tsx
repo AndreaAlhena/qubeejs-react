@@ -25,6 +25,7 @@ import {
 } from '@qubeejs/react';
 
 import { ReactRouterAdapter, useReactRouterAdapter } from '@qubeejs/react/react-router';
+import { TanStackRouterAdapter, useTanStackRouterAdapter } from '@qubeejs/react/tanstack-router';
 
 import { articleList, tagList } from './article-list.js';
 import { ArticleStatusEnum } from './article-status.enum.js';
@@ -108,9 +109,11 @@ export function Checks(): null {
 
   // The router entries: each hook returns a RouterAdapter, each provider takes children.
   const viaReactRouter: RouterAdapter = useReactRouterAdapter();
+  const viaTanStackRouter: RouterAdapter = useTanStackRouterAdapter();
   const routerProps: AdapterProviderProps = { children: null };
 
-  void [viaReactRouter, routerProps, ReactRouterAdapter];
+  void [viaReactRouter, viaTanStackRouter, routerProps];
+  void [ReactRouterAdapter, TanStackRouterAdapter];
 
   return null;
 }

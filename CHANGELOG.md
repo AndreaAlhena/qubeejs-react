@@ -42,6 +42,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `@qubeejs/react/react-router`: `<ReactRouterAdapter>` and `useReactRouterAdapter()`, for React
   Router 7 and later — an entry point of its own, with `react-router` as an optional peer
   dependency (#22)
+- `@qubeejs/react/tanstack-router`: `<TanStackRouterAdapter>` and `useTanStackRouterAdapter()`,
+  for TanStack Router 1.x — an entry point of its own, with `@tanstack/react-router` as an
+  optional peer dependency (#23)
 - A client boundary built in: the entry point is marked `'use client'`, so a Next.js Server
   Component can import the package's components without a wrapper file (#19)
 

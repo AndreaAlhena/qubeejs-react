@@ -1,0 +1,227 @@
+import type { RouterHistory } from '@tanstack/react-router';
+import type { ReactElement } from 'react';
+
+import {
+  createMemoryHistory,
+  createRootRoute,
+  createRoute,
+  createRouter,
+  Link,
+  Outlet,
+  RouterProvider,
+  useLocation,
+} from '@tanstack/react-router';
+import { act, render, screen } from '@testing-library/react';
+import { StrictMode } from 'react';
+
+import { articleList } from '../../test/fixtures/article-list';
+import { TanStackRouterAdapter } from '../components/tanstack-router-adapter';
+import { useQubeeList } from './use-qubee-list';
+import { useTanStackRouterAdapter } from './use-tanstack-router-adapter';
+
+function Articles(): ReactElement {
+  const list = useQubeeList(articleList);
+  const href = useLocation({ select: (location) => location.href });
+
+  return (
+    <>
+      <input
+        aria-label="Search"
+        onChange={(event) => list.set({ q: event.target.value }, { debounce: 300, replace: true })}
+        value={list.state.q ?? ''}
+      />
+      <button onClick={() => list.toggleSort('title')} type="button">
+        Sort by title
+      </button>
+      <button onClick={() => list.setPage(list.state.page + 1)} type="button">
+        Next page
+      </button>
+      <Link to="/other">Elsewhere</Link>
+      <output data-testid="page">{list.state.page}</output>
+      <output data-testid="q">{list.state.q ?? ''}</output>
+      <output data-testid="pending">{String(list.isPending)}</output>
+      <output data-testid="url">{href}</output>
+    </>
+  );
+}
+
+function Passed(): ReactElement {
+  const list = useQubeeList(articleList, useTanStackRouterAdapter());
+
+  return (
+    <button onClick={() => list.setPage(list.state.page + 1)} type="button">
+      passed page {list.state.page}
+    </button>
+  );
+}
+
+function Other(): ReactElement {
+  const href = useLocation({ select: (location) => location.href });
+
+  return <output data-testid="url">{href}</output>;
+}
+
+function Root(): ReactElement {
+  return (
+    <TanStackRouterAdapter>
+      <Outlet />
+    </TanStackRouterAdapter>
+  );
+}
+
+/** Render the app at `initial` and hand back the history, to count entries and go back. */
+async function start(initial: string, basepath?: string): Promise<RouterHistory> {
+  const rootRoute = createRootRoute({ component: Root });
+  const history = createMemoryHistory({ initialEntries: [initial] });
+  const router = createRouter({
+    basepath,
+    history,
+    routeTree: rootRoute.addChildren([
+      createRoute({ component: Articles, getParentRoute: () => rootRoute, path: '/articles' }),
+      createRoute({ component: Passed, getParentRoute: () => rootRoute, path: '/passed' }),
+      createRoute({ component: Other, getParentRoute: () => rootRoute, path: '/other' }),
+    ]),
+  });
+
+  await act(async () => {
+    render(
+      <StrictMode>
+        <RouterProvider router={router} />
+      </StrictMode>
+    );
+    await router.load();
+  });
+
+  return history;
+}
+
+const text = (id: string): string => screen.getByTestId(id).textContent;
+
+/** Run `action`, then let TanStack Router's navigation land. */
+const settle = (action: () => void): Promise<void> =>
+  act(async () => {
+    action();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+  });
+
+/** Type into the search box the way a browser does: set the value, then fire `input`. */
+const type = (value: string): Promise<void> =>
+  settle(() => {
+    const input = screen.getByRole<HTMLInputElement>('textbox', { name: 'Search' });
+
+    Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set?.call(input, value);
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+  });
+
+const click = (role: 'button' | 'link', name: string): Promise<void> =>
+  settle(() => screen.getByRole(role, { name }).click());
+
+const wait = (ms: number): Promise<void> =>
+  act(async () => {
+    await new Promise((resolve) => setTimeout(resolve, ms));
+  });
+
+describe('useTanStackRouterAdapter', () => {
+  beforeEach(() => {
+    vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined);
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  describe('location', () => {
+    it('should read the list state from the TanStack Router location', async () => {
+      await start('/articles?page=3&q=react');
+
+      expect(text('page')).toBe('3');
+      expect(text('q')).toBe('react');
+      expect(text('pending')).toBe('false');
+    });
+  });
+
+  describe('navigate', () => {
+    it('should navigate through TanStack Router, once per call', async () => {
+      const history = await start('/articles?page=3');
+
+      await click('button', 'Sort by title');
+
+      expect(text('url')).toBe('/articles?sort=title');
+      expect(text('pending')).toBe('false');
+      expect(history.length).toBe(2);
+    });
+
+    it('should replace the history entry when asked to', async () => {
+      const history = await start('/articles');
+
+      await type('react');
+
+      expect(text('q')).toBe('react');
+      expect(text('pending')).toBe('true');
+      expect(text('url')).toBe('/articles');
+
+      await wait(350);
+
+      expect(text('url')).toBe('/articles?q=react');
+      expect(text('pending')).toBe('false');
+      expect(history.length).toBe(1);
+    });
+
+    it('should follow the back button', async () => {
+      const history = await start('/articles');
+
+      await click('button', 'Next page');
+
+      expect(text('page')).toBe('2');
+
+      await settle(() => history.back());
+
+      expect(text('page')).toBe('1');
+      expect(text('pending')).toBe('false');
+    });
+
+    it('should not pull the user back when they leave during a debounce', async () => {
+      await start('/articles');
+
+      await type('gone');
+      await click('link', 'Elsewhere');
+      await wait(350);
+
+      expect(text('url')).toBe('/other');
+    });
+
+    it('should keep the list under a basepath', async () => {
+      const history = await start('/app/articles?page=2', '/app');
+
+      expect(text('page')).toBe('2');
+
+      await click('button', 'Next page');
+
+      expect(text('page')).toBe('3');
+      expect(history.location.href).toBe('/app/articles?page=3');
+    });
+
+    it('should settle on the spelling TanStack Router gives a value it re-types', async () => {
+      // TanStack Router parses the query as JSON and writes it back, so `q=1.50` becomes `q=1.5`.
+      // The URL wins: the list settles on what the router reports, and is not left pending.
+      await start('/articles');
+
+      await type('1.50');
+      await wait(350);
+
+      expect(text('url')).toBe('/articles?q=1.5');
+      expect(text('q')).toBe('1.5');
+      expect(text('pending')).toBe('false');
+    });
+  });
+
+  describe('as an argument', () => {
+    it('should drive a list without a provider', async () => {
+      await start('/passed?page=4');
+
+      await click('button', 'passed page 4');
+
+      expect(screen.getByRole('button').textContent).toBe('passed page 5');
+    });
+  });
+});
