@@ -197,6 +197,13 @@ export function useQubeeList<TList extends ListDefinition<ListParams>>(
     [commit, debouncer, loose, machine, read]
   );
 
+  const reset = useCallback(
+    (options: Omit<ListSetOptions, 'debounce'> = {}): void => {
+      set(Object.fromEntries(Object.keys(loose.params).map((key) => [key, undefined])), options);
+    },
+    [loose, set]
+  );
+
   const setPage = useCallback(
     (page: number, options: Omit<ListSetOptions, 'debounce'> = {}): void => {
       set({ page }, options);
@@ -241,10 +248,11 @@ export function useQubeeList<TList extends ListDefinition<ListParams>>(
       href,
       isPending,
       request,
+      reset,
       set,
       setPage,
       state,
       ...sortMember,
     } as unknown as QubeeListHandle<TList>;
-  }, [href, isPending, loose, read, request, set, setPage, sortKey, state]);
+  }, [href, isPending, loose, read, request, reset, set, setPage, sortKey, state]);
 }
