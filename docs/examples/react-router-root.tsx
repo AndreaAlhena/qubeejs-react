@@ -1,7 +1,7 @@
 import { ReactRouterAdapter } from '@qubeejs/react/react-router';
 import { createBrowserRouter, Outlet, RouterProvider } from 'react-router';
 
-import { ArticlePager } from './react-router-pager';
+import { ArticlesPage } from './react-router-articles';
 
 /** The root route: every list under it reads and writes the URL through React Router. */
 function Root() {
@@ -14,7 +14,7 @@ function Root() {
 
 const router = createBrowserRouter([
   {
-    children: [{ element: <ArticlePager lastPage={12} />, path: 'articles' }],
+    children: [{ element: <ArticlesPage />, path: 'articles' }],
     element: <Root />,
     path: '/',
   },

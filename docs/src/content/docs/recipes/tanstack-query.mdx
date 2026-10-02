@@ -28,7 +28,7 @@ const { data, isFetching } = useArticlesQuery(list);
 
 - `qubeeQueryOptions(request)` returns what TanStack's own `queryOptions()` returns, with two things
   set: the `queryKey` — `['qubee', request.uri, request.headers]` — and a `queryFn` that calls
-  [`fetchQubeePage`](/api/functions/fetch-qubee-page/) with TanStack's abort signal. Everything else
+  [`fetchQubeePage`](/api/fetch/fetch-qubee-page/) with TanStack's abort signal. Everything else
   is yours to add beside it, as `placeholderData` is here.
 - `request` is built from the committed state, so the key changes once per navigation — never for a
   keystroke still inside its debounce.
@@ -36,7 +36,7 @@ const { data, isFetching } = useArticlesQuery(list);
   the table does not flash empty.
 - The data is typed from the options: `data` is `PaginatedResult<Article>`, and so is
   `queryClient.getQueryData(options.queryKey)`.
-- A status that is not `ok` is a [`QubeeFetchError`](/api/errors/qubee-fetch-error/) in `error`.
+- A status that is not `ok` is a [`QubeeFetchError`](/api/main/qubee-fetch-error/) in `error`.
 - `list.isPending` covers the debounce and the navigation, `isFetching` the request. Dim the table
   for either.
 
@@ -58,5 +58,6 @@ await queryClient.invalidateQueries({ queryKey: ['qubee'] });
 - **A `null` request skips the query**: the `queryFn` is TanStack's `skipToken`. Such options do
   not fit `useSuspenseQuery`, which cannot skip — the types say so.
 - **The fetcher is an argument**: `qubeeQueryOptions(request, { fetcher: authFetch })`. The function
-  also runs outside React, so it does not read `<QubeeFetchProvider>`.
+  also runs outside React, so it does not read `<QubeeFetchProvider>`. It is not part of the key:
+  queries for the same request share one cache entry, whatever their fetchers.
 - **It is not a client module**, so a Server Component can build the options to prefetch a page.

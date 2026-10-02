@@ -1,0 +1,52 @@
+---
+title: React Router
+description: Lists in the URL on React Router — the shipped adapter, set once at the root route, and Link for every page.
+sidebar:
+  label: React Router
+  order: 2
+---
+
+import { Code } from '@astrojs/starlight/components';
+import reactRouterArticles from '../../../../examples/react-router-articles.tsx?raw';
+import reactRouterRoot from '../../../../examples/react-router-root.tsx?raw';
+
+The adapter for React Router is an entry point of its own, `@qubeejs/react/react-router`. It needs
+React Router 7 or later — declarative, data or framework mode.
+
+```sh
+npm install @qubeejs/react @qubeejs/core react-router
+```
+
+## Wrap once
+
+<Code code={reactRouterRoot} lang="tsx" title="src/app.tsx" />
+
+`<ReactRouterAdapter>` goes **inside** the router — in the root route's component, around its
+`<Outlet />` — because it uses React Router's own hooks. Every list under the root route then
+reads and writes the URL through React Router.
+
+## A list page
+
+<Code code={reactRouterArticles} lang="tsx" title="src/articles/articles-page.tsx" />
+
+`<Link to={list.href(…)}>` navigates in place and keeps a real href, so no click handler is needed.
+
+## How it works
+
+- It reads `useSearchParams()` and `useLocation()`, and navigates with `useNavigate()`. React
+  Router's `navigate` may return a promise; the list does not wait for it.
+- A list navigation keeps the scroll position: where the app renders `<ScrollRestoration />`,
+  React Router would otherwise scroll to the top on every sort, page or search.
+  `<ReactRouterAdapter scroll>` — or `useReactRouterAdapter({ scroll: true })` — hands the reset
+  back to React Router.
+- Every component under the route reads the same URL, so each can call `useQubeeList(articleList)`.
+  The draft and `isPending` stay with the component that made a change — see
+  [Lists in the URL](/guide/url-lists/).
+- A route `loader` can fetch the page before the component renders, with
+  [`fetchQubeePage`](/guide/fetching/#on-the-server-or-outside-react) or the
+  [TanStack Query options](/recipes/tanstack-query/).
+- For the one list that should not follow the provider, pass `useReactRouterAdapter()` as the second
+  argument — see [Adapters & providers](/guide/adapters/).
+- On React Router 6, write the adapter yourself — the same three hooks, imported from
+  `'react-router-dom'` — and turn it into a provider with
+  [`createAdapterProvider`](/api/main/create-adapter-provider/).

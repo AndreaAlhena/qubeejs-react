@@ -63,13 +63,14 @@ function locationOf(list: LooseList, location: ListLocation): string {
 }
 
 /**
- * Drive a list whose state lives in the page URL.
+ * Drive a declared list: its state lives in the page URL, or wherever its router adapter keeps it.
  *
  * `state` updates synchronously on every `set()`, so a controlled input never lags behind a
  * debounce; `request` follows the committed state, so a cache key built from it changes once per
  * navigation, never per keystroke; the URL stays the source of truth — a change the hook did not
  * cause (Back, Forward, a link elsewhere) cancels a pending debounce and discards anything not
- * yet in the URL. Unmounting (or hiding the tree with `<Activity>`) cancels a pending debounce and drops its draft too. A click on a link while a debounce waits commits it at once, so the link
+ * yet in the URL. Unmounting (or hiding the tree with `<Activity>`) cancels a pending debounce and
+ * drops its draft too. A click on a link while a debounce waits commits it at once, so the link
  * the user follows is never overtaken by it. `toggleSort` is there when the list declares exactly
  * one `sortParam`.
  *

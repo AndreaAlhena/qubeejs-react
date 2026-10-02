@@ -1,0 +1,56 @@
+---
+title: Plain React
+description: Lists in the URL without a router library — the browser adapter, set once at the root, in a Vite app or any client-rendered app.
+sidebar:
+  label: Plain React
+  order: 1
+---
+
+import { Code } from '@astrojs/starlight/components';
+import browserRoot from '../../../../examples/browser-root.tsx?raw';
+import paginationBar from '../../../../examples/pagination-bar.tsx?raw';
+import plainClick from '../../../../examples/plain-click.ts?raw';
+import quickStart from '../../../../examples/quick-start.tsx?raw';
+
+An app without a router library — a Vite app, a widget on a server-rendered page — keeps its lists
+in the URL through the browser's own history. The adapter for that is in the main entry: nothing
+else to install.
+
+## Wrap once
+
+<Code code={browserRoot} lang="tsx" title="src/main.tsx" />
+
+Every list below `<BrowserAdapter>` reads `location` and writes with `history.pushState` and
+`replaceState`.
+
+## A list page
+
+The page names no router. It calls the hook, and fetches what the hook asks for:
+
+<Code code={quickStart} lang="tsx" title="src/articles/articles-page.tsx" />
+
+The [Quick start](/introduction/quick-start/) walks through it line by line.
+
+## Links
+
+Without a router library a plain `<a href>` reloads the document. Keep the real href — it can be
+opened in a new tab, copied and crawled — and navigate in place on a plain click:
+
+<Code code={plainClick} lang="ts" title="src/plain-click.ts" />
+
+<Code code={paginationBar} lang="tsx" title="src/articles/pagination-bar.tsx" />
+
+## How it works
+
+- **Every list stays in step.** All the components under the provider, and any that call
+  `useBrowserAdapter()` themselves, see the same URL — through the Back and Forward buttons too.
+- **It observes its own navigations, and Back and Forward.** A `pushState` by other code is not
+  seen until the next `popstate`, so parameters that code added can be dropped by the next `set()`.
+  When something else also writes the URL, that something is a router: use its adapter instead.
+- **On the server it knows no URL.** A list renders its defaults there, and its real state right
+  after hydrating. To render the right page on the server, use a router that knows the URL there —
+  see [Server rendering](/guide/server-rendering/).
+- **For one list that should not follow the provider**, pass `useBrowserAdapter()` as the second
+  argument of `useQubeeList` — see [Adapters & providers](/guide/adapters/).
+- **A router of your own** — hash routing, say — becomes a provider with
+  [`createAdapterProvider`](/api/main/create-adapter-provider/).

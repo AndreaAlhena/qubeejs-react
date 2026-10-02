@@ -41,6 +41,10 @@ state. Wrap them in the provider, and each takes its adapter from it:
 - **The nearest provider wins.** A `<MemoryAdapter>` inside a page whose lists live in the URL
   gives its subtree its own state; the page's lists are untouched.
 - **Each provider is separate.** Two dialogs, two providers, two states.
+- **The draft is per component**, as with a list in the URL. What a component typed and has not
+  committed yet — a search still inside its debounce — is its own: a change another component
+  makes in that window replaces it. When a search box and a pager must not race, call the hook
+  once in their parent and pass the result down.
 
 ## Where it starts
 

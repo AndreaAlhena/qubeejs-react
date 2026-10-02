@@ -24,8 +24,8 @@ button all land on the same list.
 - **A router adapter**: any object with `navigate(href, { replace })`, `pathname` and `search`.
   Set it once for the whole app with a provider such as `<BrowserAdapter>`, or pass one as the
   second argument: `useBrowserAdapter()`, or an adapter for
-  [React Router](/recipes/react-router/), [TanStack Router](/recipes/tanstack-router/) or
-  [Next.js](/introduction/frameworks/). [Adapters & providers](/guide/adapters/) explains both.
+  [React Router](/setup/react-router/), [TanStack Router](/setup/tanstack-router/) or
+  [Next.js](/setup/next/). [Adapters & providers](/guide/adapters/) explains both.
 
 ## What it returns
 
@@ -121,7 +121,9 @@ edge cases follow from the gap between calling `navigate` and hearing the new UR
   router reports it, and pull them back. So a click on a link while a debounce is waiting commits
   the change at once: the link the user follows always comes after it. What remains is a
   navigation started without a link — by a button's handler, a timer, a keyboard shortcut of your
-  own — while a debounce is waiting.
+  own — while a debounce is waiting. A link that changes the same list in place, such as a page
+  link with a click handler, is still a link: the waiting change is committed first and the link's
+  own change follows, in two navigations that end where one would have.
 - An external navigation to a URL that is canonically equal to the current one, made while the
   hook's own navigation is in flight, can leave `state`, `request` and `isPending` on the
   superseded navigation until the next change.
@@ -130,7 +132,7 @@ Both are rare, and both clear on the next change to the list.
 
 ## One hook per list, or one per component
 
-Every component that calls `useQubeeList` with the same list reads the same URL, so no provider is
-needed to share the state. What is **not** shared is the draft and `isPending`: they belong to the
-hook that made the change. When a table should dim while the search box's change is pending, call
+Every component that calls `useQubeeList` with the same list reads the same URL, so the state is
+shared with nothing more than the adapter provider above them. What is **not** shared is the draft
+and `isPending`: they belong to the hook that made the change. When a table should dim while the search box's change is pending, call
 the hook once in their common parent and pass the result down, as `ArticleIndex` does.

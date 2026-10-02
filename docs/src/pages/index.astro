@@ -1,20 +1,22 @@
 ---
 /**
  * The home page, after the Qubee React Docs mockup: the hero, four cards, the
- * provider-then-hook sample with its measured sizes, and the way into the core
- * docs.
+ * wrap-once sample for each router with the measured sizes, and the way into
+ * the core docs.
  *
  * Standalone rather than a Starlight splash page, as on qubeejs-core's site:
  * this layout is not one Starlight's templates express. It shares the site's
  * tokens and fonts through the same stylesheet, and the reader's theme through
  * Starlight's `starlight-theme` key (ThemeScript). The sizes come from
  * src/data/sizes.json, written by scripts/generate-sizes.mjs on every build;
- * the two setup samples are the type-checked files in examples/.
+ * the setup samples are the files in examples/ that the Setup pages show.
  */
 import { Code } from 'astro:components';
 
-import nextProviders from '../../examples/next/providers.tsx?raw';
-import viteMain from '../../examples/vite-main.tsx?raw';
+import browserRoot from '../../examples/browser-root.tsx?raw';
+import nextLayout from '../../examples/next/layout.tsx?raw';
+import reactRouterRoot from '../../examples/react-router-root.tsx?raw';
+import tanStackRouterRoot from '../../examples/tanstack-router-root.tsx?raw';
 import ThemeScript from '../components/ThemeScript.astro';
 import sizes from '../data/sizes.json';
 import '../styles/qubee-react.css';
@@ -28,18 +30,38 @@ const REPO = 'https://github.com/AndreaAlhena/qubeejs-react';
 /** Bytes as the size table prints them. */
 const kb = (bytes: number): string => `${(bytes / 1000).toFixed(1)} kB`;
 
+/** The wrap-once sample of each environment, in the order of the Setup pages. */
+const SETUPS = [
+  { code: browserRoot, file: 'src/main.tsx', id: 'plain', label: 'Plain React', tab: 'Plain' },
+  {
+    code: reactRouterRoot,
+    file: 'src/app.tsx',
+    id: 'react-router',
+    label: 'React Router',
+    tab: 'React Router',
+  },
+  {
+    code: tanStackRouterRoot,
+    file: 'src/routes/root.tsx',
+    id: 'tanstack-router',
+    label: 'TanStack Router',
+    tab: 'TanStack',
+  },
+  { code: nextLayout, file: 'app/layout.tsx', id: 'next', label: 'Next.js', tab: 'Next.js' },
+];
+
 const FEATURES = [
   {
     html: '<code>useQubee</code> and <code>useQubeeContext</code> read the core store through <code>useSyncExternalStore</code>: a new snapshot per write, no tearing, and a server snapshot, so client components render on the server too.',
     title: 'Store-backed hooks',
   },
   {
-    html: '<code>useQubeeList</code> reads a list from the page URL and writes it back: at most one navigation per change, a draft that keeps inputs responsive while a search debounces, and a back button that simply works.',
+    html: '<code>useQubeeList</code> reads a list from the page URL and writes it back through your router — browser history, React Router, TanStack Router or the Next.js App Router: at most one navigation per change, a draft that keeps inputs responsive while a search debounces, and a back button that simply works.',
     title: 'The URL is the state',
   },
   {
-    html: 'The adapter hands you <code>{ uri, headers, paginate }</code>. <code>fetch</code>, TanStack Query or SWR perform the request; authentication, retries and caching stay yours.',
-    title: 'Bring your own fetch',
+    html: '<code>useQubeeQuery</code> fetches the page a list asks for, once per navigation, through <code>fetch</code> or a fetcher of yours. TanStack Query and SWR integrations ship as entry points, and <code>fetchQubeePage</code> runs on the server.',
+    title: 'Fetching included',
   },
   {
     html: `${kb(sizes.adapter.min)} minified for the whole adapter, measured with esbuild when this site was built. Zero runtime dependencies, and the core's drivers still tree-shake.`,
@@ -97,7 +119,7 @@ const CORE_LINKS = [
     <meta content="width=device-width, initial-scale=1" name="viewport" />
     <title>qubeejs/react — hook the query, not the boilerplate</title>
     <meta
-      content="React hooks for @qubeejs/core: a query per component or per subtree, and lists whose query lives in the page URL."
+      content="React hooks for @qubeejs/core: lists whose query lives in the URL of your router, fetched for you, and a query builder per component or per subtree."
       name="description"
     />
     <link href={`${base}/mark-react.png`} rel="icon" />
@@ -113,7 +135,7 @@ const CORE_LINKS = [
       <span class="chip">v{pkg.version}</span>
       <nav aria-label="Sections">
         <a href={`${base}/introduction/why-an-adapter/`}>Guide</a>
-        <a href={`${base}/api/hooks/use-qubee/`}>API</a>
+        <a href={`${base}/api/main/`}>API</a>
         <a href={`${base}/recipes/sortable-table/`}>Recipes</a>
         <a href={`${CORE}/`} rel="noopener" target="_blank">Core docs <span aria-hidden="true">↗</span></a>
       </nav>
@@ -133,10 +155,10 @@ const CORE_LINKS = [
             <div class="pill"><span class="dot"></span>react 18.3+ · ssr-safe · zero runtime deps</div>
             <h1>Hook the query.<br /><span>Not the boilerplate.</span></h1>
             <p class="lede">
-              <strong>@qubeejs/react</strong> connects <strong>@qubeejs/core</strong> to React. A hook
-              gives a component its own query, a provider shares one across a subtree, and{' '}
-              <code>useQubeeList</code> keeps a list's query in the page URL. Components re-render when
-              the query changes; fetching stays yours.
+              <strong>@qubeejs/react</strong> connects <strong>@qubeejs/core</strong> to React.{' '}
+              <code>useQubeeList</code> keeps a list's query in the page URL, through your router, and{' '}
+              <code>useQubeeQuery</code> fetches the page it asks for. A hook gives a component its own
+              query builder, and a provider shares one across a subtree.
             </p>
             <p class="aside">
               These pages cover only what the adapter adds. Drivers, filters, the builder API and the
@@ -145,7 +167,7 @@ const CORE_LINKS = [
             </p>
             <div class="cta">
               <a class="btn primary" href={`${base}/introduction/quick-start/`}>Get started</a>
-              <a class="btn" href={`${base}/api/hooks/use-qubee/`}>Adapter API</a>
+              <a class="btn" href={`${base}/api/main/`}>Adapter API</a>
               <button class="install" data-copy={INSTALL} type="button">
                 <span class="prompt">$</span>
                 {INSTALL}
@@ -173,11 +195,11 @@ const CORE_LINKS = [
 
       <section class="setup">
         <div class="setup-copy">
-          <h2>One provider, then a hook</h2>
+          <h2>Wrap once, then a hook</h2>
           <p>
-            Wrap a subtree in <code>&lt;QubeeProvider&gt;</code> with a driver and a base URL, then call{' '}
-            <code>useQubeeContext()</code> anywhere below it. Lists whose query lives in the URL need no
-            provider at all: <code>useQubeeList</code> reads the address directly.
+            Wrap the app in the adapter of your router. Every list below it calls{' '}
+            <code>useQubeeList</code> without naming a router, and <code>useQubeeQuery</code> fetches
+            the page it asks for.
           </p>
           <table>
             <thead>
@@ -198,18 +220,30 @@ const CORE_LINKS = [
         </div>
 
         <div class="tabs">
-          <input aria-label="Vite" checked id="setup-vite" name="setup" type="radio" />
-          <input aria-label="Next.js" id="setup-next" name="setup" type="radio" />
+          {
+            SETUPS.map((setup, index) => (
+              <input
+                aria-label={setup.label}
+                checked={index === 0}
+                id={`setup-${setup.id}`}
+                name="setup"
+                type="radio"
+              />
+            ))
+          }
           <div class="tab-bar">
             <span class="dot"></span>
-            <span class="file vite">src/main.tsx</span>
-            <span class="file next">app/providers.tsx</span>
+            {SETUPS.map((setup) => <span class={`file ${setup.id}`}>{setup.file}</span>)}
             <span class="spacer"></span>
-            <label for="setup-vite">Vite</label>
-            <label for="setup-next">Next.js</label>
+            {SETUPS.map((setup) => <label for={`setup-${setup.id}`}>{setup.tab}</label>)}
           </div>
-          <div class="panel vite"><Code code={viteMain} lang="tsx" theme="github-dark-default" /></div>
-          <div class="panel next"><Code code={nextProviders} lang="tsx" theme="github-dark-default" /></div>
+          {
+            SETUPS.map((setup) => (
+              <div class={`panel ${setup.id}`}>
+                <Code code={setup.code} lang="tsx" theme="github-dark-default" />
+              </div>
+            ))
+          }
         </div>
       </section>
 
@@ -796,28 +830,40 @@ const CORE_LINKS = [
         padding: 4px 9px;
       }
 
-      .file.next,
-      .panel.next,
-      #setup-next:checked ~ .tab-bar .file.vite,
-      #setup-next:checked ~ .panel.vite {
+      .tab-bar {
+        flex-wrap: wrap;
+      }
+
+      .tab-bar .file,
+      .tabs .panel {
         display: none;
       }
 
+      #setup-plain:checked ~ .tab-bar .file.plain,
+      #setup-react-router:checked ~ .tab-bar .file.react-router,
+      #setup-tanstack-router:checked ~ .tab-bar .file.tanstack-router,
       #setup-next:checked ~ .tab-bar .file.next {
         display: inline;
       }
 
+      #setup-plain:checked ~ .panel.plain,
+      #setup-react-router:checked ~ .panel.react-router,
+      #setup-tanstack-router:checked ~ .panel.tanstack-router,
       #setup-next:checked ~ .panel.next {
         display: block;
       }
 
-      #setup-vite:checked ~ .tab-bar label[for='setup-vite'],
+      #setup-plain:checked ~ .tab-bar label[for='setup-plain'],
+      #setup-react-router:checked ~ .tab-bar label[for='setup-react-router'],
+      #setup-tanstack-router:checked ~ .tab-bar label[for='setup-tanstack-router'],
       #setup-next:checked ~ .tab-bar label[for='setup-next'] {
         background: var(--qb-accent);
         color: #04141c;
       }
 
-      #setup-vite:focus-visible ~ .tab-bar label[for='setup-vite'],
+      #setup-plain:focus-visible ~ .tab-bar label[for='setup-plain'],
+      #setup-react-router:focus-visible ~ .tab-bar label[for='setup-react-router'],
+      #setup-tanstack-router:focus-visible ~ .tab-bar label[for='setup-tanstack-router'],
       #setup-next:focus-visible ~ .tab-bar label[for='setup-next'] {
         outline: 2px solid var(--qb-accent-hi);
         outline-offset: 2px;

@@ -14,38 +14,40 @@ A React app needs exactly those three effects. `@qubeejs/react` supplies them, a
 
 | You need | The adapter gives you |
 | --- | --- |
-| A component that re-renders when its query changes | `useQubee()` — a qubee instance per component, read through `useSyncExternalStore` |
-| Filters, a table and a pager sharing one query | `<QubeeProvider>` and `useQubeeContext()` — one instance for a subtree |
 | A list whose query lives in the page URL | `useQubeeList()` — reads the URL, writes it back one navigation at a time |
-| Something to write the URL with | `useBrowserAdapter()` for apps without a router, and the `RouterAdapter` type for any router you already use |
+| Your router to be the one that navigates | An adapter provider for it — browser history, React Router, TanStack Router, the Next.js App Router — set once at the root, and `createAdapterProvider()` for any other |
+| The page the list asks for | `useQubeeQuery()`, or the TanStack Query and SWR integrations; `fetchQubeePage()` on the server |
+| The same list in a dialog, outside the URL | `<MemoryAdapter>` and `useMemoryAdapter()` |
+| A component that drives the query builder itself | `useQubee()` — a qubee instance per component, read through `useSyncExternalStore` |
+| Filters, a table and a pager sharing one builder | `<QubeeProvider>` and `useQubeeContext()` — one instance for a subtree |
 
-## Two kinds of list
+## Two ways to hold a query
 
-**In-memory lists** — a picker in a dialog, a table in an app without routing. The query lives in a
-qubee store, and components drive it with the full builder API, exactly as ng-qubee components do:
-`builder.addFilter(…)`, `builder.addSort(…)`, `builder.nextPage()`. Start with
-[useQubee](/guide/use-qubee/).
+**A declared list** — you declare it once, with the core's `defineList`, and `useQubeeList` gives
+you typed state, a single `set({ … })` for every change, and the request to fetch. Its state lives
+in the address bar, so it survives a reload, can be shared as a link, and works with the back
+button — or in memory, for a dialog or a picker, with the same code. Start with the
+[Quick start](/introduction/quick-start/).
 
-**URL-driven lists** — the query lives in the address bar, so it survives a reload, can be shared
-as a link, and works with the back button. You declare the list once, with the core's `defineList`;
-`useQubeeList` reads the URL into typed state and writes every change back with a single
-`set({ … })`. Start with the [Quick start](/introduction/quick-start/).
+**The builder** — a component holds a qubee instance and drives it with the full builder API,
+exactly as ng-qubee components do: `builder.addFilter(…)`, `builder.addSort(…)`,
+`builder.nextPage()`. For queries assembled step by step, in ways a list definition does not
+describe. Start with [useQubee](/guide/use-qubee/).
 
 ## What it leaves to you
 
 - **How requests are sent.** The adapter fetches the page a list asks for — with a hook of its
   own, or through TanStack Query or SWR — but what performs the request is `fetch` or a fetcher
   of yours, so authentication stays in your code. See [Fetching](/guide/fetching/).
-- **Routing.** The adapter writes the URL through whichever router you give it. It never registers
-  routes or renders links for you — `href()` hands you the address, and your `<a>` or `<Link>`
-  renders it.
+- **Routing.** The adapter writes the URL through your router. It never registers routes or
+  renders links for you — `href()` hands you the address, and your `<a>` or `<Link>` renders it.
 - **The query language.** Filters, operators, sorts, drivers and the list layer are the core's, and
   documented once, in the [core docs ↗](https://qubeejs.andreatantimonaco.me/). The rule of thumb:
   a symbol imported from `@qubeejs/core` is documented there; a symbol imported from
   `@qubeejs/react` is documented here.
 
-## And Next.js?
+## Which router?
 
-The adapter works in any React app, the Next.js App Router included — see
-[Vite / Next.js / React Router](/introduction/frameworks/). The router adapter for
-it ships ready-made, as the entry point `@qubeejs/react/next`.
+The adapter works in any React app. Pick the page for yours — each ends with a working list page:
+[Plain React](/setup/plain-react/), [React Router](/setup/react-router/),
+[TanStack Router](/setup/tanstack-router/), [Next.js](/setup/next/).

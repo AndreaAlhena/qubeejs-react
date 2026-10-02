@@ -23,15 +23,19 @@ const { data, error, isValidating } = useArticlesSWR(list);
 ## How it works
 
 - `useQubeeSWR(request, options?)` is `useSWR` with the key `['qubee', request.uri,
-  request.headers]` and a fetcher that calls [`fetchQubeePage`](/api/functions/fetch-qubee-page/).
+  request.headers]` and a fetcher that calls [`fetchQubeePage`](/api/fetch/fetch-qubee-page/).
   It returns what `useSWR` returns, with `data` typed as `PaginatedResult<Article>`.
 - The key is built from the committed state: it changes once per navigation, after any debounce.
 - `keepPreviousData` is on by default, so the last page stays on screen while the next one loads.
-  Pass `keepPreviousData: false` to turn it off.
+  Pass `keepPreviousData: false` to the hook to turn it off: the hook's default wins over one set
+  in an `<SWRConfig>` above.
 - The options are SWR's own — `revalidateOnFocus`, `refreshInterval`, `fallbackData` and the
-  rest — except `fetcher`, which is a [`QubeeFetcher`](/api/types/qubee-fetcher/): a function with
+  rest — except `fetcher`, which is a [`QubeeFetcher`](/api/main/qubee-fetcher/): a function with
   the shape of `fetch`, not an SWR fetcher. Without one, the hook uses the nearest
   `<QubeeFetchProvider>`'s, else the global `fetch`.
-- A `null` request fetches nothing.
-- A status that is not `ok` is a [`QubeeFetchError`](/api/errors/qubee-fetch-error/) in `error`.
+- A `null` request fetches nothing. With `keepPreviousData` on, SWR goes on returning the page of
+  the request before; turn it off where that page must go.
+- The fetcher is not part of the key: two hooks with the same request share one cache entry,
+  whatever their fetchers.
+- A status that is not `ok` is a [`QubeeFetchError`](/api/main/qubee-fetch-error/) in `error`.
 - `list.isPending` covers the debounce and the navigation, `isValidating` the request.

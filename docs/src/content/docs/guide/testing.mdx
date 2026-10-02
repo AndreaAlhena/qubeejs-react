@@ -27,13 +27,26 @@ for it.
 
 ## With the real History API
 
-jsdom implements `window.history`, so `useBrowserAdapter()` works in tests as it does in a browser.
-Set the starting URL before rendering, and reset it after each test — jsdom keeps one `window` for a
-whole test file:
+jsdom implements `window.history`, so `<BrowserAdapter>` and `useBrowserAdapter()` work in tests as
+they do in a browser. Set the starting URL before rendering, and reset it after each test — jsdom
+keeps one `window` for a whole test file:
 
 ```ts
 window.history.replaceState(null, '', '/articles?q=react');
 ```
+
+## Components that take their adapter from a provider
+
+A component that calls `useQubeeList(articleList)` needs an adapter provider above it in the test
+too, or it throws `MissingRouterAdapterError`:
+
+- `<BrowserAdapter>`, with the History API as above;
+- `<MemoryAdapter initialSearch="q=react">`, when the test should not touch the URL at all;
+- your router's adapter inside its memory router — `createMemoryRouter` for React Router,
+  `createMemoryHistory` for TanStack Router.
+
+A test that mocks Next's navigation module must mock `next/navigation.js`, with the extension:
+that is the specifier the adapter imports.
 
 ## Components under a provider
 

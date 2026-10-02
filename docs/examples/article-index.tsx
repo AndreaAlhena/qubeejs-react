@@ -1,4 +1,4 @@
-import { useBrowserAdapter, useQubeeList, useQubeeQuery } from '@qubeejs/react';
+import { useQubeeList, useQubeeQuery } from '@qubeejs/react';
 
 import { type Article, articleList } from './article-list';
 import { ArticleSearch } from './article-search';
@@ -12,8 +12,7 @@ import { StatusChips } from './status-chips';
  * dims while the search box's change is pending, and while its page is fetched.
  */
 export function ArticleIndex() {
-  const router = useBrowserAdapter();
-  const list = useQubeeList(articleList, router);
+  const list = useQubeeList(articleList);
   const { data: result, isFetching } = useQubeeQuery<Article>(list.request);
 
   return (

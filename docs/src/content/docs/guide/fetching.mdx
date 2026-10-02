@@ -16,9 +16,9 @@ ways, all built on one function:
 
 | You want | Use |
 | --- | --- |
-| No extra dependency | [`useQubeeQuery`](/api/hooks/use-qubee-query/), in the main entry |
+| No extra dependency | [`useQubeeQuery`](/api/main/use-qubee-query/), in the main entry |
 | A cache, retries, refetch on focus | [TanStack Query](/recipes/tanstack-query/) or [SWR](/recipes/swr/) |
-| A page on the server, in a loader or a script | [`fetchQubeePage`](/api/functions/fetch-qubee-page/), in `@qubeejs/react/fetch` |
+| A page on the server, in a loader or a script | [`fetchQubeePage`](/api/fetch/fetch-qubee-page/), in `@qubeejs/react/fetch` |
 
 What performs the request stays yours: the global `fetch` by default, your own fetcher when the
 API wants a token.
@@ -81,7 +81,7 @@ fetcher function does not fetch again: it is used from the next request on.
 ## Errors
 
 A response whose status is not `ok` becomes a
-[`QubeeFetchError`](/api/errors/qubee-fetch-error/), with the `status`, the `uri` and the
+[`QubeeFetchError`](/api/main/qubee-fetch-error/), with the `status`, the `uri` and the
 `response` itself — its body unread, for the message your API sent:
 
 ```tsx
@@ -121,6 +121,10 @@ const articles = useQubeeQuery<Article>(list.request, { initialData });
 first render shows its rows — on the server and after hydration alike. Every later request is
 fetched in the browser.
 
+It needs an adapter that knows the URL on the server — a router's. Under `<BrowserAdapter>` the
+server renders the list's defaults, so the request of the first render is not the one the page
+was fetched for, and the browser fetches it again.
+
 This fits an app whose navigations stay in the browser after the first load. In the Next.js App
 Router a page that reads `searchParams` is rendered again on the server for every navigation, so
 the server would fetch each page as well: there, render the page the server fetched from its
@@ -159,7 +163,9 @@ identified by its headers as well as its address.
 
 The TanStack Query and SWR integrations key their cache on `['qubee', request.uri,
 request.headers]`. `request` is built from the committed state, so the key changes once per
-navigation, and a cache never sees the half-typed searches in between.
+navigation, and a cache never sees the half-typed searches in between. The fetcher is not part of
+the key: two hooks that pass the same request with different fetchers share one entry, fetched by
+whichever asked first.
 
 PostgREST reports the total only when asked. Add `Prefer: count=exact` in a fetcher —
 `headers: { ...init.headers, Prefer: 'count=exact' }` — or `total` and `lastPage` stay `null`.

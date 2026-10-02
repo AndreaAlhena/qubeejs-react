@@ -8,16 +8,20 @@ import type { AdapterNavigateOptions } from './adapter-navigate-options.type';
  *
  * Build it on every render from the router's own hooks, so reactivity comes from the router; the
  * hook never relies on the object's identity. {@link useBrowserAdapter} is one for apps without a
- * router; the README shows adapters for React Router, TanStack Router and Next.js.
+ * router, and the entries `@qubeejs/react/react-router`, `@qubeejs/react/tanstack-router` and
+ * `@qubeejs/react/next` ship one for each of those routers. For any other router, write the hook
+ * and hand it to {@link createAdapterProvider}.
  *
  * @example
  * ```ts
- * function useReactRouterList(): RouterAdapter {
- *   const [search] = useSearchParams();
- *   const navigate = useNavigate();
- *   const { pathname } = useLocation();
+ * function useMyRouterAdapter(): RouterAdapter {
+ *   const router = useMyRouter();
  *
- *   return { navigate: (href, { replace }) => void navigate(href, { replace }), pathname, search };
+ *   return {
+ *     navigate: (href, { replace }) => (replace ? router.replace(href) : router.push(href)),
+ *     pathname: router.pathname,
+ *     search: router.search,
+ *   };
  * }
  * ```
  */

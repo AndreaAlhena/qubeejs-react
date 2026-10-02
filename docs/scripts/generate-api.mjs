@@ -3,18 +3,19 @@
  *
  * Ported from qubeejs-core's docs/scripts/generate-api.mjs. What differs:
  *
- * - five groups of the adapter's own — provider, hooks, functions, types, errors — and an
- *   export that fits none of them fails the build, instead of landing on a page
- *   no sidebar links to;
- * - every page carries a `kind` (hook, component, type, error) that the
- *   PageTitle override shows as a badge beside the title;
+ * - the pages are grouped by entry point, as entries.json lists them: one
+ *   folder per entry, with an overview page that says what to import it from,
+ *   what it needs, and what it exports;
+ * - an export that two entries share gets one page, under the main entry, and
+ *   is listed in the overview of both;
+ * - every page carries a `kind` (hook, component, function, type, error) that
+ *   the PageTitle override shows as a badge beside the title, and an export
+ *   that fits no kind fails the build;
  * - type aliases list their members, variant by variant for a union;
  * - prose from JSDoc is escaped for MDX, so `<QubeeProvider>` in a comment
  *   reads as text rather than as an unknown JSX tag;
  * - TypeDoc runs from docs/node_modules, so the library needs no TypeDoc of
- *   its own;
- * - every entry point of entries.json is documented, not only the main one, and an export that
- *   two entries share gets one page.
+ *   its own.
  *
  * Every page here is generated — never hand-edit src/content/docs/api/.
  */
@@ -30,6 +31,15 @@ const repo = join(here, '..', '..');
 const outDir = join(here, '..', 'src', 'content', 'docs', 'api');
 const jsonPath = join(here, '..', '.typedoc.json');
 const typedocBin = join(here, '..', 'node_modules', 'typedoc', 'bin', 'typedoc');
+const pkg = JSON.parse(readFileSync(join(repo, 'package.json'), 'utf8'));
+
+/**
+ * The entry points, the main one first: TypeDoc documents an export under the
+ * first entry that has it, so one that several entries share lands in the main.
+ */
+const ENTRIES = JSON.parse(readFileSync(join(repo, 'entries.json'), 'utf8')).sort(
+  (a, b) => Number(b.name === 'index') - Number(a.name === 'index') || a.name.localeCompare(b.name)
+);
 
 /** TypeDoc's ReflectionKind values this script reads. */
 const REFLECTION = {
@@ -44,26 +54,34 @@ const REFLECTION = {
   VARIABLE: 32,
 };
 
-/** Exports that document the provider, whatever their kind. */
-const PROVIDER = new Set(['QubeeProvider', 'QubeeProviderProps', 'useQubeeContext']);
-
-/** The sidebar group of each kind, outside the provider group. */
-const GROUP_OF_KIND = {
-  component: 'provider',
-  error: 'errors',
-  function: 'functions',
-  hook: 'hooks',
-  type: 'types',
+/** The order of the kinds within an entry's sidebar group, and their plural names. */
+const KINDS = {
+  component: { plural: 'components', rank: 1 },
+  error: { plural: 'errors', rank: 5 },
+  function: { plural: 'functions', rank: 3 },
+  hook: { plural: 'hooks', rank: 2 },
+  type: { plural: 'types', rank: 4 },
 };
 
-/** The sidebar groups, each of which must end up with at least one page. */
-const GROUPS = ['provider', 'hooks', 'functions', 'types', 'errors'];
+/** Room for the pages of one kind in the sidebar order. */
+const RANK_STEP = 1000;
 
 /** Stop with a message that names the command which fixes it. */
 function fail(message) {
   console.error(`generate-api: ${message}`);
   process.exit(1);
 }
+
+// ---- entries ----------------------------------------------------------------
+
+/** The folder of an entry's pages under api/: `main`, `fetch`, `react-router`. */
+const dirOf = (entry) => (entry.name === 'index' ? 'main' : entry.name);
+
+/** What an app imports an entry from: `@qubeejs/react`, `@qubeejs/react/fetch`. */
+const specifierOf = (entry) => `${pkg.name}${entry.subpath.slice(1)}`;
+
+/** The name TypeDoc gives an entry's module: its source path, without `src/` and the extension. */
+const moduleOf = (entry) => entry.source.replace(/^src\//, '').replace(/\.ts$/, '');
 
 // ---- text ---------------------------------------------------------------
 
@@ -77,6 +95,14 @@ const partsText = (parts = []) =>
 /** A comment's summary, escaped for MDX. */
 const summary = (comment) => mdx(partsText(comment?.summary));
 
+/** The first sentence of a comment's summary, on one line, escaped for MDX. */
+const firstSentence = (comment) =>
+  mdx(
+    partsText(comment?.summary)
+      .replace(/\s+/g, ' ')
+      .replace(/^(.*?[.:])\s.*$/, '$1')
+  );
+
 /** The contents of every block tag with a name, such as every `@throws`. */
 const blockTags = (comment, name) =>
   (comment?.blockTags ?? []).filter((tag) => tag.tag === name).map((tag) => partsText(tag.content));
@@ -84,8 +110,16 @@ const blockTags = (comment, name) =>
 /** Escape a value for a markdown table cell. */
 const cell = (value) => String(value).replace(/\|/g, '\\|').replace(/\n+/g, ' ').trim();
 
-/** `useQubee` → `use-qubee`; `QubeeProvider` → `qubee-provider`. */
-const slugOf = (name) => name.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
+/**
+ * `useQubee` → `use-qubee`; `QubeeProvider` → `qubee-provider`. A run of capitals is one word —
+ * `QubeeSWROptions` → `qubee-swr-options` — and so is the name TanStack, as in the entry names.
+ */
+const slugOf = (name) =>
+  name
+    .replace(/TanStack/g, 'Tanstack')
+    .replace(/([A-Z]+)([A-Z][a-z])/g, '$1-$2')
+    .replace(/([a-z0-9])([A-Z])/g, '$1-$2')
+    .toLowerCase();
 
 /** "1 parameter", "3 members". */
 const count = (n, noun) => `${n} ${noun}${n === 1 ? '' : 's'}`;
@@ -185,7 +219,7 @@ function signaturesOf(node) {
   return [];
 }
 
-/** What an export is: the badge on its page, and the key to its group. */
+/** What an export is: the badge on its page, and its place in the sidebar. */
 function kindOf(node) {
   const isFunction = signaturesOf(node).length > 0;
 
@@ -196,7 +230,7 @@ function kindOf(node) {
   if (isFunction) return 'function';
 
   return fail(
-    `export "${node.name}" is no hook, component, function, type or error — teach kindOf() and GROUP_OF_KIND about it.`
+    `export "${node.name}" is no hook, component, function, type or error — teach kindOf() and KINDS about it.`
   );
 }
 
@@ -339,12 +373,12 @@ function seeAlso(node, pages) {
   return links.length ? ['## See also', '', links.join(' · '), ''] : [];
 }
 
-/** The chips under the title: the source file and a count. */
+/** The chips under the title: the source file, from the repository root, and a count. */
 function chips(node) {
   const signature = signaturesOf(node)[0];
   const members = membersOf(node.kind === REFLECTION.TYPE_ALIAS ? aliasedType(node) : node.type).length;
   const labels = [
-    node.sources?.[0]?.fileName ?? '',
+    node.sources?.[0]?.fileName?.replace(/^.*?(?=src\/)/, '') ?? '',
     signature ? count(signature.parameters?.length ?? 0, 'parameter') : '',
     !signature && members ? count(members, 'member') : '',
   ].filter(Boolean);
@@ -357,21 +391,43 @@ function chips(node) {
   ];
 }
 
+/** The import line of an export, from each entry that has it. */
+function importSection(node, page) {
+  const keyword = page.kind === 'type' ? 'import type' : 'import';
+
+  return [
+    '## Import',
+    '',
+    '```ts',
+    ...page.entries.map((entry) => `${keyword} { ${node.name} } from '${specifierOf(entry)}';`),
+    '```',
+    '',
+    ...(page.entries.length > 1
+      ? ['The entries export the same thing: import it from whichever the file already uses.', '']
+      : []),
+  ];
+}
+
 // ---- pages -----------------------------------------------------------------
 
-/** A hook's or a component's page. */
+/** A hook's, a component's or a function's page. One signature block per overload. */
 function renderFunction(node, pages) {
-  const signature = signaturesOf(node)[0];
+  const signatures = signaturesOf(node);
+  const [signature] = signatures;
   const params = signature.parameters ?? [];
   const [returns] = blockTags(signature.comment, '@returns');
 
   return [
     summary(signature.comment ?? node.comment),
     '',
+    ...importSection(node, pages.get(node.name)),
     '## Signature',
     '',
     '```ts',
-    `function ${node.name}${typeParameters(signature)}(${params.map(param).join(', ')}): ${typeName(signature.type)}`,
+    ...signatures.map(
+      (s) =>
+        `function ${node.name}${typeParameters(s)}(${(s.parameters ?? []).map(param).join(', ')}): ${typeName(s.type)}`
+    ),
     '```',
     '',
     ...parameterTable(params),
@@ -390,6 +446,7 @@ function renderType(node, pages) {
   return [
     summary(node.comment),
     '',
+    ...importSection(node, pages.get(node.name)),
     '## Definition',
     '',
     '```ts',
@@ -417,6 +474,7 @@ function renderClass(node, pages) {
     summary(node.comment),
     '',
     ...(parents.length ? [`Extends ${parents.map((name) => `\`${name}\``).join(', ')}.`, ''] : []),
+    ...importSection(node, pages.get(node.name)),
     ...(signature
       ? ['## Constructor', '', '```ts', `new ${node.name}(${params.map(param).join(', ')})`, '```', '']
       : []),
@@ -463,6 +521,63 @@ function renderPage(node, page, order, pages) {
   ].join('\n');
 }
 
+/** What an entry needs installed beside the package itself. */
+function needs(entry) {
+  return entry.peer
+    ? `\`${entry.peer}\` \`${pkg.peerDependencies[entry.peer]}\`, an optional peer dependency: install it to use this entry.`
+    : 'Nothing beyond the package and its two peers, `react` and `@qubeejs/core`.';
+}
+
+/** Where the code of an entry may run. */
+const runsIn = (entry) =>
+  entry.client
+    ? "Client components: the entry is marked `'use client'`. A Server Component can render what it exports, not call it."
+    : "Anywhere — a Server Component, a route loader, a script: the entry is not a client module and imports nothing from React.";
+
+/** An entry's overview page: where to import it from, what it needs, what it exports. */
+function renderOverview(entry, module, names, pages) {
+  const specifier = specifierOf(entry);
+  const rows = [...names]
+    .sort((a, b) => {
+      const [first, second] = [pages.get(a), pages.get(b)];
+
+      return KINDS[first.kind].rank - KINDS[second.kind].rank || a.localeCompare(b);
+    })
+    .map((name) => {
+      const page = pages.get(name);
+
+      return `| [${cell(mdx(page.title))}](${page.href}) | ${page.kind} | ${cell(page.summary) || '—'} |`;
+    });
+
+  return [
+    '---',
+    `title: ${JSON.stringify(specifier)}`,
+    `description: ${JSON.stringify(`What ${specifier} exports, and what it needs.`)}`,
+    'editUrl: false',
+    'sidebar:',
+    '  label: "Overview"',
+    '  order: 0',
+    '---',
+    '',
+    '{/* Generated from entries.json and source JSDoc by scripts/generate-api.mjs — do not edit. */}',
+    '',
+    summary(module.comment),
+    '',
+    '| | |',
+    '| --- | --- |',
+    `| Import from | \`${specifier}\` |`,
+    `| Needs | ${needs(entry)} |`,
+    `| Runs in | ${runsIn(entry)} |`,
+    '',
+    '## Exports',
+    '',
+    '| Export | Kind | What it is |',
+    '| --- | --- | --- |',
+    ...rows,
+    '',
+  ].join('\n');
+}
+
 // ---- run -------------------------------------------------------------------
 
 if (!existsSync(typedocBin)) {
@@ -484,7 +599,7 @@ execFileSync(
     '--json',
     jsonPath,
     '--entryPoints',
-    ...JSON.parse(readFileSync(join(repo, 'entries.json'), 'utf8')).map((entry) => entry.source),
+    ...ENTRIES.map((entry) => entry.source),
     '--tsconfig',
     'tsconfig.json',
     '--excludeInternal',
@@ -495,55 +610,99 @@ execFileSync(
   { cwd: repo, stdio: 'inherit' }
 );
 
-// With several entry points TypeDoc nests each one's exports in a module; with one, it does not.
-// An export that a second entry re-exports appears there as a reference to the first: the
-// declaration is the one to document.
-const nodes = [
-  ...new Map(
-    (JSON.parse(readFileSync(jsonPath, 'utf8')).children ?? [])
-      .flatMap((child) => (child.kind === REFLECTION.MODULE ? (child.children ?? []) : [child]))
-      .filter((node) => node.kind !== REFLECTION.REFERENCE)
-      .map((node) => [node.name, node])
-  ).values(),
-];
+// With several entry points TypeDoc nests each one's exports in a module, named after its source.
+const modules = new Map(
+  (JSON.parse(readFileSync(jsonPath, 'utf8')).children ?? [])
+    .filter((child) => child.kind === REFLECTION.MODULE)
+    .map((module) => [module.name, module])
+);
 
-/** Every export's page: its group, its address and its title. */
-const pages = new Map(
-  nodes.map((node) => {
+/** Every export's page: its entry, its address and its title. */
+const pages = new Map();
+
+/** The names each entry exports, its own and the ones it shares with an entry before it. */
+const exportsOf = new Map();
+
+/** The declaration behind every page. */
+const nodes = new Map();
+
+for (const entry of ENTRIES) {
+  const module = modules.get(moduleOf(entry));
+
+  if (!module) {
+    fail(`TypeDoc reported no module for ${entry.source} — is it in entries.json and on disk?`);
+  }
+
+  if (!module.comment) {
+    fail(`${entry.source} has no @module comment — its overview page would open with nothing.`);
+  }
+
+  exportsOf.set(entry, (module.children ?? []).map((node) => node.name));
+
+  for (const node of module.children ?? []) {
+    // An export a second entry shares appears there as a reference to the first declaration.
+    if (node.kind === REFLECTION.REFERENCE) {
+      pages.get(node.name)?.entries.push(entry);
+      continue;
+    }
+
     const kind = kindOf(node);
 
     if (node.kind === REFLECTION.TYPE_ALIAS && !node.type && !node.children?.length) {
       fail(`type alias "${node.name}" has neither a type nor members — TypeDoc gave the generator nothing to render.`);
     }
 
-    const group = PROVIDER.has(node.name) ? 'provider' : GROUP_OF_KIND[kind];
+    nodes.set(node.name, node);
+    pages.set(node.name, {
+      dir: dirOf(entry),
+      entries: [entry],
+      href: `/api/${dirOf(entry)}/${slugOf(node.name)}/`,
+      kind,
+      summary: firstSentence(signaturesOf(node)[0]?.comment ?? node.comment),
+      title: titleOf(node.name, kind),
+    });
+  }
+}
 
-    return [node.name, { group, href: `/api/${group}/${slugOf(node.name)}/`, kind, title: titleOf(node.name, kind) }];
-  })
-);
+for (const entry of ENTRIES) {
+  const missing = exportsOf.get(entry).filter((name) => !pages.has(name));
 
-for (const group of GROUPS) {
-  if (![...pages.values()].some((page) => page.group === group)) {
-    fail(`no export lands in the "${group}" group, so its sidebar section would be empty.`);
+  if (missing.length) {
+    fail(`${entry.source} exports ${missing.join(', ')}, which no page documents.`);
+  }
+
+  if (!exportsOf.get(entry).length) {
+    fail(`${entry.source} exports nothing, so its sidebar group would be empty.`);
   }
 }
 
 rmSync(outDir, { force: true, recursive: true });
 
-const sorted = [...nodes].sort((a, b) => a.name.localeCompare(b.name));
-
-for (const [order, node] of sorted.entries()) {
-  const page = pages.get(node.name);
-  const dir = join(outDir, page.group);
+for (const entry of ENTRIES) {
+  const dir = join(outDir, dirOf(entry));
 
   mkdirSync(dir, { recursive: true });
-  writeFileSync(join(dir, `${slugOf(node.name)}.mdx`), renderPage(node, page, order, pages));
+  writeFileSync(
+    join(dir, 'index.mdx'),
+    renderOverview(entry, modules.get(moduleOf(entry)), exportsOf.get(entry), pages)
+  );
+}
+
+const sorted = [...nodes.values()].sort((a, b) => a.name.localeCompare(b.name));
+
+for (const [index, node] of sorted.entries()) {
+  const page = pages.get(node.name);
+  const order = KINDS[page.kind].rank * RANK_STEP + index;
+
+  writeFileSync(
+    join(outDir, page.dir, `${slugOf(node.name)}.mdx`),
+    renderPage(node, page, order, pages)
+  );
 }
 
 rmSync(jsonPath, { force: true });
 
-console.log(`  generated ${nodes.length} API pages`);
-for (const group of GROUPS) {
-  const names = [...pages.entries()].filter(([, page]) => page.group === group).map(([name]) => name);
-  console.log(`    ${group.padEnd(10)} ${names.sort().join(', ')}`);
+console.log(`  generated ${nodes.size} API pages and ${ENTRIES.length} overviews`);
+for (const entry of ENTRIES) {
+  console.log(`    ${dirOf(entry).padEnd(16)} ${[...exportsOf.get(entry)].sort().join(', ')}`);
 }

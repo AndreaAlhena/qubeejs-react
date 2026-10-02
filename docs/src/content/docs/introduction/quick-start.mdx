@@ -1,6 +1,6 @@
 ---
 title: Quick start
-description: A searchable, filterable, sortable article list whose query lives in the page URL.
+description: A searchable, filterable, sortable article list whose query lives in the page URL — declare it, wrap once, use the hook, fetch.
 sidebar:
   label: Quick start
   order: 3
@@ -8,6 +8,7 @@ sidebar:
 
 import { Code } from '@astrojs/starlight/components';
 import articleList from '../../../../examples/article-list.ts?raw';
+import browserRoot from '../../../../examples/browser-root.tsx?raw';
 import quickStart from '../../../../examples/quick-start.tsx?raw';
 
 This page builds an article list backed by a Strapi API. Its query lives in the address bar —
@@ -32,7 +33,17 @@ both your pages and your components import.
 Every param, and the rules the URL follows, are documented with the core:
 [Lists & URL state ↗](https://qubeejs.andreatantimonaco.me/guide/lists/).
 
-## 2. Render it
+## 2. Wrap once
+
+A list reads and writes the URL through your router. Say which one, once, at the root:
+
+<Code code={browserRoot} lang="tsx" title="src/main.tsx" />
+
+`<BrowserAdapter>` is for an app without a router library. With one, use its adapter instead —
+[React Router](/setup/react-router/), [TanStack Router](/setup/tanstack-router/) or
+[Next.js](/setup/next/) — and the rest of this page stays the same.
+
+## 3. Use the hook, and fetch
 
 `useQubeeList` reads the URL into typed state and gives back the request for the page to show;
 `useQubeeQuery` fetches that request and parses the answer with the driver that built it.
@@ -49,15 +60,11 @@ What happens when someone types `react` into the search box:
 3. `request` changes — its `uri` now filters on the title — and `useQubeeQuery` fetches the new
    page. The rows of the old one stay on screen until it arrives.
 
-`useBrowserAdapter()` writes the URL with the History API and observes only its own `navigate` plus
-Back and Forward. That is enough here, where the list is the only thing writing the URL. If your app
-already has a router, or other code also writes the URL, pass that router's adapter instead:
-[Vite / Next.js / React Router](/introduction/frameworks/).
-
 ## Where next
 
+- [Setup](/setup/plain-react/) — the same page on your router, with its links.
 - [Lists in the URL](/guide/url-lists/) — every member of `useQubeeList`, and the three layers of
   state behind it.
 - [Fetching](/guide/fetching/) — your own fetcher, errors, fetching on the server, and caching
   with TanStack Query or SWR.
-- [useQubee](/guide/use-qubee/) — lists that live in memory rather than in the URL.
+- [Lists in memory](/guide/in-memory-lists/) — the same list in a dialog, without the URL.

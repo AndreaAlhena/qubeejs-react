@@ -4,6 +4,8 @@
  * A server-safe entry point: it is not a client module and imports nothing from React, so a
  * Server Component, a route loader or a script can call it. The hooks that fetch are in the main
  * entry, and call the same function.
+ *
+ * @module
  */
 
 // Types
