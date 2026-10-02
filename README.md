@@ -212,11 +212,11 @@ export function useTanStackRouterList(): RouterAdapter {
 }
 ```
 
-**Next.js App Router** (until `@qubeejs/next` ships `useNextRouter()`): the package's hooks and
-`QubeeProvider` run on the client, so import `@qubeejs/react` only from `'use client'` modules and
-wrap `QubeeProvider` in your own client component — a server module that imports the package
-fails at import time. `useSearchParams` on a statically rendered route needs a `<Suspense>`
-boundary above it, or `next build` fails.
+**Next.js App Router** (until `@qubeejs/react/next` ships its adapter): the package is marked as
+a client module, so a Server Component can import its components without a wrapper file; its hooks
+still run in client components only. `QubeeProvider` takes a driver, which cannot cross the
+server–client boundary as a prop, so wrap it in your own client component. `useSearchParams` on a
+statically rendered route needs a `<Suspense>` boundary above it, or `next build` fails.
 
 ```ts
 'use client';

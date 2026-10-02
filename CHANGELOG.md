@@ -29,6 +29,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   lists whose query lives in the URL, eight recipes, and an API reference generated from JSDoc.
   Every usage sample is type-checked against the build, and the testing samples run, on each
   build (#8)
+- A client boundary built in: the entry point is marked `'use client'`, so a Next.js Server
+  Component can import the package's components without a wrapper file (#19)
 
 ### Changed
 

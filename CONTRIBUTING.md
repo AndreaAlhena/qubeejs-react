@@ -27,9 +27,19 @@ npm run test:coverage
 npm run build
 ```
 
-CI runs exactly these on Node 22 and 24 × React 18 and 19, then verifies that both entry points
-load, that no `'use client'` directive or `next` import reached the bundle, and that the package
-still has zero runtime dependencies.
+CI runs exactly these on Node 22 and 24 × React 18 and 19, then checks the build entry by entry
+(`npm run check:dist`): both formats and their types exist and load, the `'use client'` directive
+is on the client entries only, each entry imports nothing but `react`, `@qubeejs/core` and its
+own optional peer, and the package still has zero runtime dependencies. `npm run lint:package`
+runs publint and are-the-types-wrong on the packed package.
+
+A second job installs the packed tarball in a fresh project outside the repository and
+type-checks and runs it there, as ESM and as CommonJS, on React 18 and 19
+(`npm run test:consumer`, after a build). The project is `consumer/`.
+
+Entry points are listed once, in `entries.json`. To add one: add its line there, its source file
+under `src/entries/`, its block in `package.json` `exports`, and — when it has an optional peer —
+the peer in `peerDependencies` and `peerDependenciesMeta`.
 
 Coverage thresholds ratchet up, never down. If a change drops coverage, add tests rather than
 lowering the threshold.

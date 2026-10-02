@@ -49,9 +49,9 @@ Type declarations ship with the package; there is no `@types/…` package to add
 - **One entry point.** Every hook, the provider and their types come from `@qubeejs/react`.
 - **ES modules and CommonJS**, with source maps and `sideEffects: false`.
 - **Zero runtime dependencies.** React and the core are peers; nothing else is installed.
-- **No `'use client'` directive.** The package works in any React app. In the Next.js App Router,
-  import it only from files that start with `'use client'` — see
-  [Vite / Next.js / React Router](/introduction/frameworks/).
+- **A client boundary built in.** The entry point is marked `'use client'`, so a Next.js Server
+  Component can import the package's components without a wrapper file. Other bundlers ignore the
+  marker — see [Vite / Next.js / React Router](/introduction/frameworks/).
 
 ## Keep the bundle small
 
