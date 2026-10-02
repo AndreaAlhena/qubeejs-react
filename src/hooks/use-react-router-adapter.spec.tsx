@@ -1,7 +1,8 @@
 import type { ReactElement } from 'react';
+import type { MockInstance } from 'vitest';
 
 import { act, render, screen } from '@testing-library/react';
-import { StrictMode } from 'react';
+import { StrictMode, useState } from 'react';
 import { renderToString } from 'react-dom/server';
 import {
   createMemoryRouter,
@@ -9,6 +10,7 @@ import {
   MemoryRouter,
   Outlet,
   RouterProvider,
+  ScrollRestoration,
   useLocation,
 } from 'react-router';
 
@@ -49,21 +51,61 @@ function Root(): ReactElement {
   );
 }
 
+/** A root that restores scroll, as React Router's framework template does. */
+function RestoringRoot({ scroll }: { scroll: boolean }): ReactElement {
+  return (
+    <ReactRouterAdapter scroll={scroll}>
+      <Outlet />
+      <ScrollRestoration />
+    </ReactRouterAdapter>
+  );
+}
+
+/** A root whose `scroll` prop changes after the first render. */
+function TogglingRoot(): ReactElement {
+  const [scroll, setScroll] = useState(true);
+
+  return (
+    <ReactRouterAdapter scroll={scroll}>
+      <button onClick={() => setScroll(false)} type="button">
+        Stop scrolling
+      </button>
+      <Outlet />
+      <ScrollRestoration />
+    </ReactRouterAdapter>
+  );
+}
+
+/** A list that passes its own adapter, with scrolling on. */
+function ScrollingArticles(): ReactElement {
+  const list = useQubeeList(articleList, useReactRouterAdapter({ scroll: true }));
+
+  return (
+    <button onClick={() => list.toggleSort('title')} type="button">
+      Sort by title
+    </button>
+  );
+}
+
 function Other(): ReactElement {
   const { pathname } = useLocation();
 
   return <output data-testid="url">{pathname}</output>;
 }
 
-function start(initial: string): ReturnType<typeof createMemoryRouter> {
+function start(
+  initial: string,
+  root: ReactElement = <Root />
+): ReturnType<typeof createMemoryRouter> {
   const router = createMemoryRouter(
     [
       {
         children: [
           { element: <Articles />, path: 'articles' },
+          { element: <ScrollingArticles />, path: 'scrolling' },
           { element: <Other />, path: 'other' },
         ],
-        element: <Root />,
+        element: root,
         path: '/',
       },
     ],
@@ -179,6 +221,70 @@ describe('useReactRouterAdapter', () => {
       await act(() => vi.advanceTimersByTimeAsync(300));
 
       expect(text('url')).toBe('/other');
+    });
+  });
+
+  describe('scroll', () => {
+    let scrollTo: MockInstance<typeof window.scrollTo>;
+
+    beforeEach(() => {
+      scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined);
+    });
+
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    it('should keep the scroll position when a list navigates', async () => {
+      start('/articles', <RestoringRoot scroll={false} />);
+      scrollTo.mockClear();
+
+      await click('button', 'Sort by title');
+
+      expect(text('url')).toBe('/articles?sort=title');
+      expect(scrollTo).not.toHaveBeenCalled();
+    });
+
+    it('should keep the scroll position when a debounced search lands', async () => {
+      vi.useFakeTimers();
+      start('/articles', <RestoringRoot scroll={false} />);
+      scrollTo.mockClear();
+
+      await type('react');
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(300);
+      });
+
+      expect(text('url')).toBe('/articles?q=react');
+      expect(scrollTo).not.toHaveBeenCalled();
+    });
+
+    it('should let React Router reset the scroll position when the provider says so', async () => {
+      start('/articles', <RestoringRoot scroll />);
+      scrollTo.mockClear();
+
+      await click('button', 'Sort by title');
+
+      expect(scrollTo).toHaveBeenCalledWith(0, 0);
+    });
+
+    it('should let React Router reset the scroll position when the hook says so', async () => {
+      start('/scrolling', <RestoringRoot scroll={false} />);
+      scrollTo.mockClear();
+
+      await click('button', 'Sort by title');
+
+      expect(scrollTo).toHaveBeenCalledWith(0, 0);
+    });
+
+    it('should read the scroll prop on the first render only', async () => {
+      start('/articles', <TogglingRoot />);
+
+      await click('button', 'Stop scrolling');
+      scrollTo.mockClear();
+      await click('button', 'Sort by title');
+
+      expect(scrollTo).toHaveBeenCalledWith(0, 0);
     });
   });
 

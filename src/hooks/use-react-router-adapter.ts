@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router';
 
+import type { ReactRouterAdapterOptions } from '../types/react-router-adapter-options.type';
 import type { RouterAdapter } from '../types/router-adapter.type';
 
 /**
@@ -10,6 +11,10 @@ import type { RouterAdapter } from '../types/router-adapter.type';
  * {@link useQubeeList} for one list, or wrap the routes in {@link ReactRouterAdapter} and every
  * list below finds it.
  *
+ * A list navigation keeps the scroll position: where the app renders `<ScrollRestoration>`, React
+ * Router would otherwise scroll to the top each time a filter or a page number changes.
+ *
+ * @param options - `scroll`: let React Router reset the scroll position; `false` by default
  * @returns The current pathname and query, and a `navigate` that goes through React Router
  *
  * @example
@@ -21,7 +26,8 @@ import type { RouterAdapter } from '../types/router-adapter.type';
  * }
  * ```
  */
-export function useReactRouterAdapter(): RouterAdapter {
+export function useReactRouterAdapter(options: ReactRouterAdapterOptions = {}): RouterAdapter {
+  const { scroll = false } = options;
   const [search] = useSearchParams();
   const navigate = useNavigate();
   const { pathname } = useLocation();
@@ -30,11 +36,11 @@ export function useReactRouterAdapter(): RouterAdapter {
     (): RouterAdapter => ({
       navigate: (href, { replace }): void => {
         // React Router's navigate may return a promise; the list does not wait for it.
-        void navigate(href, { replace });
+        void navigate(href, { preventScrollReset: !scroll, replace });
       },
       pathname,
       search,
     }),
-    [navigate, pathname, search]
+    [navigate, pathname, scroll, search]
   );
 }
