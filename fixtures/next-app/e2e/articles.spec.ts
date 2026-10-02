@@ -34,6 +34,40 @@ test.describe('a list in the Next.js App Router', () => {
     expect(errors).toEqual([]);
   });
 
+  test('shows the page the server fetched, and fetches the next one in the browser', async ({
+    page,
+    request,
+  }) => {
+    const html = await (await request.get('/articles?page=2')).text();
+
+    // The second page of ten, in the HTML the server sent.
+    expect(html).toContain('Article 11');
+    expect(html).not.toContain('Article 01');
+
+    const asked: string[] = [];
+
+    page.on('request', (sent) => {
+      if (sent.url().includes('/api/articles')) {
+        asked.push(decodeURIComponent(sent.url()));
+      }
+    });
+
+    await page.goto('/articles?page=2');
+
+    await expect(page.locator('#rows li').first()).toHaveText('Article 11');
+    await expect(page.locator('#fetching')).toHaveText('false');
+    // The page came with the HTML: the browser asked the API for nothing.
+    expect(asked).toEqual([]);
+
+    await page.locator('#next-button').click();
+
+    await expect(page.locator('#rows li').first()).toHaveText('Article 21');
+    await expect(page.locator('#rows li')).toHaveCount(5);
+    await expect(page.locator('#fetching')).toHaveText('false');
+    expect(asked).toHaveLength(1);
+    expect(asked[0]).toContain('pagination[page]=3');
+  });
+
   test('sorts and pages through the router, and the server follows', async ({ page }) => {
     await page.goto('/articles');
 
@@ -102,6 +136,13 @@ test.describe('a list in the Next.js App Router', () => {
 
     await expect(page).toHaveURL(/\/static\?page=6$/);
     await expect(page.locator('#client-page')).toHaveText('6');
+  });
+
+  test('fetches in the browser on a route the server fetched nothing for', async ({ page }) => {
+    await page.goto('/static?page=3');
+
+    await expect(page.locator('#rows li').first()).toHaveText('Article 21');
+    await expect(page.locator('#fetching')).toHaveText('false');
   });
 
   test('is not pulled back when the user follows a slow link while a search is pending', async ({
