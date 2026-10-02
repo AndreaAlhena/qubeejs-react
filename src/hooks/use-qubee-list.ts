@@ -69,8 +69,9 @@ function locationOf(list: LooseList, location: ListLocation): string {
  * debounce; `request` follows the committed state, so a cache key built from it changes once per
  * navigation, never per keystroke; the URL stays the source of truth — a change the hook did not
  * cause (Back, Forward, a link elsewhere) cancels a pending debounce and discards anything not
- * yet in the URL. Unmounting (or hiding the tree with `<Activity>`) cancels a pending debounce and drops its draft too. `toggleSort` is there when the list
- * declares exactly one `sortParam`.
+ * yet in the URL. Unmounting (or hiding the tree with `<Activity>`) cancels a pending debounce and drops its draft too. A click on a link while a debounce waits commits it at once, so the link
+ * the user follows is never overtaken by it. `toggleSort` is there when the list declares exactly
+ * one `sortParam`.
  *
  * The list reads and writes the URL through a router adapter: the one passed as `adapter`, else
  * the nearest adapter provider's — {@link BrowserAdapter}, or the one for your router.
@@ -125,6 +126,29 @@ export function useQubeeList<TList extends ListDefinition<ListParams>>(
 
     machine.update(() => after);
   }, [debouncer, location, machine]);
+
+  // While a debounced change waits, a click on a link commits it at once. With a router that
+  // reports the new URL only after its transition, a change that fired after the click would
+  // navigate back to this list and pull the user away from where they were going. Committed
+  // first, it is simply what they leave behind. Other clicks are left alone: a button that changes
+  // the same list merges with the waiting change, in one navigation.
+  useEffect(() => {
+    if (!view.debouncing) {
+      return undefined;
+    }
+
+    const flushOnLink = (event: MouseEvent): void => {
+      if (event.target instanceof Element && event.target.closest('a[href]')) {
+        debouncer.flush();
+      }
+    };
+
+    document.addEventListener('click', flushOnLink, true);
+
+    return (): void => {
+      document.removeEventListener('click', flushOnLink, true);
+    };
+  }, [debouncer, view.debouncing]);
 
   // Not only an unmount: `<Activity>` hiding the tree and Fast Refresh tear effects down and re-run
   // them, and a debounce cancelled there would otherwise leave its draft — and `isPending` — behind.
