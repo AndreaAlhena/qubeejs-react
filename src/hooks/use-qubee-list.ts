@@ -139,7 +139,13 @@ export function useQubeeList<TList extends ListDefinition<ListParams>>(
     }
 
     const flushOnLink = (event: MouseEvent): void => {
-      if (event.target instanceof Element && event.target.closest('a[href]')) {
+      // The composed path, not `target.closest()`: for a link inside a shadow root, the target a
+      // listener on the document sees is the root's host.
+      const isOnLink = event
+        .composedPath()
+        .some((node) => node instanceof Element && node.matches('a[href]'));
+
+      if (isOnLink) {
         debouncer.flush();
       }
     };

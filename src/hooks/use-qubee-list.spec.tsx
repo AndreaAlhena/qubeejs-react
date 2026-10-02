@@ -590,6 +590,28 @@ describe('useQubeeList', () => {
       ]);
     });
 
+    it('should commit at once when the link is inside a shadow root', () => {
+      const router = createTestRouter('/articles');
+      const { result } = renderList(router);
+      const host = document.createElement('div');
+      const link = document.createElement('a');
+
+      link.href = '/other';
+      link.addEventListener('click', (event) => event.preventDefault());
+      host.attachShadow({ mode: 'open' }).append(link);
+      document.body.append(host);
+
+      act(() => result.current.set({ q: 'react' }, { debounce: 300 }));
+      // Outside the shadow root the click's target is the host, not the link.
+      act(() => link.click());
+
+      expect(router.navigations.map((navigation) => navigation.href)).toEqual([
+        '/articles?q=react',
+      ]);
+
+      host.remove();
+    });
+
     it('should leave a click that is not on a link to the debounce', () => {
       const router = createTestRouter('/articles');
       const { result } = renderList(router);
