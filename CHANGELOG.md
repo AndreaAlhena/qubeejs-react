@@ -34,7 +34,7 @@ use the hook, fetch.
   `useTanStackRouterAdapter()`, for TanStack Router 1.49 and later, the first release whose
   `navigate` takes an href; and `parseSearch` and `stringifySearch`, search serialisers for
   `createRouter` that keep a query as plain text, so that a search box keeps what was typed
-  (#23, #32, #34)
+  (#23, #32, #34, #36)
 - **`@qubeejs/react/next`**: `<NextAdapter>` and `useNextAdapter()`, for the Next.js App Router,
   15 and later. A Server Component layout can render the provider directly (#24)
 - **Scroll stays where it is.** Every router adapter keeps the scroll position when a list

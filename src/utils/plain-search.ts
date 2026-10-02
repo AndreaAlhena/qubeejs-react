@@ -18,15 +18,18 @@
  * ```
  */
 export function parseSearch(searchStr: string): Record<string, string | string[]> {
-  const search: Record<string, string | string[]> = {};
+  const values = new Map<string, string | string[]>();
 
   for (const [name, value] of new URLSearchParams(searchStr)) {
-    const current = search[name];
+    const current = values.get(name);
 
-    search[name] = current === undefined ? value : [...[current].flat(), value];
+    values.set(name, current === undefined ? value : [...[current].flat(), value]);
   }
 
-  return search;
+  // A map, not an object: on an object, a name such as `toString` would read what every object
+  // inherits, and `__proto__` would set the prototype. `Object.fromEntries` makes each name a
+  // property of the search's own.
+  return Object.fromEntries(values);
 }
 
 /**
