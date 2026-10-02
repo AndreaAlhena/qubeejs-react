@@ -12,6 +12,8 @@ import type {
   SortToggle,
 } from '@qubeejs/react';
 
+import type { PaginatedResult } from '@qubeejs/core';
+
 import { createQubee, STRAPI_DRIVER } from '@qubeejs/core';
 import {
   BrowserAdapter,
@@ -24,6 +26,7 @@ import {
   useQubeeList,
 } from '@qubeejs/react';
 
+import type { QubeeFetcher } from '@qubeejs/react/fetch';
 import type { NextAdapterOptions, NextAdapterProps } from '@qubeejs/react/next';
 import type {
   ReactRouterAdapterOptions,
@@ -34,12 +37,15 @@ import type {
   TanStackRouterAdapterProps,
 } from '@qubeejs/react/tanstack-router';
 
+import { fetchQubeePage, QubeeFetchError } from '@qubeejs/react/fetch';
 import { NextAdapter, useNextAdapter } from '@qubeejs/react/next';
 import { ReactRouterAdapter, useReactRouterAdapter } from '@qubeejs/react/react-router';
 import { TanStackRouterAdapter, useTanStackRouterAdapter } from '@qubeejs/react/tanstack-router';
 
 import { articleList, tagList } from './article-list.js';
 import { ArticleStatusEnum } from './article-status.enum.js';
+
+type Article = { id: number; title: string };
 
 export function Checks(): null {
   const router: RouterAdapter = useBrowserAdapter();
@@ -139,4 +145,35 @@ export function Checks(): null {
   void [NextAdapter, ReactRouterAdapter, TanStackRouterAdapter];
 
   return null;
+}
+
+/** The fetch entry: callable outside React, with the app's own fetcher. */
+export async function fetchChecks(list: QubeeListHandle<typeof articleList>): Promise<void> {
+  const authFetch: QubeeFetcher = (uri, init) =>
+    fetch(uri, { ...init, headers: { ...init.headers, Authorization: 'Bearer token' } });
+  const globalFetch: QubeeFetcher = fetch;
+  const page: PaginatedResult<Article> = await fetchQubeePage<Article>(list.request, {
+    fetcher: authFetch,
+    signal: new AbortController().signal,
+  });
+  const title: string = page.data[0].title;
+  const lastPage: number | null = page.lastPage;
+
+  try {
+    await fetchQubeePage(list.request);
+  } catch (error) {
+    if (error instanceof QubeeFetchError) {
+      const status: number = error.status;
+      const response: Response = error.response;
+
+      void [status, response, error.uri];
+    }
+  }
+
+  // @ts-expect-error — a request is required
+  void fetchQubeePage();
+  // @ts-expect-error — a fetcher returns a Response
+  void fetchQubeePage(list.request, { fetcher: () => Promise.resolve({ data: [] }) });
+
+  void [globalFetch, title, lastPage];
 }

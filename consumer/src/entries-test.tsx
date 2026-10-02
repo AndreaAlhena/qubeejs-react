@@ -1,7 +1,9 @@
 // The other entry points, loaded the way an app loads them, working with the main entry.
 import type { ReactElement } from 'react';
 
-import { useQubeeList } from '@qubeejs/react';
+import { buildListRequest, readListState } from '@qubeejs/core';
+import { QubeeFetchError, useQubeeList } from '@qubeejs/react';
+import * as fetchEntry from '@qubeejs/react/fetch';
 import * as next from '@qubeejs/react/next';
 import { ReactRouterAdapter, useReactRouterAdapter } from '@qubeejs/react/react-router';
 import * as tanstackRouter from '@qubeejs/react/tanstack-router';
@@ -63,4 +65,50 @@ check(
   Object.keys(next)
 );
 
-finish(`Entries (React ${version})`);
+/** The fetch entry, called outside React with a fetcher that answers like a Strapi API. */
+async function fetching(): Promise<void> {
+  const request = buildListRequest(articleList, readListState(articleList, 'page=2'));
+  const body = {
+    data: [
+      { id: 1, title: 'Hooks in depth' },
+      { id: 2, title: 'Server rendering' },
+    ],
+    meta: { pagination: { page: 2, pageCount: 3, pageSize: 20, total: 57 } },
+  };
+  const asked: string[] = [];
+  const page = await fetchEntry.fetchQubeePage<{ id: number; title: string }>(request, {
+    fetcher: (uri) => {
+      asked.push(uri);
+
+      return Promise.resolve(new Response(JSON.stringify(body)));
+    },
+  });
+
+  check(
+    'fetchQubeePage asks the fetcher for the request and returns the page as a plain object',
+    asked.length === 1 &&
+      asked[0] === request.uri &&
+      page.data.length === 2 &&
+      page.lastPage === 3 &&
+      Object.getPrototypeOf(page) === Object.prototype,
+    { asked, page }
+  );
+
+  const failure: unknown = await fetchEntry
+    .fetchQubeePage(request, {
+      fetcher: () => Promise.resolve(new Response(null, { status: 503 })),
+    })
+    .catch((reason: unknown) => reason);
+
+  // Two entries, one class: an `instanceof` against the main entry's export must hold for an
+  // error thrown by the fetch entry.
+  check(
+    'a failed response is the QubeeFetchError the main entry exports',
+    fetchEntry.QubeeFetchError === QubeeFetchError &&
+      failure instanceof QubeeFetchError &&
+      failure.status === 503,
+    String(failure)
+  );
+}
+
+void fetching().then(() => finish(`Entries (React ${version})`));
