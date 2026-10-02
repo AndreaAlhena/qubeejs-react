@@ -4,6 +4,7 @@ import type { ReactElement } from 'react';
 import { getAriaSort, STRAPI_DRIVER } from '@qubeejs/core';
 import {
   BrowserAdapter,
+  MemoryAdapter,
   QubeeProvider,
   useBrowserAdapter,
   useQubeeList,
@@ -115,6 +116,38 @@ export function Tags(): ReactElement {
   );
 }
 
+/** One half of a dialog whose list lives in memory: it shares its state with <DialogLabel>. */
+function DialogPager(): ReactElement {
+  const tags = useQubeeList(tagList);
+
+  return (
+    <>
+      <button id="dialognext" onClick={() => tags.setPage(tags.state.page + 1)} type="button">
+        More tags
+      </button>
+      <button id="dialogreset" onClick={() => tags.reset()} type="button">
+        Reset
+      </button>
+    </>
+  );
+}
+
+function DialogLabel(): ReactElement {
+  const { state } = useQubeeList(tagList);
+
+  return <output id="dialoglabel">{state.page}</output>;
+}
+
+/** A list that never touches the page URL. */
+export function TagDialog(): ReactElement {
+  return (
+    <MemoryAdapter initialSearch="tagPage=3">
+      <DialogPager />
+      <DialogLabel />
+    </MemoryAdapter>
+  );
+}
+
 /** A list with neither a provider above it nor an adapter passed in. */
 export function NoAdapter(): ReactElement {
   const { state } = useQubeeList(articleList);
@@ -130,6 +163,7 @@ export function App(): ReactElement {
       <Articles />
       <PageLabel />
       <Tags />
+      <TagDialog />
     </BrowserAdapter>
   );
 }

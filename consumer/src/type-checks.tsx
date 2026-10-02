@@ -8,6 +8,7 @@ import type {
   QubeeHandle,
   QubeeProviderProps,
   ListSetOptions,
+  MemoryAdapterProps,
   SortToggle,
 } from '@qubeejs/react';
 
@@ -15,8 +16,10 @@ import { createQubee, STRAPI_DRIVER } from '@qubeejs/core';
 import {
   BrowserAdapter,
   createAdapterProvider,
+  MemoryAdapter,
   QubeeProvider,
   useBrowserAdapter,
+  useMemoryAdapter,
   useQubee,
   useQubeeList,
 } from '@qubeejs/react';
@@ -90,7 +93,16 @@ export function Checks(): null {
   const CustomAdapter = createAdapterProvider(useBrowserAdapter);
 
   void [sortToggle, qubee, props, QubeeProvider, provided, providerProps, BrowserAdapter];
-  void CustomAdapter;
+  // In-memory lists, and reset().
+  const inMemory = useQubeeList(tagList, useMemoryAdapter({ tagPage: '2' }));
+  const memoryProps: MemoryAdapterProps = { children: null, initialSearch: 'tagPage=2' };
+
+  list.reset();
+  list.reset({ replace: true });
+  // @ts-expect-error — reset() takes no debounce
+  list.reset({ debounce: 100 });
+
+  void [CustomAdapter, inMemory, memoryProps, MemoryAdapter];
 
   return null;
 }
