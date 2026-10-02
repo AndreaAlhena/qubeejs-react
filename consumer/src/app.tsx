@@ -14,6 +14,7 @@ import {
   useQubee,
   useQubeeContext,
 } from '@qubeejs/react';
+import { useQubeeSWR } from '@qubeejs/react/swr';
 
 import { articleList, tagList } from './article-list.js';
 
@@ -189,6 +190,36 @@ export function Rows(): ReactElement {
   );
 }
 
+/** Every address the SWR rows below asked their own API for. */
+export const swrAsked: string[] = [];
+
+/** A second stand-in API, so that what SWR fetches is told apart from what the built-in hook does. */
+export const swrFetcher: QubeeFetcher = (uri) => {
+  swrAsked.push(uri);
+
+  return Promise.resolve(
+    new Response(
+      JSON.stringify({
+        data: [{ id: 1, title: 'From SWR' }],
+        meta: { pagination: { page: 1, pageCount: 3, pageSize: 20, total: 57 } },
+      })
+    )
+  );
+};
+
+/**
+ * The same page, fetched through SWR. The hook comes from the swr entry and the provider above
+ * it from the main entry: they must share one fetcher context.
+ */
+export function SwrRows(): ReactElement {
+  const list = useQubeeList(articleList);
+  const articles = useQubeeSWR<{ id: number; title: string }>(list.request);
+
+  return (
+    <output id="swrrows">{articles.data?.data.map((article) => article.title).join(',')}</output>
+  );
+}
+
 export function App(): ReactElement {
   return (
     <BrowserAdapter>
@@ -198,6 +229,9 @@ export function App(): ReactElement {
         <Articles />
         <PageLabel />
         <Rows />
+        <QubeeFetchProvider fetcher={swrFetcher}>
+          <SwrRows />
+        </QubeeFetchProvider>
         <Tags />
         <TagDialog />
       </QubeeFetchProvider>

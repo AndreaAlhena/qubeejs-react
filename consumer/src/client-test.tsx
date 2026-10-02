@@ -39,7 +39,7 @@ async function main(): Promise<void> {
 
   const { createRoot, hydrateRoot } = await import('react-dom/client');
   const { renderToString } = await import('react-dom/server');
-  const { App, Articles, asked } = await import('./app.js');
+  const { App, Articles, asked, swrAsked } = await import('./app.js');
 
   const rootElement = window.document.getElementById('root') as HTMLElement;
   const within = (scope: Element, id: string): HTMLElement =>
@@ -118,6 +118,12 @@ async function main(): Promise<void> {
     'Q2 the page is parsed by the driver',
     text('lastpage') === '3' && text('fetching') === 'false',
     { fetching: text('fetching'), lastPage: text('lastpage') }
+  );
+
+  check(
+    'Q5 useQubeeSWR, from its own entry, fetches through the provider of the main entry',
+    swrAsked.at(-1) === text('uri') && text('swrrows') === 'From SWR',
+    { rows: text('swrrows'), swrAsked }
   );
 
   // B — typing with a debounce.
