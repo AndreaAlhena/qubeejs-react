@@ -6,7 +6,9 @@ import { QubeeFetchError, useQubeeList } from '@qubeejs/react';
 import * as fetchEntry from '@qubeejs/react/fetch';
 import * as next from '@qubeejs/react/next';
 import { ReactRouterAdapter, useReactRouterAdapter } from '@qubeejs/react/react-router';
+import * as tanstackQuery from '@qubeejs/react/tanstack-query';
 import * as tanstackRouter from '@qubeejs/react/tanstack-router';
+import { QueryClient } from '@tanstack/react-query';
 import { version } from 'react';
 import { renderToString } from 'react-dom/server';
 import { MemoryRouter } from 'react-router';
@@ -109,6 +111,23 @@ async function fetching(): Promise<void> {
       failure.status === 503,
     String(failure)
   );
+
+  // The TanStack Query entry, used outside React the way a loader prefetches a page.
+  const client = new QueryClient();
+  const options = tanstackQuery.qubeeQueryOptions<{ id: number; title: string }>(request, {
+    fetcher: () => Promise.resolve(new Response(JSON.stringify(body))),
+  });
+  const cached = await client.fetchQuery(options);
+
+  check(
+    'qubeeQueryOptions fetches the page through a QueryClient, under the key of the request',
+    cached.lastPage === 3 &&
+      client.getQueryData(['qubee', request.uri, request.headers]) === cached &&
+      client.getQueryData(options.queryKey) === cached,
+    cached
+  );
+
+  client.clear();
 }
 
 void fetching().then(() => finish(`Entries (React ${version})`));
