@@ -110,16 +110,24 @@ function Articles(): ReactElement {
         onChange={(e) => list.set({ q: e.target.value }, { debounce: 300, replace: true })}
       />
       <button onClick={() => list.reset()}>Clear filters</button>
-      <th aria-sort={getAriaSort(list.state.sort, 'title')}>
-        <button onClick={() => list.toggleSort('title')} type="button">
-          Title
-        </button>
-      </th>
-      <ul>
-        {articles.data?.data.map((article) => (
-          <li key={article.id}>{article.title}</li>
-        ))}
-      </ul>
+      <table>
+        <thead>
+          <tr>
+            <th aria-sort={getAriaSort(list.state.sort, 'title')}>
+              <button onClick={() => list.toggleSort('title')} type="button">
+                Title
+              </button>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {articles.data?.data.map((article) => (
+            <tr key={article.id}>
+              <td>{article.title}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
       <a href={list.href({ page: 2 })}>2</a>
       <button onClick={() => list.setPage(2)} type="button">
         Go to page 2

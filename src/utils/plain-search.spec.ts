@@ -24,6 +24,20 @@ describe('parseSearch', () => {
     expect(parseSearch('')).toEqual({});
     expect(parseSearch('?')).toEqual({});
   });
+
+  it('should read a name that every object inherits as the text it is in the URL', () => {
+    expect(parseSearch('?constructor=x&toString=a&toString=b')).toEqual({
+      constructor: 'x',
+      toString: ['a', 'b'],
+    });
+  });
+
+  it('should read __proto__ as a name of its own, not as the prototype of the search', () => {
+    const search = parseSearch('?__proto__=x');
+
+    expect(Object.getPrototypeOf(search)).toBe(Object.prototype);
+    expect(Object.entries(search)).toEqual([['__proto__', 'x']]);
+  });
 });
 
 describe('stringifySearch', () => {
@@ -48,5 +62,11 @@ describe('stringifySearch', () => {
     const query = '?q=10+&title=%22react+hooks%22&tag=a&tag=b';
 
     expect(stringifySearch(parseSearch(query))).toBe(query);
+  });
+
+  it('should write back a name that every object inherits, round trip after round trip', () => {
+    const query = '?toString=a&__proto__=x&constructor=y';
+
+    expect(stringifySearch(parseSearch(stringifySearch(parseSearch(query))))).toBe(query);
   });
 });
