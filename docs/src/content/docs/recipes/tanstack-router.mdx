@@ -1,6 +1,6 @@
 ---
 title: TanStack Router
-description: useQubeeList on TanStack Router — the shipped adapter, set once at the root route; the raw query string in, whole hrefs out.
+description: useQubeeList on TanStack Router — the shipped adapter, set once at the root route, and the search serialisers that keep a search box as typed.
 sidebar:
   label: TanStack Router
   order: 5
@@ -8,6 +8,7 @@ sidebar:
 
 import { Code } from '@astrojs/starlight/components';
 import tanStackRouterRoot from '../../../../examples/tanstack-router-root.tsx?raw';
+import tanStackRouterSearch from '../../../../examples/tanstack-router-search.ts?raw';
 
 The adapter for TanStack Router ships with the package, as an entry point of its own:
 `@qubeejs/react/tanstack-router`. It needs TanStack Router 1.49 or later, the first release whose
@@ -18,20 +19,46 @@ The adapter for TanStack Router ships with the package, as an entry point of its
 Every list under the root route then calls `useQubeeList(articleList)` and goes through TanStack
 Router.
 
-TanStack Router parses search params into typed objects of its own. A qubee list keeps its own URL
-format, so the adapter reads the raw query string and writes whole hrefs through `router.navigate`.
+## Keep the query as typed
+
+TanStack Router owns the query string: it parses it into a search object and writes that object
+back on every navigation. Its default serialisers read each value as JSON, so the URL a list asks
+for is not always the URL it gets:
+
+| The user types  | TanStack Router writes |
+| --------------- | ---------------------- |
+| `10 ` (a space) | `10`                   |
+| `"react hooks"` | `react hooks`          |
+| `1.50`          | `1.5`                  |
+| `1e3`           | `1000`                 |
+
+The list settles on what the router wrote — the URL always wins — so a search box loses those
+characters when its debounce lands: `10 years`, typed with a pause after the space, ends up as
+`10years`.
+
+If the app has a free-text search, give the router serialisers that keep text as text:
+
+<Code code={tanStackRouterSearch} lang="ts" title="src/router-search.ts" />
+
+```ts
+const router = createRouter({ parseSearch, routeTree, stringifySearch });
+```
+
+With them, every search value in the app is a string, or a list of strings: a route whose
+`validateSearch` wants a number has to coerce it. TanStack Router's guide to
+[custom search param serialization](https://tanstack.com/router/latest/docs/framework/react/guide/custom-search-param-serialization)
+covers the alternatives.
 
 ## How it works
 
-- It reads `location.searchStr`, the raw query string — `?q=react&sort=title` — and
+- It reads `location.searchStr` — the query string as TanStack Router serialised it — and
   `location.pathname`.
 - It navigates with `router.navigate({ href })`, which takes a fully built href and applies the
   router's basepath and rewrites, so the list's URL rules — defaults left out, foreign parameters
-  kept — apply unchanged. TanStack's typed `navigate({ search })` would serialise a search object its
-  own way instead.
-- TanStack's default search serialiser re-types JSON-looking values (`?q=1.50` lands as `1.5`), so
-  the list's state follows what the router wrote back: it settles, with no loop. Configure TanStack's
-  `parseSearch` and `stringifySearch` to keep strings if that matters.
+  kept — apply unchanged. The router's search serialisers still run on that href, as above.
+- A list navigation keeps the scroll position: TanStack Router would otherwise scroll to the top
+  on every sort, page or search. `<TanStackRouterAdapter scroll>` — or
+  `useTanStackRouterAdapter({ scroll: true })` — hands the scrolling back to the router.
 - If the route declares `validateSearch`, let it pass the list's keys through untouched: a validator
   that drops unknown keys drops the list's.
 - For links, render `<a href={list.href(…)}>` with a plain-click handler, as the

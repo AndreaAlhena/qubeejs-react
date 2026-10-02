@@ -56,7 +56,8 @@ src/
 ├─ types/       public handles and props, plus internal machine / store / debouncer / loose-list /
 │               adapter-scope / list-registry shapes
 └─ utils/       createAdapterProvider, plus internal href, browser history, local store,
-                list-state machine, debouncer, list registry, memory location
+                list-state machine, debouncer, list registry, memory location, adapter options
+                binding
 ```
 
 A list finds its router adapter in the second argument of `useQubeeList`, else in the nearest

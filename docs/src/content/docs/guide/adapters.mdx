@@ -30,6 +30,11 @@ Every list below it uses that adapter, and names no router:
 router's adapter instead — see [Vite / Next.js / React Router](/introduction/frameworks/) — because
 their router would not see these navigations.
 
+The three router adapters keep the scroll position when a list navigates: a filter or a page
+number that changes should not send the reader back to the top. Each takes `scroll` to hand that
+back to its router — `<ReactRouterAdapter scroll>`, or `useNextAdapter({ scroll: true })` for one
+list.
+
 The provider hands down the adapter _hook_, not a router value. Only the components that use a
 list re-render when the URL changes, never the whole subtree. The nearest provider wins, so a
 provider around part of the tree gives that part its own adapter.

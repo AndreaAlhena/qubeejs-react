@@ -51,6 +51,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `@qubeejs/react/next`: `<NextAdapter>` and `useNextAdapter()`, for the Next.js App Router (15
   and later) — an entry point of its own, with `next` as an optional peer dependency. A Server
   Component layout can render the provider directly (#24)
+- Every router adapter keeps the scroll position when a list navigates — a sort, a page, a
+  debounced search landing — and takes `scroll` to hand it back to the router:
+  `<ReactRouterAdapter scroll>`, `<TanStackRouterAdapter scroll>`, `<NextAdapter scroll>`, and the
+  same option on their hooks (#24, #32)
 - A client boundary built in: the entry point is marked `'use client'`, so a Next.js Server
   Component can import the package's components without a wrapper file (#19)
 

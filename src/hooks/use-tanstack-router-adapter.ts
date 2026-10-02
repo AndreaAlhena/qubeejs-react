@@ -7,10 +7,12 @@ import type { TanStackRouterAdapterOptions } from '../types/tanstack-router-adap
 /**
  * TanStack Router as a {@link RouterAdapter}: its location in, its `navigate` out.
  *
- * It reads the raw query string and navigates with whole hrefs, so the list keeps its own URL
- * format instead of TanStack's serialised search objects, and a `basepath` or a rewrite is
- * honoured. Call it inside a TanStack Router tree. Pass the result to {@link useQubeeList} for
- * one list, or wrap the routes in {@link TanStackRouterAdapter} and every list below finds it.
+ * It reads the query string as TanStack Router serialised it and navigates with whole hrefs, so
+ * a `basepath` or a rewrite is honoured. The router's search serialisers run in both directions:
+ * its default pair re-types JSON-looking values (`1.50` becomes `1.5`, `10 ` becomes `10`), and
+ * the list settles on what the router wrote. Call it inside a TanStack Router tree. Pass the
+ * result to {@link useQubeeList} for one list, or wrap the routes in
+ * {@link TanStackRouterAdapter} and every list below finds it.
  *
  * A list navigation keeps the scroll position: TanStack Router would otherwise scroll to the top
  * each time a filter or a page number changes.
