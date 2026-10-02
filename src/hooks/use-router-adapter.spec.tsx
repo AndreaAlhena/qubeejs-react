@@ -2,11 +2,14 @@ import type { ReactElement, ReactNode } from 'react';
 
 import { defineList, integerParam, STRAPI_DRIVER, stringParam } from '@qubeejs/core';
 import { act, render, renderHook } from '@testing-library/react';
-import { StrictMode } from 'react';
+import { StrictMode, useContext } from 'react';
+
+import type { ListRegistry } from '../types/list-registry.type';
 
 import { articleList } from '../../test/fixtures/article-list';
 import { tagList } from '../../test/fixtures/tag-list';
 import { createTestRouter } from '../../test/helpers/create-test-router';
+import { adapterContext } from '../contexts/adapter-context';
 import { MissingRouterAdapterError } from '../errors/missing-router-adapter.error';
 import { createAdapterProvider } from '../utils/create-adapter-provider';
 import { useQubeeList } from './use-qubee-list';
@@ -281,6 +284,28 @@ describe('useRouterAdapter', () => {
       );
 
       expect(warn).not.toHaveBeenCalled();
+    });
+
+    it('should register nothing in a production build', () => {
+      vi.stubEnv('NODE_ENV', 'production');
+
+      const Provider = createAdapterProvider(createTestRouter('/articles').useRouter);
+      let registry: ListRegistry | undefined;
+
+      function Probe(): null {
+        registry = useContext(adapterContext)?.registry;
+
+        return null;
+      }
+
+      render(
+        <Provider>
+          <Articles />
+          <Probe />
+        </Provider>
+      );
+
+      expect(registry?.claims.size).toBe(0);
     });
 
     it('should stay silent in a production build', () => {

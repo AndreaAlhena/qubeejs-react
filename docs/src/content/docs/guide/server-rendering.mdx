@@ -31,9 +31,9 @@ browser. The adapter's hooks support it through the server snapshot of `useSyncE
 
 ## React Server Components
 
-A Server Component never imports `@qubeejs/react`: the adapter is hooks and context, which exist only
-in client components. It imports `@qubeejs/core`, which never imports React — and the core has
-everything a server needs to read the URL, fetch the page and link onward:
+A Server Component never calls the hooks of `@qubeejs/react`: hooks and context exist only in
+client components. For its own work it imports `@qubeejs/core`, which never imports React — and the
+core has everything a server needs to read the URL, fetch the page and link onward:
 
 <Code code={nextPage} lang="tsx" title="app/articles/page.tsx" />
 
@@ -61,8 +61,8 @@ Declare the list — `articleList` — in a module both sides import. It holds f
 travel from a Server Component to a Client Component as a prop.
 :::
 
-## `@qubeejs/next`
+## A Next.js adapter
 
-A Next.js adapter is planned. It will ship `useNextRouter()`, which replaces the `useNextListRouter`
-above, and server helpers for the pattern above, with its `'use client'` boundaries in place. Until
-then, this page is the whole integration.
+A Next.js adapter is planned as an entry point of this package, `@qubeejs/react/next`, not as a
+package of its own. It will ship the router adapter that replaces the `useNextListRouter` above.
+Until then, this page is the whole integration.

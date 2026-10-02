@@ -1,7 +1,8 @@
 # @qubeejs/react
 
 React hooks for `@qubeejs/core`: `useQubee`, `QubeeProvider` + `useQubeeContext`, `useQubeeList`
-and `useBrowserAdapter`. `@qubeejs/next` builds on this package.
+and `useBrowserAdapter`. Router and fetching integrations ship as entry points of this package
+(`entries.json`); there is no separate Next.js package.
 
 ## Coding standards
 

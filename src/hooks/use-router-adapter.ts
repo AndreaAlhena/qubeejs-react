@@ -5,6 +5,7 @@ import type { RouterAdapter } from '../types/router-adapter.type';
 
 import { adapterContext } from '../contexts/adapter-context';
 import { MissingRouterAdapterError } from '../errors/missing-router-adapter.error';
+import { isProduction } from '../utils/is-production';
 import { claimListParams } from '../utils/list-registry';
 import { useNoAdapter } from './use-no-adapter';
 
@@ -17,7 +18,8 @@ import { useNoAdapter } from './use-no-adapter';
  * changes for the components below it — which is what makes calling it safe.
  *
  * A list that takes its adapter from a provider registers its URL names with it, so that two
- * lists claiming the same name are reported.
+ * lists claiming the same name are reported. That is a development aid: a production build
+ * registers nothing.
  *
  * @param list - The list the adapter is for
  * @param adapter - The adapter passed to the hook, if any
@@ -31,7 +33,7 @@ export function useRouterAdapter(
   const scope = useContext(adapterContext);
   const useProvided = scope?.useAdapter ?? useNoAdapter;
   const provided = useProvided();
-  const registry = adapter ? undefined : scope?.registry;
+  const registry = adapter || isProduction() ? undefined : scope?.registry;
 
   useEffect(() => (registry ? claimListParams(registry, list) : undefined), [list, registry]);
 

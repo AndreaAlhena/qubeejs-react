@@ -8,20 +8,30 @@
  * - server rendering in plain Node, with no `window`;
  * - a browser-like run in jsdom, with and without StrictMode;
  * - all of it as ESM and as CommonJS;
- * - that a bundler which knows nothing of `'use client'` still bundles the package.
+ * - that a bundler which knows nothing of `'use client'` still bundles the package;
+ * - that no entry reads `process` once bundled for production (consumer/production-check.mjs).
+ *
+ * Every entry of entries.json must be imported by consumer/src/type-checks.tsx: an entry the
+ * consumer project never touches would pass all of the above untested.
  *
  * `CONSUMER_REACT=18` runs it on React 18.3; the default is React 19.
  * Run it after `npm run build`.
  */
 import { execSync } from 'node:child_process';
-import { cpSync, existsSync, mkdtempSync, readdirSync, renameSync, rmSync } from 'node:fs';
+import {
+  cpSync,
+  existsSync,
+  mkdtempSync,
+  readdirSync,
+  readFileSync,
+  renameSync,
+  rmSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
-const work = mkdtempSync(join(tmpdir(), 'qubeejs-react-consumer-'));
-const project = join(work, 'consumer');
 const react = process.env.CONSUMER_REACT ?? '19';
 
 /** Run a command, streaming its output; a non-zero exit throws. */
@@ -34,6 +44,21 @@ if (!existsSync(join(root, 'dist', 'index.js'))) {
   console.error('test-consumer: dist/ is missing — run `npm run build` first.');
   process.exit(1);
 }
+
+const typeChecks = readFileSync(join(root, 'consumer', 'src', 'type-checks.tsx'), 'utf8');
+const untested = JSON.parse(readFileSync(join(root, 'entries.json'), 'utf8'))
+  .map(({ subpath }) => `@qubeejs/react${subpath.slice(1)}`)
+  .filter((specifier) => !typeChecks.includes(`from '${specifier}'`));
+
+if (untested.length) {
+  console.error(
+    `test-consumer: consumer/src/type-checks.tsx imports nothing from ${untested.join(', ')} — every entry of entries.json must be exercised there.`
+  );
+  process.exit(1);
+}
+
+const work = mkdtempSync(join(tmpdir(), 'qubeejs-react-consumer-'));
+const project = join(work, 'consumer');
 
 try {
   run(`npm pack --pack-destination "${work}"`, root);
@@ -78,6 +103,8 @@ try {
     'npx esbuild src/app.tsx --bundle --format=esm --jsx=automatic --outfile=out/bundled.js --log-level=error',
     project
   );
+
+  run('node production-check.mjs', project);
 
   console.log(`\ntest-consumer: ok (React ${react})`);
 } finally {
