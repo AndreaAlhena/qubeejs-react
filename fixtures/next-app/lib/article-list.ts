@@ -7,9 +7,17 @@ import {
   stringParam,
 } from '@qubeejs/core';
 
+/** An article as the app's stand-in API returns it. */
+export type Article = {
+  id: number;
+  publishedAt: string;
+  title: string;
+};
+
 /**
  * Declared once, in a module both the Server Component and the Client Component import: a list
- * holds functions, so it cannot travel between them as a prop.
+ * holds functions, so it cannot travel between them as a prop. Its API is the app's own
+ * `/api/articles`, at the address the tests serve the app from.
  */
 export const articleList = defineList({
   apply: (builder, { q, sort }) => {
@@ -28,6 +36,6 @@ export const articleList = defineList({
       fields: ['publishedAt', 'title'] as const,
     }),
   },
-  qubee: { baseUrl: 'https://example.com/api', driver: STRAPI_DRIVER },
+  qubee: { baseUrl: 'http://127.0.0.1:3210/api', driver: STRAPI_DRIVER },
   resource: 'articles',
 });

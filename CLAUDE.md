@@ -1,8 +1,8 @@
 # @qubeejs/react
 
-React hooks for `@qubeejs/core`: `useQubee`, `QubeeProvider` + `useQubeeContext`, `useQubeeList`
-and `useBrowserAdapter`. Router and fetching integrations ship as entry points of this package
-(`entries.json`); there is no separate Next.js package.
+React hooks for `@qubeejs/core`: `useQubee`, `QubeeProvider` + `useQubeeContext`, `useQubeeList`,
+`useBrowserAdapter` and `useQubeeQuery`. Router and fetching integrations ship as entry points of
+this package (`entries.json`); there is no separate Next.js package.
 
 ## Coding standards
 
@@ -15,7 +15,8 @@ See **[CODING-STANDARDS.md](./CODING-STANDARDS.md)** — the single source of tr
 - Function members of public types are properties, so handles can be destructured.
 - Ordering is auto-fixed by perfectionist — run `npm run lint:fix`, don't reorder by hand.
 - No `any`. No `'use client'` in the source (the build adds it per entry), no optional peer
-  outside its own entry, no `fetch`. No AI credits in commit messages.
+  outside its own entry, no React in a server-safe entry, and `fetch` named in one file only:
+  `utils/fetch-qubee-page.ts`. No AI credits in commit messages.
 - Entry points are listed once, in `entries.json`; the build, the convention tests, the dist check
   and the consumer test all read it.
 - **Every issue ships code + changelog entry + stated SemVer impact + docs.**
@@ -45,24 +46,28 @@ list definitions, page URL ⇄ state ⇄ API request, pagination and sort helper
 ```
 src/
 ├─ entries/     one file per entry point besides index.ts, as entries.json lists them:
-│               next · react-router · tanstack-router
-├─ components/  QubeeProvider · BrowserAdapter · MemoryAdapter · NextAdapter · ReactRouterAdapter ·
-│               TanStackRouterAdapter · AdapterScopeProvider (internal)
-├─ contexts/    qubeeContext · adapterContext (both internal)
-├─ errors/      MissingQubeeProviderError · MissingRouterAdapterError
+│               fetch (server-safe) · next · react-router · tanstack-router
+├─ components/  QubeeProvider · QubeeFetchProvider · BrowserAdapter · MemoryAdapter · NextAdapter ·
+│               ReactRouterAdapter · TanStackRouterAdapter · AdapterScopeProvider (internal)
+├─ contexts/    qubeeContext · adapterContext · fetcherContext (all internal)
+├─ errors/      MissingQubeeProviderError · MissingRouterAdapterError · QubeeFetchError
 ├─ hooks/       useQubee · useQubeeContext · useBrowserAdapter · useMemoryAdapter · useNextAdapter ·
-│               useReactRouterAdapter · useTanStackRouterAdapter · useQubeeList,
-│               plus internal useQubeeHandle · useRouterAdapter · useNoAdapter · useMemoryLocation
-├─ types/       public handles and props, plus internal machine / store / debouncer / loose-list /
-│               adapter-scope / list-registry shapes
-└─ utils/       createAdapterProvider, plus internal href, browser history, local store,
-                list-state machine, debouncer, list registry, memory location, adapter options
-                binding
+│               useReactRouterAdapter · useTanStackRouterAdapter · useQubeeList · useQubeeQuery,
+│               plus internal useQubeeHandle · useRouterAdapter · useNoAdapter · useMemoryLocation ·
+│               useQubeeFetcher
+├─ types/       public handles, props and options, plus internal machine / store / debouncer /
+│               loose-list / adapter-scope / list-registry / query-state shapes
+└─ utils/       createAdapterProvider · fetchQubeePage, plus internal href, browser history, local
+                store, list-state machine, debouncer, list registry, memory location, adapter
+                options binding, query state, request key
 ```
 
 A list finds its router adapter in the second argument of `useQubeeList`, else in the nearest
 adapter provider; with neither it throws. A provider puts its adapter **hook** in context, never a
 router value, so only list components subscribe to the URL.
+
+Everything that fetches goes through `fetchQubeePage(request, { fetcher, signal })`, the one
+function that performs I/O; `useQubeeQuery` adds request state on top, with no cache.
 
 `useQubeeList` keeps three layers: the **draft** (updated synchronously by `set()`), the
 **in-flight** hrefs handed to `navigate()`, and the **URL**, which always wins.

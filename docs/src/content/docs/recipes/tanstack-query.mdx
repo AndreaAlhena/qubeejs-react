@@ -29,7 +29,7 @@ const { data, isFetching } = useArticlesQuery(list);
 - `placeholderData: keepPreviousData` keeps the current page on screen while the next one loads, so
   the table does not flash empty.
 - `signal` cancels a request TanStack Query no longer needs.
-- `fetchPage` passes `response.headers` to `paginate`, so header-paginated drivers work too, and
-  returns `toPlain()`: a plain object TanStack Query can share structurally between refetches.
+- `fetchQubeePage` passes `response.headers` to `paginate`, so header-paginated drivers work too,
+  and returns a plain object TanStack Query can share structurally between refetches.
 - `list.isPending` covers the debounce and the navigation, `isFetching` the request. Dim the table
   for either.

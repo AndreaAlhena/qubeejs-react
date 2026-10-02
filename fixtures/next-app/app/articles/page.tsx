@@ -1,8 +1,9 @@
 import type { ReactElement } from 'react';
 
 import { buildListHref, buildListRequest, readListState } from '@qubeejs/core';
+import { fetchQubeePage } from '@qubeejs/react/fetch';
 
-import { articleList } from '../../lib/article-list';
+import { type Article, articleList } from '../../lib/article-list';
 import { ArticlesView } from './articles-view';
 
 type ArticlesPageProps = {
@@ -11,7 +12,9 @@ type ArticlesPageProps = {
 
 /**
  * A Server Component: it reads the list state, builds the request and builds a link with the
- * core, which never imports React. Reading `searchParams` makes the route dynamic.
+ * core, which never imports React, and fetches the page with the server-safe `fetch` entry. The
+ * page goes to the Client Component as `initialData`, so the first render shows it without a
+ * request from the browser. Reading `searchParams` makes the route dynamic.
  */
 export default async function ArticlesPage({
   searchParams,
@@ -19,6 +22,7 @@ export default async function ArticlesPage({
   const search = await searchParams;
   const state = readListState(articleList, search);
   const request = buildListRequest(articleList, state);
+  const initialData = await fetchQubeePage<Article>(request);
 
   return (
     <main>
@@ -35,7 +39,7 @@ export default async function ArticlesPage({
       >
         First page
       </a>
-      <ArticlesView />
+      <ArticlesView initialData={initialData} />
     </main>
   );
 }

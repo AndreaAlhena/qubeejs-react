@@ -1,19 +1,29 @@
 'use client';
 
+import type { PaginatedResult } from '@qubeejs/core';
 import type { ReactElement } from 'react';
 
 import { getAriaSort } from '@qubeejs/core';
-import { useQubeeList } from '@qubeejs/react';
+import { useQubeeList, useQubeeQuery } from '@qubeejs/react';
 import Link from 'next/link';
 
-import { articleList } from '../../lib/article-list';
+import { type Article, articleList } from '../../lib/article-list';
 
 /** How long typing must pause before the URL changes. */
 const SEARCH_DEBOUNCE_MS = 300;
 
-/** The interactive half: it takes its adapter from the `<NextAdapter>` in the layout. */
-export function ArticlesView(): ReactElement {
+type ArticlesViewProps = {
+  /** The page of the URL the server rendered, when the server fetched it. */
+  initialData?: PaginatedResult<Article>;
+};
+
+/**
+ * The interactive half: it takes its adapter from the `<NextAdapter>` in the layout, and fetches
+ * every page but the one the server handed it.
+ */
+export function ArticlesView({ initialData }: ArticlesViewProps): ReactElement {
   const list = useQubeeList(articleList);
+  const articles = useQubeeQuery<Article>(list.request, { initialData });
   const { page, q, sort } = list.state;
 
   return (
@@ -61,6 +71,14 @@ export function ArticlesView(): ReactElement {
       </p>
       <p>
         Pending: <output id="pending">{String(list.isPending)}</output>
+      </p>
+      <ul aria-busy={articles.isFetching} id="rows">
+        {articles.data?.data.map((article) => (
+          <li key={article.id}>{article.title}</li>
+        ))}
+      </ul>
+      <p>
+        Fetching: <output id="fetching">{String(articles.isFetching)}</output>
       </p>
     </section>
   );

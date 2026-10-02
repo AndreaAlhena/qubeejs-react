@@ -8,7 +8,6 @@ sidebar:
 
 import { Code } from '@astrojs/starlight/components';
 import articleList from '../../../../examples/article-list.ts?raw';
-import fetchPage from '../../../../examples/fetch-page.ts?raw';
 import quickStart from '../../../../examples/quick-start.tsx?raw';
 
 This page builds an article list backed by a Strapi API. Its query lives in the address bar —
@@ -33,15 +32,10 @@ both your pages and your components import.
 Every param, and the rules the URL follows, are documented with the core:
 [Lists & URL state ↗](https://qubeejs.andreatantimonaco.me/guide/lists/).
 
-## 2. Fetch a page
+## 2. Render it
 
-The adapter performs no requests. This helper is all the fetching the example needs: it sends the
-list's request and parses the answer with the driver that built it, passing the response headers
-along for drivers that paginate through them.
-
-<Code code={fetchPage} lang="ts" title="src/articles/fetch-page.ts" />
-
-## 3. Render it
+`useQubeeList` reads the URL into typed state and gives back the request for the page to show;
+`useQubeeQuery` fetches that request and parses the answer with the driver that built it.
 
 <Code code={quickStart} lang="tsx" title="src/articles/articles-page.tsx" />
 
@@ -52,7 +46,8 @@ What happens when someone types `react` into the search box:
 2. 300 ms after the last keystroke, the adapter navigates **once**, to `/articles?q=react`,
    replacing the history entry instead of adding one per keystroke. The page goes back to 1: a new
    search makes the old page number meaningless.
-3. `request` changes — its `uri` now filters on the title — and the effect fetches the new page.
+3. `request` changes — its `uri` now filters on the title — and `useQubeeQuery` fetches the new
+   page. The rows of the old one stay on screen until it arrives.
 
 `useBrowserAdapter()` writes the URL with the History API and observes only its own `navigate` plus
 Back and Forward. That is enough here, where the list is the only thing writing the URL. If your app
@@ -63,5 +58,6 @@ already has a router, or other code also writes the URL, pass that router's adap
 
 - [Lists in the URL](/guide/url-lists/) — every member of `useQubeeList`, and the three layers of
   state behind it.
-- [Fetching](/guide/fetching/) — caching with TanStack Query or SWR instead of an effect.
+- [Fetching](/guide/fetching/) — your own fetcher, errors, fetching on the server, and caching
+  with TanStack Query or SWR.
 - [useQubee](/guide/use-qubee/) — lists that live in memory rather than in the URL.

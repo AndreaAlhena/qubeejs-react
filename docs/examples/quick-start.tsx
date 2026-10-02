@@ -1,9 +1,6 @@
-import type { PaginatedResult } from '@qubeejs/core';
-import { useBrowserAdapter, useQubeeList } from '@qubeejs/react';
-import { useEffect, useState } from 'react';
+import { useBrowserAdapter, useQubeeList, useQubeeQuery } from '@qubeejs/react';
 
 import { type Article, articleList, ArticleStatusEnum } from './article-list';
-import { fetchPage } from './fetch-page';
 
 /** How long typing must pause before the URL changes. */
 const SEARCH_DEBOUNCE_MS = 300;
@@ -12,27 +9,12 @@ const SEARCH_DEBOUNCE_MS = 300;
 export function ArticlesPage() {
   const router = useBrowserAdapter();
   const list = useQubeeList(articleList, router);
-  const [result, setResult] = useState<PaginatedResult<Article> | null>(null);
-  const { request, state } = list;
-
-  useEffect(() => {
-    const controller = new AbortController();
-
-    fetchPage<Article>(request, controller.signal)
-      .then(setResult)
-      .catch((error: unknown) => {
-        if (!controller.signal.aborted) {
-          console.error(error);
-        }
-      });
-
-    return () => controller.abort();
-  }, [request]);
-
-  const lastPage = result?.lastPage ?? 1;
+  const articles = useQubeeQuery<Article>(list.request);
+  const { state } = list;
+  const lastPage = articles.data?.lastPage ?? 1;
 
   return (
-    <main aria-busy={list.isPending}>
+    <main aria-busy={list.isPending || articles.isFetching}>
       <input
         aria-label="Search articles"
         onChange={(event) =>
@@ -54,8 +36,9 @@ export function ArticlesPage() {
       <button onClick={() => list.toggleSort('title')} type="button">
         Sort by title
       </button>
+      {articles.error && <p role="alert">The articles could not be loaded.</p>}
       <ul>
-        {result?.data.map((article) => (
+        {articles.data?.data.map((article) => (
           <li key={article.id}>{article.title}</li>
         ))}
       </ul>

@@ -123,9 +123,9 @@ jobs:
       - name: Build
         run: npm run build
 
-      # fixtures/next-app, built with the packed tarball: a Server Component renders the adapter,
-      # a static route builds behind a Suspense boundary, and Playwright drives the result in the
-      # runner's own Chrome.
+      # fixtures/next-app, built with the packed tarball: a Server Component renders the adapter
+      # and fetches the first page, a static route builds behind a Suspense boundary, and
+      # Playwright drives the result in the runner's own Chrome.
       - name: Build the Next.js fixture app and drive it in a browser
         env:
           NEXT_BUILD_ONLY: ${{ matrix.build-only }}

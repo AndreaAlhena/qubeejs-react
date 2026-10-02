@@ -3,7 +3,7 @@ import { MissingQubeeProviderError, MissingRouterAdapterError } from '@qubeejs/r
 import { version } from 'react';
 import { renderToString } from 'react-dom/server';
 
-import { App, NoAdapter, Orphan } from './app.js';
+import { App, asked, NoAdapter, Orphan } from './app.js';
 import { check, finish } from './report.js';
 
 const hasWindow = typeof (globalThis as { window?: unknown }).window !== 'undefined';
@@ -29,6 +29,11 @@ check(
   html
 );
 check('the server request targets the resource', /id="uri">[^<]*articles/.test(html), html);
+check(
+  'useQubeeQuery reports a fetch as due on the server, and performs none',
+  html.includes('id="fetching">true<') && asked.length === 0,
+  { asked, html }
+);
 
 let thrown: unknown;
 

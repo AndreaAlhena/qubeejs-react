@@ -24,6 +24,6 @@ const { data, isValidating } = useArticlesSWR(list);
 - The key is `['articles', request.uri, request.headers]`, built from the committed state: it changes
   once per navigation, after any debounce.
 - `keepPreviousData: true` keeps the last page on screen while the next one loads.
-- `fetchPage` passes `response.headers` to `paginate` and returns a plain object, which SWR can
-  compare between revalidations.
+- `fetchQubeePage` passes `response.headers` to `paginate` and returns a plain object, which SWR
+  can compare between revalidations.
 - `list.isPending` covers the debounce and the navigation, `isValidating` the request.

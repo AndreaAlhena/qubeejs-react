@@ -1,13 +1,16 @@
 // The README's usage samples, as a user would type them, plus a few outputs to assert on.
+import type { QubeeFetcher } from '@qubeejs/react';
 import type { ReactElement } from 'react';
 
 import { getAriaSort, STRAPI_DRIVER } from '@qubeejs/core';
 import {
   BrowserAdapter,
   MemoryAdapter,
+  QubeeFetchProvider,
   QubeeProvider,
   useBrowserAdapter,
   useQubeeList,
+  useQubeeQuery,
   useQubee,
   useQubeeContext,
 } from '@qubeejs/react';
@@ -155,15 +158,49 @@ export function NoAdapter(): ReactElement {
   return <output>{state.page}</output>;
 }
 
+/** Every address the API below was asked for, in order: the tests read it. */
+export const asked: string[] = [];
+
+/** Stands in for a Strapi API: it answers every request with one article, numbered in order. */
+export const apiFetcher: QubeeFetcher = (uri) => {
+  asked.push(uri);
+
+  return Promise.resolve(
+    new Response(
+      JSON.stringify({
+        data: [{ id: asked.length, title: `Row ${asked.length}` }],
+        meta: { pagination: { page: 1, pageCount: 3, pageSize: 20, total: 57 } },
+      })
+    )
+  );
+};
+
+/** The page the list asks for, fetched with the built-in hook through the provider's fetcher. */
+export function Rows(): ReactElement {
+  const list = useQubeeList(articleList);
+  const articles = useQubeeQuery<{ id: number; title: string }>(list.request);
+
+  return (
+    <>
+      <output id="fetching">{String(articles.isFetching)}</output>
+      <output id="rows">{articles.data?.data.map((article) => article.title).join(',')}</output>
+      <output id="lastpage">{articles.data?.lastPage}</output>
+    </>
+  );
+}
+
 export function App(): ReactElement {
   return (
     <BrowserAdapter>
-      <ArticlePicker />
-      <Shared />
-      <Articles />
-      <PageLabel />
-      <Tags />
-      <TagDialog />
+      <QubeeFetchProvider fetcher={apiFetcher}>
+        <ArticlePicker />
+        <Shared />
+        <Articles />
+        <PageLabel />
+        <Rows />
+        <Tags />
+        <TagDialog />
+      </QubeeFetchProvider>
     </BrowserAdapter>
   );
 }

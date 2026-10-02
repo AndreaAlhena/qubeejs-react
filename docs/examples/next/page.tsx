@@ -1,7 +1,7 @@
 import { buildListHref, buildListRequest, readListState } from '@qubeejs/core';
+import { fetchQubeePage } from '@qubeejs/react/fetch';
 
 import { type Article, articleList } from '@/articles/article-list';
-import { fetchPage } from '@/articles/fetch-page';
 
 import { ArticleListView } from './article-list-view';
 
@@ -13,7 +13,7 @@ type ArticlesPageProps = {
 export default async function ArticlesPage({ searchParams }: ArticlesPageProps) {
   const search = await searchParams;
   const state = readListState(articleList, search);
-  const result = await fetchPage<Article>(buildListRequest(articleList, state));
+  const result = await fetchQubeePage<Article>(buildListRequest(articleList, state));
   const nextHref = buildListHref(articleList, { pathname: '/articles', search }, { page: state.page + 1 });
 
   return <ArticleListView nextHref={nextHref} result={result} />;

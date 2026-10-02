@@ -43,6 +43,7 @@ Hand the provider an instance the test created, then assert on its store:
 
 ## Requests
 
-The adapter performs no requests, so there is nothing of it to mock: mock the API instead. The
+The fetching hooks go through `fetch`, or the fetcher you gave them, so there is nothing of the
+adapter to mock: mock the API instead. The
 [Testing with MSW recipe](/recipes/testing-with-msw/) answers the list's requests with a Strapi
 payload and checks what the list asked for.

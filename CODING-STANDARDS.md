@@ -64,7 +64,8 @@ A file declares **one kind of thing**, and its name says which. The one exceptio
 interfaces, `*Enum` naming in `*.enum.ts`, kebab-case filenames, hooks in `hooks/use-*.ts` (one
 each), one `PascalCase` component per `.tsx`, constant casing, no client directive in the source,
 optional peers imported only by their own entry, no React in the server-safe entries, every entry
-of `entries.json` declared in `package.json`, no `node:` imports, and no network I/O.
+of `entries.json` declared in `package.json`, no `node:` imports, and network I/O in one place
+only: `fetch` is named in `utils/fetch-qubee-page.ts` and nowhere else.
 
 ## Ordering **[auto]**
 

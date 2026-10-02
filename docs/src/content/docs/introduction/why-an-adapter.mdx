@@ -33,9 +33,9 @@ as a link, and works with the back button. You declare the list once, with the c
 
 ## What it leaves to you
 
-- **Requests.** The adapter hands you `{ uri, headers, paginate }`. `fetch`, TanStack Query or SWR
-  perform the request; authentication, retries and caching stay in your code. See
-  [Fetching](/guide/fetching/).
+- **How requests are sent.** The adapter fetches the page a list asks for — with a hook of its
+  own, or through TanStack Query or SWR — but what performs the request is `fetch` or a fetcher
+  of yours, so authentication stays in your code. See [Fetching](/guide/fetching/).
 - **Routing.** The adapter writes the URL through whichever router you give it. It never registers
   routes or renders links for you — `href()` hands you the address, and your `<a>` or `<Link>`
   renders it.
