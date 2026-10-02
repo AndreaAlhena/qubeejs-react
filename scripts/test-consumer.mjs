@@ -7,6 +7,7 @@
  * - strict types under `bundler` and `node16` module resolution;
  * - server rendering in plain Node, with no `window`;
  * - a browser-like run in jsdom, with and without StrictMode;
+ * - the other entry points loaded beside the main one, sharing its context;
  * - all of it as ESM and as CommonJS;
  * - that a bundler which knows nothing of `'use client'` still bundles the package;
  * - that no entry reads `process` once bundled for production (consumer/production-check.mjs).
@@ -72,7 +73,8 @@ try {
 
   if (react === '18') {
     run(
-      'npm install --no-audit --no-fund react@18.3 react-dom@18.3 @types/react@18 @types/react-dom@18',
+      // React Router 8 needs React 19.2 or later; version 7 is the one for React 18.
+      'npm install --no-audit --no-fund react@18.3 react-dom@18.3 @types/react@18 @types/react-dom@18 react-router@7',
       project
     );
   }
@@ -80,7 +82,7 @@ try {
   run('npx tsc -p tsconfig.json', project);
   run('npx tsc -p tsconfig.node16.json', project);
 
-  for (const test of ['ssr-test', 'client-test']) {
+  for (const test of ['ssr-test', 'client-test', 'entries-test']) {
     for (const [format, extension] of [
       ['esm', 'mjs'],
       ['cjs', 'cjs'],
@@ -96,6 +98,7 @@ try {
     run(`node out/ssr-test.${extension}`, project);
     run(`node out/client-test.${extension}`, project);
     run(`node out/client-test.${extension}`, project, { STRICT: '1' });
+    run(`node out/entries-test.${extension}`, project);
   }
 
   // An app's bundler inlines the package. The client directive must not stop it.

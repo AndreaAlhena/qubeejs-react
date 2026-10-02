@@ -24,6 +24,8 @@ import {
   useQubeeList,
 } from '@qubeejs/react';
 
+import { ReactRouterAdapter, useReactRouterAdapter } from '@qubeejs/react/react-router';
+
 import { articleList, tagList } from './article-list.js';
 import { ArticleStatusEnum } from './article-status.enum.js';
 
@@ -103,6 +105,12 @@ export function Checks(): null {
   list.reset({ debounce: 100 });
 
   void [CustomAdapter, inMemory, memoryProps, MemoryAdapter];
+
+  // The router entries: each hook returns a RouterAdapter, each provider takes children.
+  const viaReactRouter: RouterAdapter = useReactRouterAdapter();
+  const routerProps: AdapterProviderProps = { children: null };
+
+  void [viaReactRouter, routerProps, ReactRouterAdapter];
 
   return null;
 }
