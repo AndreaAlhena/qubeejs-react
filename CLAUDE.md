@@ -13,13 +13,19 @@ See **[CODING-STANDARDS.md](./CODING-STANDARDS.md)** — the single source of tr
 - Hooks live in `hooks/use-*.ts`, one per file; components in `.tsx`, one per file.
 - Function members of public types are properties, so handles can be destructured.
 - Ordering is auto-fixed by perfectionist — run `npm run lint:fix`, don't reorder by hand.
-- No `any`. No `'use client'`, no `next` imports, no `fetch`. No AI credits in commit messages.
+- No `any`. No `'use client'` in the source (the build adds it per entry), no optional peer
+  outside its own entry, no `fetch`. No AI credits in commit messages.
+- Entry points are listed once, in `entries.json`; the build, the convention tests, the dist check
+  and the consumer test all read it.
 - **Every issue ships code + changelog entry + stated SemVer impact + docs.**
 
 ## Commands
 
 ```bash
-npm run build         # tsup → dual ESM + CJS
+npm run build         # tsup → dual ESM + CJS, shared chunks, 'use client' on client entries
+npm run check:dist    # after a build: every entry exists, loads and imports only what it may
+npm run test:consumer # after a build: install the packed tarball in a fresh project and run it
+npm run lint:package  # publint + are-the-types-wrong
 npm test              # vitest run (jsdom)
 npm run test:coverage
 npm run lint          # eslint

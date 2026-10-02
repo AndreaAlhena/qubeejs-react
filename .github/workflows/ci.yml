@@ -53,20 +53,42 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Verify the published entry points load
-        run: |
-          node --input-type=module -e "await import('./dist/index.js')"
-          node --input-type=commonjs -e "require('./dist/index.cjs')"
+      # Every entry of entries.json: both formats and their types exist and load, the client
+      # directive is on the client entries only, each entry imports nothing but react, the core
+      # and its own optional peer, and the package has no runtime dependencies.
+      - name: Check the built package
+        run: npm run check:dist
 
-      - name: Verify server/client boundaries are left to @qubeejs/next
-        run: |
-          if grep -q "use client" dist/index.js dist/index.cjs; then echo "unexpected 'use client' directive"; exit 1; fi
-          if grep -qE "from ['\"]next|require\(['\"]next" dist/index.js dist/index.cjs; then echo "unexpected next import"; exit 1; fi
+      # publint checks package.json against what is published; attw checks that every entry's
+      # types resolve under node16 and bundler resolution, from ESM and from CommonJS.
+      - name: Lint the package
+        run: npm run lint:package
 
-      - name: Verify the package has no runtime dependencies
-        run: |
-          node -e "
-            const { dependencies = {} } = require('./package.json');
-            const names = Object.keys(dependencies);
-            if (names.length) throw new Error('unexpected runtime dependencies: ' + names.join(', '));
-          "
+  consumer:
+    name: consumer (react ${{ matrix.react }})
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        react: ['18', '19']
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          cache: npm
+          node-version: '24'
+
+      - run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      # The package as an app gets it: packed, installed from the tarball into a fresh project
+      # outside the repository, type-checked and run as ESM and as CommonJS.
+      - name: Test the packed tarball in a fresh project
+        env:
+          CONSUMER_REACT: ${{ matrix.react }}
+        run: npm run test:consumer

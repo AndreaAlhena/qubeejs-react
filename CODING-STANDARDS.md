@@ -62,8 +62,9 @@ A file declares **one kind of thing**, and its name says which. The one exceptio
 `test/conventions.spec.ts` enforces: one declaration kind per file, interfaces only in
 `*.interface.ts`, exported types only in `*.type.ts`, the `I` prefix only on implemented
 interfaces, `*Enum` naming in `*.enum.ts`, kebab-case filenames, hooks in `hooks/use-*.ts` (one
-each), one `PascalCase` component per `.tsx`, constant casing, no Next.js imports or client
-directives, no `node:` imports, and no network I/O.
+each), one `PascalCase` component per `.tsx`, constant casing, no client directive in the source,
+optional peers imported only by their own entry, no React in the server-safe entries, every entry
+of `entries.json` declared in `package.json`, no `node:` imports, and no network I/O.
 
 ## Ordering **[auto]**
 
@@ -109,7 +110,13 @@ index signatures → static props → private props → protected props → publ
   subtree.
 - **Framework-free logic belongs in `@qubeejs/core`.** If a function does not need React, it does
   not belong here, and nothing from core is re-exported.
-- **No `'use client'`, no `next` imports.** Server/client boundaries are `@qubeejs/next`'s job.
+- **No `'use client'` in the source.** The build adds the directive to the client entries listed
+  in `entries.json`, and to nothing else: a directive written in a source file would end up in a
+  shared chunk, which the server-safe entries load too.
+- **An optional peer is imported only by its own entry.** `next`, `react-router`,
+  `@tanstack/react-router`, `@tanstack/react-query` and `swr` are each reachable from the one
+  entry that declares them in `entries.json`; the main entry imports only `react` and
+  `@qubeejs/core`.
 
 ## Structure
 

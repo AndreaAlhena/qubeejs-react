@@ -5,6 +5,7 @@
   },
   "description": "React hooks for @qubeejs/core: a query builder per component or per subtree, and lists whose state lives in the URL",
   "devDependencies": {
+    "@arethetypeswrong/cli": "^0.18.5",
     "@eslint/js": "^10.0.1",
     "@qubeejs/core": "^1.3.0",
     "@testing-library/dom": "^10.4.2",
@@ -20,6 +21,7 @@
     "jsdom": "^30.1.1",
     "prettier": "^3.9.9",
     "prettier-plugin-sort-json": "^4.2.0",
+    "publint": "^0.3.25",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "tsup": "^8.5.1",
@@ -69,11 +71,14 @@
   },
   "scripts": {
     "build": "tsup",
+    "check:dist": "node scripts/check-dist.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
+    "lint:package": "publint && attw --pack . --profile node16",
     "test": "vitest run",
+    "test:consumer": "node scripts/test-consumer.mjs",
     "test:coverage": "vitest run --coverage",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit"

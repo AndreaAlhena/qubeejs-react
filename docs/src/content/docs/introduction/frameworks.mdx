@@ -44,20 +44,22 @@ shows a complete pager.
 
 ## Next.js (App Router)
 
-Import `@qubeejs/react` only from `'use client'` modules, and wrap `QubeeProvider` in your own
-client component, as below. Separately, `useSearchParams` on a statically rendered route needs a
+`@qubeejs/react` is marked as a client module, so a Server Component can import its components;
+its hooks still run in client components only. Two things remain yours: `QubeeProvider` goes in
+your own client component, as below, and `useSearchParams` on a statically rendered route needs a
 `<Suspense>` boundary above it, or `next build` fails.
 
 ### Server Components import the core
 
-A Server Component never imports `@qubeejs/react` — hooks and context exist only in client
-components. It imports `@qubeejs/core`, which never imports React: `readListState`,
+A Server Component never calls the hooks of `@qubeejs/react` — hooks and context exist only in
+client components. It imports `@qubeejs/core`, which never imports React: `readListState`,
 `buildListRequest` and `buildListHref` all run on the server. See
 [Server rendering](/guide/server-rendering/).
 
-### Client files import the adapter
+### `QubeeProvider` in a client file
 
-The adapter carries no `'use client'` directive, so import it from files that do:
+`QubeeProvider` takes a driver, which holds functions and so cannot cross the server–client
+boundary as a prop. Render it from a file of your own that starts with `'use client'`:
 
 <Code code={nextProviders} lang="tsx" title="app/providers.tsx" />
 

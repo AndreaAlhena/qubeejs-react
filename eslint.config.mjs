@@ -7,7 +7,8 @@ import tseslint from 'typescript-eslint';
 export default tseslint.config(
   {
     // docs/ holds the specs, the plans and the documentation site, which has its own toolchain.
-    ignores: ['coverage/**', 'dist/**', 'docs/**', 'node_modules/**'],
+    // consumer/ is a project of its own: the packed-tarball test installs and type-checks it.
+    ignores: ['consumer/**', 'coverage/**', 'dist/**', 'docs/**', 'node_modules/**'],
   },
 
   js.configs.recommended,
@@ -118,11 +119,12 @@ export default tseslint.config(
   },
 
   {
-    // Config files only: they are outside the tsconfig project, so type-checked rules cannot
-    // run here. `sort-objects` stays out of src/, exactly as in @qubeejs/core, so the two
-    // repositories lint alike.
-    files: ['*.config.ts', '*.config.mjs'],
+    // Config files and Node scripts: they are outside the tsconfig project, so type-checked
+    // rules cannot run here. `sort-objects` stays out of src/, exactly as in @qubeejs/core, so
+    // the two repositories lint alike.
+    files: ['*.config.ts', '*.config.mjs', 'scripts/**/*.mjs'],
     ...tseslint.configs.disableTypeChecked,
+    languageOptions: { globals: { console: 'readonly', process: 'readonly' } },
     plugins: { perfectionist },
     rules: {
       ...tseslint.configs.disableTypeChecked.rules,
