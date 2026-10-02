@@ -24,7 +24,12 @@ const ENTRIES = JSON.parse(readFileSync(join(root, 'entries.json'), 'utf8'));
 
 const DIRECTIVE = "'use client';";
 const ALWAYS_ALLOWED = ['@qubeejs/core', 'react', 'react/jsx-runtime'];
-const IMPORT = /(?:from\s*|import\s*\(\s*|require\s*\(\s*)['"]([^'"]+)['"]/g;
+// `import x from '…'`, `import('…')`, `require('…')`, and the bare `import '…'` a bundler writes
+// for a chunk it loads for its side effects only.
+const IMPORT = /(?:from\s*|import\s*\(?\s*|require\s*\(\s*)['"]([^'"]+)['"]/g;
+
+/** Whether a module specifier is React or React DOM, or a file of theirs. */
+const isReact = (specifier) => /^react(-dom)?(\/|$)/.test(specifier);
 
 const problems = [];
 
@@ -87,7 +92,7 @@ for (const { client, name, peer } of ENTRIES) {
       problems.push(`dist/${name}.${extension} imports ${foreign.join(', ')}`);
     }
 
-    if (!client && externalsOf(file).some((specifier) => specifier.startsWith('react'))) {
+    if (!client && externalsOf(file).some(isReact)) {
       problems.push(`dist/${name}.${extension} is a server-safe entry that imports react`);
     }
   }
