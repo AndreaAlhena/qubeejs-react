@@ -12,7 +12,7 @@ export const collections = {
     loader: docsLoader(),
     schema: docsSchema({
       extend: z.object({
-        kind: z.enum(['component', 'error', 'hook', 'type']).optional(),
+        kind: z.enum(['component', 'error', 'function', 'hook', 'type']).optional(),
       }),
     }),
   }),

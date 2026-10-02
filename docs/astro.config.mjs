@@ -36,6 +36,7 @@ export default defineConfig({
           items: [
             { items: [{ autogenerate: { directory: 'api/provider' } }], label: 'Provider' },
             { items: [{ autogenerate: { directory: 'api/hooks' } }], label: 'Hooks' },
+            { items: [{ autogenerate: { directory: 'api/functions' } }], label: 'Functions' },
             { items: [{ autogenerate: { directory: 'api/types' } }], label: 'Types' },
             { items: [{ autogenerate: { directory: 'api/errors' } }], label: 'Errors' },
           ],
