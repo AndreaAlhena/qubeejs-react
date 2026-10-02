@@ -4,6 +4,10 @@
  * Its own entry point, so that only apps that import it need `@tanstack/react-router` installed.
  */
 
+// Types
+export type { TanStackRouterAdapterOptions } from '../types/tanstack-router-adapter-options.type';
+export type { TanStackRouterAdapterProps } from '../types/tanstack-router-adapter-props.type';
+
 // Components
 export { TanStackRouterAdapter } from '../components/tanstack-router-adapter';
 

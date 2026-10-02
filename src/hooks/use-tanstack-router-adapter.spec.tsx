@@ -1,5 +1,6 @@
 import type { RouterHistory } from '@tanstack/react-router';
 import type { ReactElement } from 'react';
+import type { MockInstance } from 'vitest';
 
 import {
   createMemoryHistory,
@@ -12,7 +13,7 @@ import {
   useLocation,
 } from '@tanstack/react-router';
 import { act, render, screen } from '@testing-library/react';
-import { StrictMode } from 'react';
+import { StrictMode, useState } from 'react';
 
 import { articleList } from '../../test/fixtures/article-list';
 import { TanStackRouterAdapter } from '../components/tanstack-router-adapter';
@@ -55,6 +56,17 @@ function Passed(): ReactElement {
   );
 }
 
+/** A list that passes its own adapter, with scrolling on. */
+function Scrolling(): ReactElement {
+  const list = useQubeeList(articleList, useTanStackRouterAdapter({ scroll: true }));
+
+  return (
+    <button onClick={() => list.toggleSort('title')} type="button">
+      Sort by title
+    </button>
+  );
+}
+
 function Other(): ReactElement {
   const href = useLocation({ select: (location) => location.href });
 
@@ -69,9 +81,39 @@ function Root(): ReactElement {
   );
 }
 
-/** Render the app at `initial` and hand back the history, to watch its entries and go back. */
-async function start(initial: string, basepath?: string): Promise<RouterHistory> {
-  const rootRoute = createRootRoute({ component: Root });
+/** A root whose lists scroll to the top when they navigate. */
+function ScrollingRoot(): ReactElement {
+  return (
+    <TanStackRouterAdapter scroll>
+      <Outlet />
+    </TanStackRouterAdapter>
+  );
+}
+
+/** A root whose `scroll` prop changes after the first render. */
+function TogglingRoot(): ReactElement {
+  const [scroll, setScroll] = useState(true);
+
+  return (
+    <TanStackRouterAdapter scroll={scroll}>
+      <button onClick={() => setScroll(false)} type="button">
+        Stop scrolling
+      </button>
+      <Outlet />
+    </TanStackRouterAdapter>
+  );
+}
+
+/**
+ * Render the app at `initial` and hand back the history, to watch its entries and go back, and a
+ * spy on the router's `navigate`, to see what the adapter asks of it.
+ */
+async function start(
+  initial: string,
+  basepath?: string,
+  root: () => ReactElement = Root
+): Promise<{ history: RouterHistory; navigate: MockInstance }> {
+  const rootRoute = createRootRoute({ component: root });
   const history = createMemoryHistory({ initialEntries: [initial] });
   const router = createRouter({
     basepath,
@@ -79,6 +121,7 @@ async function start(initial: string, basepath?: string): Promise<RouterHistory>
     routeTree: rootRoute.addChildren([
       createRoute({ component: Articles, getParentRoute: () => rootRoute, path: '/articles' }),
       createRoute({ component: Passed, getParentRoute: () => rootRoute, path: '/passed' }),
+      createRoute({ component: Scrolling, getParentRoute: () => rootRoute, path: '/scrolling' }),
       createRoute({ component: Other, getParentRoute: () => rootRoute, path: '/other' }),
     ]),
   });
@@ -92,7 +135,7 @@ async function start(initial: string, basepath?: string): Promise<RouterHistory>
     await router.load();
   });
 
-  return history;
+  return { history, navigate: vi.spyOn(router, 'navigate') };
 }
 
 const text = (id: string): string => screen.getByTestId(id).textContent;
@@ -122,8 +165,10 @@ const wait = (ms: number): Promise<void> =>
   });
 
 describe('useTanStackRouterAdapter', () => {
+  let scrollTo: MockInstance<typeof window.scrollTo>;
+
   beforeEach(() => {
-    vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined);
+    scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined);
   });
 
   afterEach(() => {
@@ -142,7 +187,7 @@ describe('useTanStackRouterAdapter', () => {
 
   describe('navigate', () => {
     it('should navigate through TanStack Router, once per call', async () => {
-      const history = await start('/articles?page=3');
+      const { history } = await start('/articles?page=3');
       const push = vi.spyOn(history, 'push');
       const replace = vi.spyOn(history, 'replace');
 
@@ -155,7 +200,7 @@ describe('useTanStackRouterAdapter', () => {
     });
 
     it('should replace the history entry when asked to', async () => {
-      const history = await start('/articles');
+      const { history } = await start('/articles');
       const push = vi.spyOn(history, 'push');
       const replace = vi.spyOn(history, 'replace');
 
@@ -174,7 +219,7 @@ describe('useTanStackRouterAdapter', () => {
     });
 
     it('should follow the back button', async () => {
-      const history = await start('/articles');
+      const { history } = await start('/articles');
 
       await click('button', 'Next page');
 
@@ -197,7 +242,7 @@ describe('useTanStackRouterAdapter', () => {
     });
 
     it('should keep the list under a basepath', async () => {
-      const history = await start('/app/articles?page=2', '/app');
+      const { history } = await start('/app/articles?page=2', '/app');
 
       expect(text('page')).toBe('2');
 
@@ -218,6 +263,68 @@ describe('useTanStackRouterAdapter', () => {
       expect(text('url')).toBe('/articles?q=1.5');
       expect(text('q')).toBe('1.5');
       expect(text('pending')).toBe('false');
+    });
+  });
+
+  describe('scroll', () => {
+    it('should keep the scroll position when a list navigates', async () => {
+      await start('/articles');
+      scrollTo.mockClear();
+
+      await click('button', 'Sort by title');
+
+      expect(text('url')).toBe('/articles?sort=title');
+      expect(scrollTo).not.toHaveBeenCalled();
+    });
+
+    it('should keep the scroll position when a debounced search lands', async () => {
+      await start('/articles');
+      scrollTo.mockClear();
+
+      await type('react');
+      await wait(350);
+
+      expect(text('url')).toBe('/articles?q=react');
+      expect(scrollTo).not.toHaveBeenCalled();
+    });
+
+    // Whether TanStack Router then scrolls depends on its version and on the app's scroll
+    // restoration, so these three pin what the adapter asks of it.
+    it('should ask TanStack Router to reset the scroll when the provider says so', async () => {
+      const { navigate } = await start('/articles', undefined, ScrollingRoot);
+
+      await click('button', 'Sort by title');
+
+      expect(navigate).toHaveBeenCalledExactlyOnceWith({
+        href: '/articles?sort=title',
+        replace: false,
+        resetScroll: true,
+      });
+    });
+
+    it('should ask TanStack Router to reset the scroll when the hook says so', async () => {
+      const { navigate } = await start('/scrolling');
+
+      await click('button', 'Sort by title');
+
+      expect(navigate).toHaveBeenCalledExactlyOnceWith({
+        href: '/scrolling?sort=title',
+        replace: false,
+        resetScroll: true,
+      });
+    });
+
+    it('should read the scroll prop on the first render only', async () => {
+      const { navigate } = await start('/articles', undefined, TogglingRoot);
+
+      await click('button', 'Stop scrolling');
+      await click('button', 'Sort by title');
+
+      expect(navigate).toHaveBeenCalledExactlyOnceWith({
+        href: '/articles?sort=title',
+        replace: false,
+        resetScroll: true,
+      });
     });
   });
 

@@ -1,4 +1,12 @@
 import type { NextAdapterOptions, NextAdapterProps } from '../src/entries/next';
+import type {
+  ReactRouterAdapterOptions,
+  ReactRouterAdapterProps,
+} from '../src/entries/react-router';
+import type {
+  TanStackRouterAdapterOptions,
+  TanStackRouterAdapterProps,
+} from '../src/entries/tanstack-router';
 
 import * as next from '../src/entries/next';
 import * as reactRouter from '../src/entries/react-router';
@@ -23,6 +31,11 @@ describe('entry points', () => {
         'useReactRouterAdapter',
       ]);
     });
+
+    it('should export the documented types', () => {
+      expectTypeOf<ReactRouterAdapterOptions>().toHaveProperty('scroll');
+      expectTypeOf<ReactRouterAdapterProps>().toHaveProperty('children');
+    });
   });
 
   describe('@qubeejs/react/tanstack-router', () => {
@@ -31,6 +44,11 @@ describe('entry points', () => {
         'TanStackRouterAdapter',
         'useTanStackRouterAdapter',
       ]);
+    });
+
+    it('should export the documented types', () => {
+      expectTypeOf<TanStackRouterAdapterOptions>().toHaveProperty('scroll');
+      expectTypeOf<TanStackRouterAdapterProps>().toHaveProperty('children');
     });
   });
 });
