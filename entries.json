@@ -6,5 +6,12 @@
     "peer": "react-router",
     "source": "src/entries/react-router.ts",
     "subpath": "./react-router"
+  },
+  {
+    "client": true,
+    "name": "tanstack-router",
+    "peer": "@tanstack/react-router",
+    "source": "src/entries/tanstack-router.ts",
+    "subpath": "./tanstack-router"
   }
 ]
