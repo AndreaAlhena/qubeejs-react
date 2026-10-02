@@ -69,7 +69,7 @@ function Root(): ReactElement {
   );
 }
 
-/** Render the app at `initial` and hand back the history, to count entries and go back. */
+/** Render the app at `initial` and hand back the history, to watch its entries and go back. */
 async function start(initial: string, basepath?: string): Promise<RouterHistory> {
   const rootRoute = createRootRoute({ component: Root });
   const history = createMemoryHistory({ initialEntries: [initial] });
@@ -143,16 +143,21 @@ describe('useTanStackRouterAdapter', () => {
   describe('navigate', () => {
     it('should navigate through TanStack Router, once per call', async () => {
       const history = await start('/articles?page=3');
+      const push = vi.spyOn(history, 'push');
+      const replace = vi.spyOn(history, 'replace');
 
       await click('button', 'Sort by title');
 
       expect(text('url')).toBe('/articles?sort=title');
       expect(text('pending')).toBe('false');
-      expect(history.length).toBe(2);
+      expect(push).toHaveBeenCalledTimes(1);
+      expect(replace).not.toHaveBeenCalled();
     });
 
     it('should replace the history entry when asked to', async () => {
       const history = await start('/articles');
+      const push = vi.spyOn(history, 'push');
+      const replace = vi.spyOn(history, 'replace');
 
       await type('react');
 
@@ -164,7 +169,8 @@ describe('useTanStackRouterAdapter', () => {
 
       expect(text('url')).toBe('/articles?q=react');
       expect(text('pending')).toBe('false');
-      expect(history.length).toBe(1);
+      expect(replace).toHaveBeenCalledTimes(1);
+      expect(push).not.toHaveBeenCalled();
     });
 
     it('should follow the back button', async () => {

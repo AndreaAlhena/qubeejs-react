@@ -255,7 +255,7 @@ function Root(): ReactElement {
 
 `useReactRouterAdapter()` is its hook form, for the second argument of `useQubeeList`.
 
-**TanStack Router** (1.x) — the adapter ships as `@qubeejs/react/tanstack-router`. Wrap the root
+**TanStack Router** (1.49 or later) — the adapter ships as `@qubeejs/react/tanstack-router`. Wrap the root
 route's outlet once:
 
 ```tsx

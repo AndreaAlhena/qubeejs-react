@@ -10,7 +10,8 @@ import { Code } from '@astrojs/starlight/components';
 import tanStackRouterRoot from '../../../../examples/tanstack-router-root.tsx?raw';
 
 The adapter for TanStack Router ships with the package, as an entry point of its own:
-`@qubeejs/react/tanstack-router`. Wrap the root route's outlet in it once:
+`@qubeejs/react/tanstack-router`. It needs TanStack Router 1.49 or later, the first release whose
+`navigate` takes an href. Wrap the root route's outlet in it once:
 
 <Code code={tanStackRouterRoot} lang="tsx" title="src/routes/root.tsx" />
 

@@ -43,8 +43,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   Router 7 and later — an entry point of its own, with `react-router` as an optional peer
   dependency (#22)
 - `@qubeejs/react/tanstack-router`: `<TanStackRouterAdapter>` and `useTanStackRouterAdapter()`,
-  for TanStack Router 1.x — an entry point of its own, with `@tanstack/react-router` as an
-  optional peer dependency (#23)
+  for TanStack Router 1.49 and later, the first release whose `navigate` takes an href — an
+  entry point of its own, with `@tanstack/react-router` as an optional peer dependency (#23, #32)
 - A debounced change is committed at once when the user clicks a link, so that on routers that
   report the new URL late — the Next.js App Router, loaders that take time — a search still
   waiting cannot fire after the link was followed and pull the user back (#31)
