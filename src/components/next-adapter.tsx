@@ -4,7 +4,8 @@ import { useState } from 'react';
 
 import type { NextAdapterProps } from '../types/next-adapter-props.type';
 
-import { createNextAdapterHook } from '../utils/create-next-adapter-hook';
+import { useNextAdapter } from '../hooks/use-next-adapter';
+import { bindAdapterOptions } from '../utils/bind-adapter-options';
 import { AdapterScopeProvider } from './adapter-scope-provider';
 
 /**
@@ -33,7 +34,7 @@ import { AdapterScopeProvider } from './adapter-scope-provider';
  * ```
  */
 export function NextAdapter(props: NextAdapterProps): ReactElement {
-  const [useAdapter] = useState(() => createNextAdapterHook({ scroll: props.scroll }));
+  const [useAdapter] = useState(() => bindAdapterOptions(useNextAdapter, { scroll: props.scroll }));
 
   return <AdapterScopeProvider useAdapter={useAdapter}>{props.children}</AdapterScopeProvider>;
 }
