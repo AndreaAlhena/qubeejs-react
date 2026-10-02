@@ -17,6 +17,7 @@ import { StrictMode, useState } from 'react';
 
 import { articleList } from '../../test/fixtures/article-list';
 import { TanStackRouterAdapter } from '../components/tanstack-router-adapter';
+import { parseSearch, stringifySearch } from '../utils/plain-search';
 import { useQubeeList } from './use-qubee-list';
 import { useTanStackRouterAdapter } from './use-tanstack-router-adapter';
 
@@ -111,11 +112,13 @@ function TogglingRoot(): ReactElement {
 async function start(
   initial: string,
   basepath?: string,
-  root: () => ReactElement = Root
+  root: () => ReactElement = Root,
+  serialisers: { parseSearch?: typeof parseSearch; stringifySearch?: typeof stringifySearch } = {}
 ): Promise<{ history: RouterHistory; navigate: MockInstance }> {
   const rootRoute = createRootRoute({ component: root });
   const history = createMemoryHistory({ initialEntries: [initial] });
   const router = createRouter({
+    ...serialisers,
     basepath,
     history,
     routeTree: rootRoute.addChildren([
@@ -263,6 +266,36 @@ describe('useTanStackRouterAdapter', () => {
       expect(text('url')).toBe('/articles?q=1.5');
       expect(text('q')).toBe('1.5');
       expect(text('pending')).toBe('false');
+    });
+  });
+
+  describe('with the plain-text search serialisers', () => {
+    it('should keep a space typed after a number', async () => {
+      await start('/articles', undefined, Root, { parseSearch, stringifySearch });
+
+      await type('10 ');
+      await wait(350);
+
+      expect(text('url')).toBe('/articles?q=10+');
+      expect(text('q')).toBe('10 ');
+      expect(text('pending')).toBe('false');
+    });
+
+    it('should keep quotes and digits as typed', async () => {
+      await start('/articles', undefined, Root, { parseSearch, stringifySearch });
+
+      await type('"react hooks" 1.50');
+      await wait(350);
+
+      expect(text('q')).toBe('"react hooks" 1.50');
+      expect(text('pending')).toBe('false');
+    });
+
+    it('should still read the page the router was opened at', async () => {
+      await start('/articles?page=3&q=react', undefined, Root, { parseSearch, stringifySearch });
+
+      expect(text('page')).toBe('3');
+      expect(text('q')).toBe('react');
     });
   });
 
