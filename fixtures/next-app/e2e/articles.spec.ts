@@ -145,6 +145,35 @@ test.describe('a list in the Next.js App Router', () => {
     await expect(page.locator('#fetching')).toHaveText('false');
   });
 
+  test('prefetches in a Server Component with the TanStack Query entry, and hydrates the cache', async ({
+    page,
+    request,
+  }) => {
+    const html = await (await request.get('/prefetch?page=2')).text();
+
+    // The page the Server Component prefetched, rendered from the cache on the server.
+    expect(html).toContain('Article 11');
+
+    const asked: string[] = [];
+
+    page.on('request', (sent) => {
+      if (sent.url().includes('/api/articles')) {
+        asked.push(sent.url());
+      }
+    });
+
+    await page.goto('/prefetch?page=2');
+
+    await expect(page.locator('#prefetched-rows li').first()).toHaveText('Article 11');
+    await expect(page.locator('#fetch-status')).toHaveText('idle');
+    // Same key on both sides: the browser found the page in the cache and asked for nothing.
+    expect(asked).toEqual([]);
+
+    await page.locator('#prefetched-next').click();
+
+    await expect(page.locator('#prefetched-rows li').first()).toHaveText('Article 21');
+  });
+
   test('is not pulled back when the user follows a slow link while a search is pending', async ({
     page,
   }) => {
@@ -153,6 +182,7 @@ test.describe('a list in the Next.js App Router', () => {
     // The debounce is still waiting when the link is clicked, and the page it leads to takes
     // longer to arrive than the debounce: the search must not overtake the navigation.
     await page.locator('#search').pressSequentially('late');
+    await expect(page.locator('#pending')).toHaveText('true');
     await page.locator('#slow-link').click();
 
     await expect(page.locator('#slow')).toBeVisible();
