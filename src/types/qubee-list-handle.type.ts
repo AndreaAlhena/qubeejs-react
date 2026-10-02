@@ -24,6 +24,11 @@ export type QubeeListHandle<TList> = {
    */
   request: ListRequest;
   /**
+   * Return every param of the list to its default, in one navigation. Parameters the list does
+   * not own are kept; a list already at its defaults does not navigate.
+   */
+  reset: (options?: Omit<ListSetOptions, 'debounce'>) => void;
+  /**
    * Apply `changes` to the state and navigate — at most one navigation per call. A change to
    * anything but the page returns to page 1; a key set to `undefined` returns to its default.
    */

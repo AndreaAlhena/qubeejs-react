@@ -265,6 +265,33 @@ async function main(): Promise<void> {
     text('shared')
   );
 
+  // M — a list in memory, under its own provider.
+  const urlBeforeDialog = window.location.search;
+
+  check(
+    'M1 the in-memory list starts from its initial search',
+    text('dialoglabel') === '3',
+    text('dialoglabel')
+  );
+
+  await click('dialognext');
+
+  check('M2 its components share one state', text('dialoglabel') === '4', text('dialoglabel'));
+  check(
+    'M3 and the page URL does not change',
+    window.location.search === urlBeforeDialog,
+    window.location.search
+  );
+  check(
+    'M4 nor does the URL list with the same definition',
+    $('tagnext').textContent === 'Tags page 2',
+    $('tagnext').textContent ?? ''
+  );
+
+  await click('dialogreset');
+
+  check('M5 reset() returns it to its default', text('dialoglabel') === '1', text('dialoglabel'));
+
   // J — hydration of server-rendered markup at a URL with params.
   const hydrated = window.document.getElementById('hydrated') as HTMLElement;
   const errorsBeforeHydration = errors.length;

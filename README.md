@@ -155,6 +155,8 @@ function Articles(): ReactElement {
 - The URL is the source of truth: Back, Forward or a link elsewhere cancel a pending debounce and
   discard anything not yet in the URL. Unmounting cancels a pending debounce too, and so does
   hiding the tree with React 19's `<Activity>`: the draft is dropped, not left pending.
+- `reset()` returns every param to its default in one navigation, keeping parameters the list
+  does not own.
 - `toggleSort(field)` exists when the list declares exactly one `sortParam`; `field` is typed to
   its fields. Single mode (the default) flips the primary sort, and any other field starts
   ascending and replaces the others; `{ multiple: true }` flips the field in place, or appends it,
@@ -162,6 +164,28 @@ function Articles(): ReactElement {
 
 No provider is needed: the URL is the shared state. When several components need the same draft
 or `isPending`, call the hook once in their common parent and pass the handle down.
+
+## Lists in memory
+
+The same definition works without a URL — in a dialog, a picker, anywhere the page URL must not
+change:
+
+```tsx
+import { MemoryAdapter, useMemoryAdapter, useQubeeList } from '@qubeejs/react';
+
+// One component: the state belongs to it.
+const tags = useQubeeList(tagList, useMemoryAdapter());
+
+// Several components sharing one state.
+<MemoryAdapter initialSearch="status=draft">
+  <TagFilters />
+  <TagTable />
+</MemoryAdapter>;
+```
+
+The state starts from `initialSearch` and is gone when the component or the provider unmounts.
+There is no history: `replace` makes no difference and there is no Back. Everything else — typed
+state, `set()`, debounce, `isPending`, `request` — behaves as with a URL.
 
 ## Routers
 

@@ -367,6 +367,78 @@ describe('useQubeeList', () => {
     });
   });
 
+  describe('reset', () => {
+    it('should return every param to its default in one navigation', () => {
+      const router = createTestRouter('/articles?page=3&q=react&sort=title&status=draft');
+      const { result } = renderList(router);
+
+      act(() => result.current.reset());
+
+      expect(router.navigations).toEqual([{ href: '/articles', options: { replace: false } }]);
+      expect(result.current.state.page).toBe(1);
+      expect(result.current.state.q).toBeUndefined();
+      expect(result.current.state.status).toBeUndefined();
+      expect(result.current.state.sort).toEqual([{ field: 'publishedAt', order: SortEnum.DESC }]);
+    });
+
+    it('should keep parameters the list does not own', () => {
+      const router = createTestRouter('/articles?q=react&utm=newsletter');
+      const { result } = renderList(router);
+
+      act(() => result.current.reset());
+
+      expect(router.navigations.map((navigation) => navigation.href)).toEqual([
+        '/articles?utm=newsletter',
+      ]);
+    });
+
+    it('should forward replace', () => {
+      const router = createTestRouter('/articles?q=react');
+      const { result } = renderList(router);
+
+      act(() => result.current.reset({ replace: true }));
+
+      expect(router.navigations[0].options).toEqual({ replace: true });
+    });
+
+    it('should not navigate when the list is already at its defaults', () => {
+      const router = createTestRouter('/articles?utm=newsletter');
+      const { result } = renderList(router);
+
+      act(() => result.current.reset());
+
+      expect(router.navigations).toEqual([]);
+    });
+
+    it('should cancel a pending debounce', () => {
+      vi.useFakeTimers();
+
+      const router = createTestRouter('/articles?q=react');
+      const { result } = renderList(router);
+
+      act(() => result.current.set({ q: 'reactive' }, { debounce: 300 }));
+      act(() => result.current.reset());
+      act(() => {
+        vi.advanceTimersByTime(300);
+      });
+
+      expect(router.navigations.map((navigation) => navigation.href)).toEqual(['/articles']);
+      expect(result.current.state.q).toBeUndefined();
+      expect(result.current.isPending).toBe(false);
+
+      vi.useRealTimers();
+    });
+
+    it('should take no debounce', () => {
+      const { result } = renderList(createTestRouter('/articles'));
+
+      // @ts-expect-error — reset() navigates at once: it has no debounce option
+      result.current.reset({ debounce: 300 });
+
+      expect(result.current.state.page).toBe(1);
+    });
+  });
+
   describe('href', () => {
     it('should build hrefs from the draft', () => {
       const router = createTestRouter('/articles', { mode: 'manual' });

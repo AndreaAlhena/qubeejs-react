@@ -34,6 +34,7 @@ button all land on the same list.
 | `state` | `ListState<typeof list>` | The list's values: render from it, bind inputs to it. |
 | `set(changes, options?)` | `void` | Change any params at once. One call, at most one navigation. |
 | `setPage(page, options?)` | `void` | Shorthand for `set({ page })`. |
+| `reset(options?)` | `void` | Return every param to its default, in one navigation. |
 | `toggleSort(field, options?)` | `void` | There only when the list declares exactly one `sortParam`: sorts by the field, flipping the direction where the core's rules say so. |
 | `href(changes?)` | `string` | The URL a change would lead to — for `<a>` and `<Link>`. |
 | `request` | `ListRequest` | `{ uri, headers, paginate }` for the page to fetch. |
@@ -89,6 +90,10 @@ list.set({ q: undefined, status: undefined });
 Setting a key to `undefined` returns it to its default. For a param with an empty default, such as
 `q` or `status`, that means no value; for a list or sort param with a non-empty default it means
 that default, not nothing. Give a multi-select an empty default if users must be able to clear it.
+
+`list.reset()` does the same for every param the list declares: one call, one history entry, and
+parameters the list does not own stay where they are. On a list already at its defaults it does
+nothing.
 
 A change adds a history entry; pass `{ replace: true }` to replace the current one instead — what a
 search box wants, so that the back button does not step through every search.
