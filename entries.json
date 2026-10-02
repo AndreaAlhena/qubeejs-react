@@ -1,4 +1,11 @@
 [
+  {
+    "client": false,
+    "name": "fetch",
+    "peer": null,
+    "source": "src/entries/fetch.ts",
+    "subpath": "./fetch"
+  },
   { "client": true, "name": "index", "peer": null, "source": "src/index.ts", "subpath": "." },
   {
     "client": true,

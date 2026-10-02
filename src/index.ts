@@ -13,6 +13,7 @@ export type { AdapterNavigateOptions } from './types/adapter-navigate-options.ty
 export type { AdapterProviderProps } from './types/adapter-provider-props.type';
 export type { ListSetOptions } from './types/list-set-options.type';
 export type { MemoryAdapterProps } from './types/memory-adapter-props.type';
+export type { QubeeFetcher } from './types/qubee-fetcher.type';
 export type { QubeeHandle } from './types/qubee-handle.type';
 export type { QubeeListHandle } from './types/qubee-list-handle.type';
 export type { QubeeProviderProps } from './types/qubee-provider-props.type';
@@ -27,6 +28,7 @@ export { QubeeProvider } from './components/qubee-provider';
 // Errors
 export { MissingQubeeProviderError } from './errors/missing-qubee-provider.error';
 export { MissingRouterAdapterError } from './errors/missing-router-adapter.error';
+export { QubeeFetchError } from './errors/qubee-fetch.error';
 
 // Functions
 export { createAdapterProvider } from './utils/create-adapter-provider';

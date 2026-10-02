@@ -1,3 +1,4 @@
+import type { QubeeFetcher } from '../src/entries/fetch';
 import type { NextAdapterOptions, NextAdapterProps } from '../src/entries/next';
 import type {
   ReactRouterAdapterOptions,
@@ -8,11 +9,27 @@ import type {
   TanStackRouterAdapterProps,
 } from '../src/entries/tanstack-router';
 
+import * as fetchEntry from '../src/entries/fetch';
 import * as next from '../src/entries/next';
 import * as reactRouter from '../src/entries/react-router';
 import * as tanstackRouter from '../src/entries/tanstack-router';
+import * as main from '../src/index';
 
 describe('entry points', () => {
+  describe('@qubeejs/react/fetch', () => {
+    it('should export exactly the documented symbols', () => {
+      expect(Object.keys(fetchEntry).sort()).toEqual(['QubeeFetchError', 'fetchQubeePage']);
+    });
+
+    it('should export the documented types', () => {
+      expectTypeOf<QubeeFetcher>().returns.toEqualTypeOf<Promise<Response>>();
+    });
+
+    it('should export the error class the main entry exports', () => {
+      expect(fetchEntry.QubeeFetchError).toBe(main.QubeeFetchError);
+    });
+  });
+
   describe('@qubeejs/react/next', () => {
     it('should export exactly the documented symbols', () => {
       expect(Object.keys(next).sort()).toEqual(['NextAdapter', 'useNextAdapter']);

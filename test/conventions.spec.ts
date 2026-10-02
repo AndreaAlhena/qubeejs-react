@@ -302,10 +302,17 @@ describe('repository conventions', () => {
     ]);
   });
 
-  it('performs no network I/O', () => {
+  it('performs network I/O in one place only, and through nothing but fetch', () => {
+    // `fetch` is named once: as the default fetcher of fetchQubeePage. Everything else that
+    // fetches goes through that function, so an app's own fetcher always applies.
     const offenders = files
-      .filter((f) => /\b(fetch|XMLHttpRequest|axios)\s*\(/.test(f.text.replace(COMMENTS, '')))
-      .map((f) => f.path);
-    expect(offenders).toEqual([]);
+      .filter((f) => f.path !== 'src/utils/fetch-qubee-page.ts')
+      .filter((f) => /(?<![\w.-])fetch(?![\w-])/.test(f.text.replace(COMMENTS, '')))
+      .map((f) => `${f.path} names fetch`);
+    const others = files
+      .filter((f) => /\b(XMLHttpRequest|axios)\b/.test(f.text.replace(COMMENTS, '')))
+      .map((f) => `${f.path} uses another HTTP client`);
+
+    expect([...offenders, ...others]).toEqual([]);
   });
 });

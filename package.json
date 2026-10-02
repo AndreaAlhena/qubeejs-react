@@ -46,6 +46,16 @@
         "default": "./dist/index.cjs"
       }
     },
+    "./fetch": {
+      "import": {
+        "types": "./dist/fetch.d.ts",
+        "default": "./dist/fetch.js"
+      },
+      "require": {
+        "types": "./dist/fetch.d.cts",
+        "default": "./dist/fetch.cjs"
+      }
+    },
     "./next": {
       "import": {
         "types": "./dist/next.d.ts",

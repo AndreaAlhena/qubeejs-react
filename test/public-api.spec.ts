@@ -5,6 +5,7 @@ import type {
   AdapterProviderProps,
   ListSetOptions,
   MemoryAdapterProps,
+  QubeeFetcher,
   QubeeHandle,
   QubeeListHandle,
   QubeeProviderProps,
@@ -21,6 +22,7 @@ describe('public API', () => {
       'MemoryAdapter',
       'MissingQubeeProviderError',
       'MissingRouterAdapterError',
+      'QubeeFetchError',
       'QubeeProvider',
       'createAdapterProvider',
       'useBrowserAdapter',
@@ -36,6 +38,7 @@ describe('public API', () => {
     expectTypeOf<AdapterProviderProps>().toHaveProperty('children');
     expectTypeOf<ListSetOptions>().toHaveProperty('debounce');
     expectTypeOf<MemoryAdapterProps>().toHaveProperty('initialSearch');
+    expectTypeOf<QubeeFetcher>().returns.toEqualTypeOf<Promise<Response>>();
     expectTypeOf<QubeeHandle>().toHaveProperty('state');
     expectTypeOf<QubeeListHandle<unknown>>().toHaveProperty('set');
     expectTypeOf<QubeeProviderProps>().toHaveProperty('children');
