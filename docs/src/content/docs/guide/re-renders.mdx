@@ -8,7 +8,7 @@ sidebar:
 
 Every hook in the adapter reads an external store through React's
 [`useSyncExternalStore`](https://react.dev/reference/react/useSyncExternalStore): the qubee store for
-`useQubee` and `useQubeeContext`, the URL for `useBrowserRouter`. That one choice explains
+`useQubee` and `useQubeeContext`, the URL for `useBrowserAdapter`. That one choice explains
 everything on this page.
 
 ## One write, one snapshot
@@ -42,8 +42,8 @@ builder instead.
 | Calls `useQubee()` | its own instance's store is written |
 | Calls `useQubeeContext()` | the store of the nearest provider's instance is written |
 | Renders `<QubeeProvider>` | never because of the query — the context holds the instance, not the state |
-| Calls `useListState()` | the URL changes, or its own draft does, on `set()` |
-| Calls `useBrowserRouter()` | its own `navigate`, another `useBrowserRouter` instance's `navigate` (they share one history fan-out), or Back/Forward — not when other code calls `history.pushState` |
+| Calls `useQubeeList()` | the URL changes, or its own draft does, on `set()` |
+| Calls `useBrowserAdapter()` | its own `navigate`, another `useBrowserAdapter` instance's `navigate` (they share one history fan-out), or Back/Forward — not when other code calls `history.pushState` |
 
 A component that only renders children re-renders with its parent, as always; wrap expensive rows
 in `memo` when a list is long.
@@ -70,7 +70,7 @@ server and while hydrating.
   never as a module-level instance shared across server requests — and configure it the same way on
   both sides. A client-only write before hydration (from `localStorage`, say) makes the client's
   snapshot differ from the server HTML; make such writes in an effect.
-- For `useBrowserRouter`, the server knows no URL: its server snapshot is an empty path and search.
+- For `useBrowserAdapter`, the server knows no URL: its server snapshot is an empty path and search.
   A URL-driven list therefore renders its defaults on the server, then re-renders with the real URL
   as soon as it hydrates. When the server should render the right page — in the Next.js App Router —
   use the framework's router, which knows the URL there. See

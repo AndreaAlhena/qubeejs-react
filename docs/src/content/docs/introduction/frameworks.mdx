@@ -15,7 +15,7 @@ import viteMain from '../../../../examples/vite-main.tsx?raw';
 The adapter brings no router and no bundler of its own. Two things change from one setup to the
 next: where a shared instance is provided, and which router a URL-driven list writes through. A
 router is any object with `navigate(href, { replace })`, `pathname` and `search` — the
-`ListRouter` type.
+`RouterAdapter` type.
 
 ## Vite, or any client-rendered app
 
@@ -24,7 +24,7 @@ the URL do not:
 
 <Code code={viteMain} lang="tsx" title="src/main.tsx" />
 
-For URL-driven lists without a router library, `useBrowserRouter()` reads `location` and writes
+For URL-driven lists without a router library, `useBrowserAdapter()` reads `location` and writes
 with `history.pushState` and `replaceState`. Every component that calls it stays in step, through the back and forward buttons too. It observes only its own `navigate` plus Back and
 Forward: a `pushState` by other code is not seen until the next `popstate`, so parameters that code
 added can be dropped by the next `set()`. When something else also writes the URL, use your
@@ -32,7 +32,7 @@ router's adapter.
 
 ## React Router
 
-Wrap React Router's hooks in a `ListRouter` once, and pass it to `useListState`. The hooks below are
+Wrap React Router's hooks in a `RouterAdapter` once, and pass it to `useQubeeList`. The hooks below are
 imported from `'react-router'` in React Router 7 and later; on v6.4+ the same hooks come from
 `'react-router-dom'`.
 
@@ -61,7 +61,7 @@ The adapter carries no `'use client'` directive, so import it from files that do
 
 <Code code={nextProviders} lang="tsx" title="app/providers.tsx" />
 
-### Next's router, as a `ListRouter`
+### Next's router, as a `RouterAdapter`
 
 <Code code={nextListRouter} lang="ts" title="app/articles/use-next-list-router.ts" />
 

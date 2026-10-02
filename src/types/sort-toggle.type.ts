@@ -30,7 +30,7 @@ type SortFields<TParams, K> = K extends keyof TParams
   : never;
 
 /**
- * The `toggleSort` member of a {@link ListStateHandle}: present only when the list declares
+ * The `toggleSort` member of a {@link QubeeListHandle}: present only when the list declares
  * exactly one `sortParam`, with `field` typed to the fields that param allows.
  */
 export type SortToggle<TList> =

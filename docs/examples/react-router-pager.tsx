@@ -1,5 +1,5 @@
 import { getPageWindow } from '@qubeejs/core';
-import { useListState } from '@qubeejs/react';
+import { useQubeeList } from '@qubeejs/react';
 import { Link } from 'react-router';
 
 import { articleList } from './article-list';
@@ -7,7 +7,7 @@ import { useReactRouter } from './use-react-router';
 
 /** Page links for the article list, as React Router links: in-place and crawlable. */
 export function ArticlePager({ lastPage }: { lastPage: number }) {
-  const list = useListState(articleList, useReactRouter());
+  const list = useQubeeList(articleList, useReactRouter());
 
   return (
     <nav aria-label="Pagination">

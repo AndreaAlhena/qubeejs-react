@@ -17,8 +17,8 @@ import useArticlesQuery from '../../../../examples/use-articles-query.ts?raw';
 In a component under `QueryRoot`:
 
 ```tsx
-const router = useBrowserRouter();
-const list = useListState(articleList, router);
+const router = useBrowserAdapter();
+const list = useQubeeList(articleList, router);
 const { data, isFetching } = useArticlesQuery(list);
 ```
 

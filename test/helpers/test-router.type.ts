@@ -1,12 +1,12 @@
-import type { ListNavigateOptions } from '../../src/types/list-navigate-options.type';
-import type { ListRouter } from '../../src/types/list-router.type';
+import type { AdapterNavigateOptions } from '../../src/types/adapter-navigate-options.type';
+import type { RouterAdapter } from '../../src/types/router-adapter.type';
 
 /**
  * One call to a test router's `navigate`.
  */
 export type TestNavigation = {
   href: string;
-  options: ListNavigateOptions;
+  options: AdapterNavigateOptions;
 };
 
 /**
@@ -20,7 +20,7 @@ export type TestRouterOptions = {
 };
 
 /**
- * An in-memory router for useListState specs.
+ * An in-memory router for useQubeeList specs.
  */
 export type TestRouter = {
   /** Move the URL without the hook asking: Back, Forward, a link elsewhere. */
@@ -29,6 +29,6 @@ export type TestRouter = {
   navigations: TestNavigation[];
   /** Land the oldest queued navigation (manual mode). */
   settle: () => void;
-  /** The {@link ListRouter} for the current URL; call it inside the hook under test. */
-  useRouter: () => ListRouter;
+  /** The {@link RouterAdapter} for the current URL; call it inside the hook under test. */
+  useRouter: () => RouterAdapter;
 };

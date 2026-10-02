@@ -1,4 +1,4 @@
-import type { ListStateHandle } from '@qubeejs/react';
+import type { QubeeListHandle } from '@qubeejs/react';
 import type { MouseEvent } from 'react';
 
 import { type articleList, ArticleStatusEnum } from './article-list';
@@ -15,7 +15,7 @@ const CHIPS = [
  * Status filters as links: each is a real href — it opens in a new tab and can
  * be crawled — and a plain click changes the list in place.
  */
-export function StatusChips({ list }: { list: ListStateHandle<typeof articleList> }) {
+export function StatusChips({ list }: { list: QubeeListHandle<typeof articleList> }) {
   return (
     <nav aria-label="Status">
       {CHIPS.map(({ label, status }) => (

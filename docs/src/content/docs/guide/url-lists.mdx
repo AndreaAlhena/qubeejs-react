@@ -1,6 +1,6 @@
 ---
 title: Lists in the URL
-description: useListState — a list whose query is the page URL, with typed state, at most one navigation per change, and an href for every link.
+description: useQubeeList — a list whose query is the page URL, with typed state, at most one navigation per change, and an href for every link.
 sidebar:
   label: Lists in the URL
   order: 4
@@ -10,7 +10,7 @@ import { Code } from '@astrojs/starlight/components';
 import articleIndex from '../../../../examples/article-index.tsx?raw';
 import statusChips from '../../../../examples/status-chips.tsx?raw';
 
-`useListState(list, router)` connects a list declared with the core's `defineList` to the page URL.
+`useQubeeList(list, router)` connects a list declared with the core's `defineList` to the page URL.
 It reads the URL into typed state, writes changes back through your router, and builds the request
 for the current page. The URL is the only source of truth: a reload, a shared link and the back
 button all land on the same list.
@@ -22,7 +22,7 @@ button all land on the same list.
   param and the rules the URL follows are documented with the core:
   [Lists & URL state ↗](https://qubeejs.andreatantimonaco.me/guide/lists/).
 - **A router**: any object with `navigate(href, { replace })`, `pathname` and `search`. Use
-  `useBrowserRouter()`, or an adapter for [React Router](/recipes/react-router/),
+  `useBrowserAdapter()`, or an adapter for [React Router](/recipes/react-router/),
   [TanStack Router](/recipes/tanstack-router/) or [Next.js](/introduction/frameworks/).
 
 ## What it returns
@@ -120,7 +120,7 @@ Both are rare, and both clear on the next change to the list.
 
 ## One hook per list, or one per component
 
-Every component that calls `useListState` with the same list reads the same URL, so no provider is
+Every component that calls `useQubeeList` with the same list reads the same URL, so no provider is
 needed to share the state. What is **not** shared is the draft and `isPending`: they belong to the
 hook that made the change. When a table should dim while the search box's change is pending, call
 the hook once in their common parent and pass the result down, as `ArticleIndex` does.

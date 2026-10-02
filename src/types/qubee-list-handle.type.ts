@@ -4,12 +4,12 @@ import type { ListSetOptions } from './list-set-options.type';
 import type { SortToggle } from './sort-toggle.type';
 
 /**
- * What {@link useListState} returns for a list definition `TList`.
+ * What {@link useQubeeList} returns for a list definition `TList`.
  *
  * Function members are properties, so the handle can be destructured. `toggleSort` is present
  * when the list declares exactly one `sortParam` — see {@link SortToggle}.
  */
-export type ListStateHandle<TList> = {
+export type QubeeListHandle<TList> = {
   /**
    * The href for the current state with `changes` applied — for `<a>` and `<Link>`, which stay
    * crawlable, prefetchable and middle-clickable. Built from the draft, so it includes anything

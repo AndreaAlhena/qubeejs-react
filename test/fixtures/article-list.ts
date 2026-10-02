@@ -11,7 +11,7 @@ import {
 import { ArticleStatusEnum } from './article-status.enum';
 
 /**
- * The articles list the useListState specs run against: a Strapi `articles` resource with a
+ * The articles list the useQubeeList specs run against: a Strapi `articles` resource with a
  * page, a search, a status filter and a sort.
  */
 export const articleList = defineList({

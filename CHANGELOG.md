@@ -7,8 +7,6 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-## [1.0.0] - 2026-10-01
-
 ### Added
 
 - Project scaffold: TypeScript, tsup (ESM + CJS), vitest with jsdom and Testing Library, ESLint
@@ -19,10 +17,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `QubeeProvider` and `useQubeeContext()`: one instance shared by a subtree, configured with flat
   `QubeeConfig` props or a `value` (`QubeeProviderProps`); only consumers re-render;
   `MissingQubeeProviderError` outside a provider (#5)
-- `ListRouter`, the router contract of URL-driven lists, with `ListNavigateOptions` for its
-  `navigate`, and `useBrowserRouter()` for apps without a router — every instance in sync, safe
+- `RouterAdapter`, the router contract of URL-driven lists, with `AdapterNavigateOptions` for its
+  `navigate`, and `useBrowserAdapter()` for apps without a router — every instance in sync, safe
   to render on the server (#6, #13)
-- `useListState(list, router)`: a list whose state lives in the page URL. Its `ListStateHandle`
+- `useQubeeList(list, router)`: a list whose state lives in the page URL. Its `QubeeListHandle`
   has a draft `state` that updates synchronously, a typed `set()` that navigates at most once per
   call, optional debounce (`ListSetOptions`), `isPending`, `href()`, `setPage()`, `toggleSort()`
   when the list declares one `sortParam` (`SortToggle`), and a `request` that changes once per
@@ -35,6 +33,3 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Changed
 
 - Build against `@qubeejs/core` 1.3.0 from npm instead of a sibling checkout (#9)
-
-[unreleased]: https://github.com/AndreaAlhena/qubeejs-react/compare/v1.0.0...HEAD
-[1.0.0]: https://github.com/AndreaAlhena/qubeejs-react/releases/tag/v1.0.0

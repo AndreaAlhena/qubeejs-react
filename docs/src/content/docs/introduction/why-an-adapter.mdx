@@ -16,8 +16,8 @@ A React app needs exactly those three effects. `@qubeejs/react` supplies them, a
 | --- | --- |
 | A component that re-renders when its query changes | `useQubee()` — a qubee instance per component, read through `useSyncExternalStore` |
 | Filters, a table and a pager sharing one query | `<QubeeProvider>` and `useQubeeContext()` — one instance for a subtree |
-| A list whose query lives in the page URL | `useListState()` — reads the URL, writes it back one navigation at a time |
-| Something to write the URL with | `useBrowserRouter()` for apps without a router, and the `ListRouter` type for any router you already use |
+| A list whose query lives in the page URL | `useQubeeList()` — reads the URL, writes it back one navigation at a time |
+| Something to write the URL with | `useBrowserAdapter()` for apps without a router, and the `RouterAdapter` type for any router you already use |
 
 ## Two kinds of list
 
@@ -28,7 +28,7 @@ qubee store, and components drive it with the full builder API, exactly as ng-qu
 
 **URL-driven lists** — the query lives in the address bar, so it survives a reload, can be shared
 as a link, and works with the back button. You declare the list once, with the core's `defineList`;
-`useListState` reads the URL into typed state and writes every change back with a single
+`useQubeeList` reads the URL into typed state and writes every change back with a single
 `set({ … })`. Start with the [Quick start](/introduction/quick-start/).
 
 ## What it leaves to you

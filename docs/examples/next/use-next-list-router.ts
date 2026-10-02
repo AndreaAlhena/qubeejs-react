@@ -1,13 +1,13 @@
 'use client';
 
-import type { ListRouter } from '@qubeejs/react';
+import type { RouterAdapter } from '@qubeejs/react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 /**
- * Next's App Router as a ListRouter. `scroll: false` keeps the reader where
+ * Next's App Router as a RouterAdapter. `scroll: false` keeps the reader where
  * they are when a filter or a page number changes.
  */
-export function useNextListRouter(): ListRouter {
+export function useNextListRouter(): RouterAdapter {
   const router = useRouter();
   const pathname = usePathname();
   const search = useSearchParams();

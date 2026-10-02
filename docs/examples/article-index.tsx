@@ -1,5 +1,5 @@
 import type { PaginatedResult } from '@qubeejs/core';
-import { useBrowserRouter, useListState } from '@qubeejs/react';
+import { useBrowserAdapter, useQubeeList } from '@qubeejs/react';
 import { useEffect, useState } from 'react';
 
 import { type Article, articleList } from './article-list';
@@ -11,12 +11,12 @@ import { ResultRange } from './result-range';
 import { StatusChips } from './status-chips';
 
 /**
- * The article list, whole. One useListState serves every control, so the page
+ * The article list, whole. One useQubeeList serves every control, so the page
  * dims while the search box's change is pending.
  */
 export function ArticleIndex() {
-  const router = useBrowserRouter();
-  const list = useListState(articleList, router);
+  const router = useBrowserAdapter();
+  const list = useQubeeList(articleList, router);
   const [result, setResult] = useState<PaginatedResult<Article> | null>(null);
   const { request } = list;
 

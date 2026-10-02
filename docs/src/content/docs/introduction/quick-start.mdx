@@ -54,14 +54,14 @@ What happens when someone types `react` into the search box:
    search makes the old page number meaningless.
 3. `request` changes — its `uri` now filters on the title — and the effect fetches the new page.
 
-`useBrowserRouter()` writes the URL with the History API and observes only its own `navigate` plus
+`useBrowserAdapter()` writes the URL with the History API and observes only its own `navigate` plus
 Back and Forward. That is enough here, where the list is the only thing writing the URL. If your app
 already has a router, or other code also writes the URL, pass that router's adapter instead:
 [Vite / Next.js / React Router](/introduction/frameworks/).
 
 ## Where next
 
-- [Lists in the URL](/guide/url-lists/) — every member of `useListState`, and the three layers of
+- [Lists in the URL](/guide/url-lists/) — every member of `useQubeeList`, and the three layers of
   state behind it.
 - [Fetching](/guide/fetching/) — caching with TanStack Query or SWR instead of an effect.
 - [useQubee](/guide/use-qubee/) — lists that live in memory rather than in the URL.

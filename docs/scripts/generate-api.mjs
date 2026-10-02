@@ -189,7 +189,7 @@ function kindOf(node) {
   );
 }
 
-/** How a page names its export: `useQubee()`, `<QubeeProvider>`, `ListRouter`. */
+/** How a page names its export: `useQubee()`, `<QubeeProvider>`, `RouterAdapter`. */
 const titleOf = (name, kind) => ({ component: `<${name}>`, hook: `${name}()` })[kind] ?? name;
 
 /** Every type name referenced anywhere inside a TypeDoc node. */

@@ -14,7 +14,7 @@ Every test on this page runs in this site's own build, with Vitest, jsdom and Te
 
 ## URL-driven components: a fake router
 
-`ListRouter` is a plain object type, so a test can give `useListState` a router it controls: a fixed
+`RouterAdapter` is a plain object type, so a test can give `useQubeeList` a router it controls: a fixed
 `pathname` and `search`, and a `navigate` spy. Fake timers step through a debounce without waiting
 for it.
 
@@ -27,7 +27,7 @@ for it.
 
 ## With the real History API
 
-jsdom implements `window.history`, so `useBrowserRouter()` works in tests as it does in a browser.
+jsdom implements `window.history`, so `useBrowserAdapter()` works in tests as it does in a browser.
 Set the starting URL before rendering, and reset it after each test — jsdom keeps one `window` for a
 whole test file:
 

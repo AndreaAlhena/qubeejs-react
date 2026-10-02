@@ -1,4 +1,4 @@
-import type { ListNavigateOptions } from '../types/list-navigate-options.type';
+import type { AdapterNavigateOptions } from '../types/adapter-navigate-options.type';
 
 /**
  * Everyone following the browser history. `pushState` and `replaceState` fire no event, so
@@ -12,7 +12,7 @@ const listeners = new Set<() => void>();
  * @param href - The destination, a pathname plus an optional `?query`
  * @param options - Whether to replace the current history entry
  */
-export function navigateBrowserHistory(href: string, { replace }: ListNavigateOptions): void {
+export function navigateBrowserHistory(href: string, { replace }: AdapterNavigateOptions): void {
   const method = replace ? 'replaceState' : 'pushState';
 
   window.history[method](null, '', href);

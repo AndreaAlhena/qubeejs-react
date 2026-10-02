@@ -17,12 +17,12 @@ import {
   useTransition,
 } from 'react';
 
-import type { ListRouter } from '../types/list-router.type';
 import type { ListSetOptions } from '../types/list-set-options.type';
-import type { ListStateHandle } from '../types/list-state-handle.type';
 import type { ListStateMachine } from '../types/list-state-machine.type';
 import type { LooseChanges } from '../types/loose-changes.type';
 import type { LooseList } from '../types/loose-list.type';
+import type { QubeeListHandle } from '../types/qubee-list-handle.type';
+import type { RouterAdapter } from '../types/router-adapter.type';
 
 import { createDebouncer } from '../utils/create-debouncer';
 import { createLocalStore } from '../utils/create-local-store';
@@ -77,18 +77,18 @@ function locationOf(list: LooseList, location: ListLocation): string {
  *
  * @example
  * ```tsx
- * const list = useListState(articleList, useBrowserRouter());
+ * const list = useQubeeList(articleList, useBrowserAdapter());
  *
  * <input value={list.state.q ?? ''} onChange={(e) => list.set({ q: e.target.value }, { debounce: 300, replace: true })} />
  * <th aria-sort={getAriaSort(list.state.sort, 'title')} onClick={() => list.toggleSort('title')}>Title</th>
  * <a href={list.href({ page: 2 })}>2</a>
  * ```
  */
-export function useListState<TList extends ListDefinition<ListParams>>(
+export function useQubeeList<TList extends ListDefinition<ListParams>>(
   list: TList,
-  router: ListRouter
-): ListStateHandle<TList> {
-  // `ListStateHandle<TList>` is built on `ListState<TList>`, a conditional type the compiler
+  router: RouterAdapter
+): QubeeListHandle<TList> {
+  // `QubeeListHandle<TList>` is built on `ListState<TList>`, a conditional type the compiler
   // cannot evaluate while `TList` is generic. The hook works on the list as a `LooseList` —
   // which every definition is — and narrows the handle once, where it returns it.
   const loose: LooseList = list;
@@ -238,6 +238,6 @@ export function useListState<TList extends ListDefinition<ListParams>>(
       setPage,
       state,
       ...sortMember,
-    } as unknown as ListStateHandle<TList>;
+    } as unknown as QubeeListHandle<TList>;
   }, [href, isPending, loose, read, request, set, setPage, sortKey, state]);
 }

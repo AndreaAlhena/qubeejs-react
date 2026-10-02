@@ -14,8 +14,8 @@ import useArticlesSWR from '../../../../examples/use-articles-swr.ts?raw';
 In a component:
 
 ```tsx
-const router = useBrowserRouter();
-const list = useListState(articleList, router);
+const router = useBrowserAdapter();
+const list = useQubeeList(articleList, router);
 const { data, isValidating } = useArticlesSWR(list);
 ```
 

@@ -9,14 +9,14 @@ import { StrictMode } from 'react';
 import { renderToString } from 'react-dom/server';
 
 import type { TestRouter } from '../../test/helpers/test-router.type';
-import type { ListStateHandle } from '../types/list-state-handle.type';
+import type { QubeeListHandle } from '../types/qubee-list-handle.type';
 
 import { articleList } from '../../test/fixtures/article-list';
 import { ArticleStatusEnum } from '../../test/fixtures/article-status.enum';
 import { tagList } from '../../test/fixtures/tag-list';
 import { createTestRouter } from '../../test/helpers/create-test-router';
 import { uriFor } from '../../test/helpers/uri-for';
-import { useListState } from './use-list-state';
+import { useQubeeList } from './use-qubee-list';
 
 /**
  * React 19.2's `Activity`; `undefined` on React 18, whose typings do not declare it.
@@ -27,13 +27,13 @@ const Activity = (
   }
 ).Activity;
 
-type ArticleListHandle = ListStateHandle<typeof articleList>;
+type ArticleListHandle = QubeeListHandle<typeof articleList>;
 
 function renderList(router: TestRouter): RenderHookResult<ArticleListHandle, unknown> {
-  return renderHook(() => useListState(articleList, router.useRouter()), { wrapper: StrictMode });
+  return renderHook(() => useQubeeList(articleList, router.useRouter()), { wrapper: StrictMode });
 }
 
-describe('useListState', () => {
+describe('useQubeeList', () => {
   describe('state', () => {
     it('should read the list state from the router URL', () => {
       const { result } = renderList(createTestRouter('/articles?page=2&q=react'));
@@ -47,7 +47,7 @@ describe('useListState', () => {
     it('should accept a record as the search', () => {
       const { result } = renderHook(
         () =>
-          useListState(articleList, {
+          useQubeeList(articleList, {
             navigate: vi.fn(),
             pathname: '/articles',
             search: { q: 'react', status: ['draft'] },
@@ -420,7 +420,7 @@ describe('useListState', () => {
   describe('server rendering', () => {
     it('should render the state from the router URL', () => {
       function Probe(): ReactElement {
-        const list = useListState(articleList, {
+        const list = useQubeeList(articleList, {
           navigate: () => undefined,
           pathname: '/articles',
           search: 'q=react',
@@ -601,7 +601,7 @@ describe('useListState', () => {
         const router = createTestRouter('/articles');
         let handle: ArticleListHandle | undefined;
         const Page = (): ReactElement => {
-          handle = useListState(articleList, router.useRouter());
+          handle = useQubeeList(articleList, router.useRouter());
 
           return <output>{handle.state.q ?? ''}</output>;
         };
@@ -706,7 +706,7 @@ describe('useListState', () => {
 
     it('should not exist on a list without a sortParam', () => {
       const { result } = renderHook(
-        () => useListState(tagList, createTestRouter('/tags').useRouter()),
+        () => useQubeeList(tagList, createTestRouter('/tags').useRouter()),
         { wrapper: StrictMode }
       );
 

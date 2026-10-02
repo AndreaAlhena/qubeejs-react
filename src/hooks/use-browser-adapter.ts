@@ -1,6 +1,6 @@
 import { useMemo, useSyncExternalStore } from 'react';
 
-import type { ListRouter } from '../types/list-router.type';
+import type { RouterAdapter } from '../types/router-adapter.type';
 
 import {
   navigateBrowserHistory,
@@ -11,7 +11,7 @@ import {
 import { pathnameOfHref, searchOfHref } from '../utils/href';
 
 /**
- * A {@link ListRouter} for apps without a router: `history.pushState` / `replaceState`, plus the
+ * A {@link RouterAdapter} for apps without a router: `history.pushState` / `replaceState`, plus the
  * back and forward buttons.
  *
  * Every instance on the page stays in sync, because navigations fan out to all of them. On the
@@ -22,13 +22,13 @@ import { pathnameOfHref, searchOfHref } from '../utils/href';
  * @example
  * ```tsx
  * function Articles(): ReactElement {
- *   const list = useListState(articleList, useBrowserRouter());
+ *   const list = useQubeeList(articleList, useBrowserAdapter());
  *
  *   return <a href={list.href({ page: 2 })}>2</a>;
  * }
  * ```
  */
-export function useBrowserRouter(): ListRouter {
+export function useBrowserAdapter(): RouterAdapter {
   const location = useSyncExternalStore(
     subscribeToBrowserHistory,
     readBrowserLocation,
@@ -36,7 +36,7 @@ export function useBrowserRouter(): ListRouter {
   );
 
   return useMemo(
-    (): ListRouter => ({
+    (): RouterAdapter => ({
       navigate: navigateBrowserHistory,
       pathname: pathnameOfHref(location),
       search: searchOfHref(location),

@@ -1,7 +1,7 @@
 # @qubeejs/react
 
-React hooks for `@qubeejs/core`: `useQubee`, `QubeeProvider` + `useQubeeContext`, `useListState`
-and `useBrowserRouter`. `@qubeejs/next` builds on this package.
+React hooks for `@qubeejs/core`: `useQubee`, `QubeeProvider` + `useQubeeContext`, `useQubeeList`
+and `useBrowserAdapter`. `@qubeejs/next` builds on this package.
 
 ## Coding standards
 
@@ -39,10 +39,10 @@ src/
 ├─ components/  QubeeProvider
 ├─ contexts/    qubeeContext (internal)
 ├─ errors/      MissingQubeeProviderError
-├─ hooks/       useQubee · useQubeeContext · useBrowserRouter · useListState · useQubeeHandle (internal)
+├─ hooks/       useQubee · useQubeeContext · useBrowserAdapter · useQubeeList · useQubeeHandle (internal)
 ├─ types/       public handles and props, plus internal machine / store / debouncer / loose-list shapes
 └─ utils/       href, browser history, local store, list-state machine, debouncer (all internal)
 ```
 
-`useListState` keeps three layers: the **draft** (updated synchronously by `set()`), the
+`useQubeeList` keeps three layers: the **draft** (updated synchronously by `set()`), the
 **in-flight** hrefs handed to `navigate()`, and the **URL**, which always wins.

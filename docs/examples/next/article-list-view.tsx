@@ -1,7 +1,7 @@
 'use client';
 
 import type { PaginatedResult } from '@qubeejs/core';
-import { useListState } from '@qubeejs/react';
+import { useQubeeList } from '@qubeejs/react';
 import Link from 'next/link';
 
 import { type Article, articleList } from '@/articles/article-list';
@@ -15,7 +15,7 @@ type ArticleListViewProps = {
 
 /** The interactive half of /articles: the search box, and the page the server fetched. */
 export function ArticleListView({ nextHref, result }: ArticleListViewProps) {
-  const list = useListState(articleList, useNextListRouter());
+  const list = useQubeeList(articleList, useNextListRouter());
 
   return (
     <section aria-busy={list.isPending}>

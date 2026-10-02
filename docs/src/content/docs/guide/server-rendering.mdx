@@ -25,7 +25,7 @@ browser. The adapter's hooks support it through the server snapshot of `useSyncE
   configure it the same way on both sides. A client-only write before hydration (from
   `localStorage`, say) makes the client's snapshot differ from the server HTML; make such writes in
   an effect.
-- **`useBrowserRouter`** knows no URL on the server, so a list that uses it renders its defaults
+- **`useBrowserAdapter`** knows no URL on the server, so a list that uses it renders its defaults
   there, and its real state right after hydrating. To render the right page on the server, use a
   router that knows the URL there — your framework's.
 
@@ -43,7 +43,7 @@ everything a server needs to read the URL, fetch the page and link onward:
 - `buildListHref` gives server-rendered links the same URL rules as the client: defaults left out,
   the page reset, foreign parameters kept.
 
-The interactive half is a client component reading the same list with `useListState`:
+The interactive half is a client component reading the same list with `useQubeeList`:
 
 <Code code={nextListView} lang="tsx" title="app/articles/article-list-view.tsx" />
 

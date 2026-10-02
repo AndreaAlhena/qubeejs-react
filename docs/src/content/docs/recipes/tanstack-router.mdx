@@ -1,6 +1,6 @@
 ---
 title: TanStack Router
-description: useListState on TanStack Router — the raw query string in, whole hrefs out through router.navigate.
+description: useQubeeList on TanStack Router — the raw query string in, whole hrefs out through router.navigate.
 sidebar:
   label: TanStack Router
   order: 5
@@ -16,7 +16,7 @@ format, so the adapter reads the raw query string and writes whole hrefs through
 
 ## How it works
 
-- `searchStr` is the raw query string — `?q=react&sort=title` — which a `ListRouter`'s `search`
+- `searchStr` is the raw query string — `?q=react&sort=title` — which a `RouterAdapter`'s `search`
   accepts as it is.
 - `router.navigate({ href })` takes a fully built href and applies the router's basepath and
   rewrites, so the list's URL rules — defaults left out, foreign parameters kept — apply unchanged.

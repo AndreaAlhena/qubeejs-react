@@ -5,8 +5,8 @@ import { getAriaSort, getPageWindow } from '@qubeejs/core';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { StrictMode, useEffect, useState } from 'react';
 
-import { useBrowserRouter } from '../src/hooks/use-browser-router';
-import { useListState } from '../src/hooks/use-list-state';
+import { useBrowserAdapter } from '../src/hooks/use-browser-adapter';
+import { useQubeeList } from '../src/hooks/use-qubee-list';
 import { articleList } from './fixtures/article-list';
 import { ArticleStatusEnum } from './fixtures/article-status.enum';
 import { uriFor } from './helpers/uri-for';
@@ -27,7 +27,7 @@ const wait = (milliseconds: number): Promise<void> =>
   });
 
 function ArticlesPage(): ReactElement {
-  const list = useListState(articleList, useBrowserRouter());
+  const list = useQubeeList(articleList, useBrowserAdapter());
   const [rows, setRows] = useState<readonly ArticleRow[]>([]);
   const [lastPage, setLastPage] = useState(1);
   const { request } = list;
