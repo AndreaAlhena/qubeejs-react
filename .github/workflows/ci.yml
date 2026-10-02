@@ -58,3 +58,32 @@ jobs:
       # and its own optional peer, and the package has no runtime dependencies.
       - name: Check the built package
         run: npm run check:dist
+
+  consumer:
+    name: consumer (react ${{ matrix.react }})
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        react: ['18', '19']
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          cache: npm
+          node-version: '24'
+
+      - run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      # The package as an app gets it: packed, installed from the tarball into a fresh project
+      # outside the repository, type-checked and run as ESM and as CommonJS.
+      - name: Test the packed tarball in a fresh project
+        env:
+          CONSUMER_REACT: ${{ matrix.react }}
+        run: npm run test:consumer
