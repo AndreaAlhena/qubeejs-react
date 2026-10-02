@@ -360,21 +360,24 @@ const request = buildListRequest(articleList, readListState(articleList, await s
 const page = await fetchQubeePage<Article>(request);
 ```
 
-**TanStack Query**:
+**TanStack Query** (5.62 or later) — `@qubeejs/react/tanstack-query` turns a request into query
+options: the key, `['qubee', uri, headers]`, and a `queryFn` that fetches with TanStack's signal.
+Everything else is yours to add:
 
 ```tsx
-const { request } = useQubeeList(articleList, router);
+import { qubeeQueryOptions } from '@qubeejs/react/tanstack-query';
+
+const list = useQubeeList(articleList);
 
 const articles = useQuery({
+  ...qubeeQueryOptions<Article>(list.request),
   placeholderData: keepPreviousData,
-  queryFn: async ({ signal }) => {
-    const response = await fetch(request.uri, { headers: request.headers ?? {}, signal });
-
-    return request.paginate<Article>(await response.json(), response.headers).toPlain();
-  },
-  queryKey: ['articles', request.uri, request.headers],
 });
 ```
+
+The options also fit `useSuspenseQuery`, `useQueries`, `prefetchQuery` and `ensureQueryData`; a
+`null` request skips the query. The entry is not a client module, so a Server Component or a
+loader can prefetch with it.
 
 **SWR**:
 

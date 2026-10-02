@@ -47,15 +47,17 @@ Type declarations ship with the package; there is no `@types/…` package to add
 ## What you get
 
 - **One main entry point, and one per integration.** The hooks, the providers and their types come
-  from `@qubeejs/react`. Each router adapter is an entry point of its own —
-  `@qubeejs/react/react-router`, `@qubeejs/react/tanstack-router`, `@qubeejs/react/next` — with its
-  router as an optional peer dependency, so you install only what you import.
+  from `@qubeejs/react`. Each router adapter and each fetching integration is an entry point of
+  its own — `@qubeejs/react/react-router`, `@qubeejs/react/tanstack-router`, `@qubeejs/react/next`,
+  `@qubeejs/react/tanstack-query` — with its library as an optional peer dependency, so you install
+  only what you import.
   `@qubeejs/react/fetch` holds `fetchQubeePage`, for servers, loaders and scripts.
 - **ES modules and CommonJS**, with source maps and `sideEffects: false`.
 - **Zero runtime dependencies.** React and the core are peers; nothing else is installed.
 - **A client boundary built in.** The entry points that export hooks or components are marked
   `'use client'`, so a Next.js Server Component can import the package's components without a
-  wrapper file; `@qubeejs/react/fetch` is not, so a Server Component can call what it exports.
+  wrapper file; `@qubeejs/react/fetch` and `@qubeejs/react/tanstack-query` are not, so a Server
+  Component can call what they export.
   Other bundlers ignore the marker — see [Vite / Next.js / React Router](/introduction/frameworks/).
 
 ## Keep the bundle small

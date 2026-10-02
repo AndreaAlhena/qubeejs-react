@@ -9,7 +9,10 @@
     "noUnusedParameters": true,
     "paths": {
       "@qubeejs/react": ["../../dist/index.d.ts"],
-      "@qubeejs/react/*": ["../../dist/*.d.ts"]
+      "@qubeejs/react/*": ["../../dist/*.d.ts"],
+      // The types of the tanstack-query entry name TanStack Query's own: the examples and the
+      // build must read one copy of them, the repository's.
+      "@tanstack/react-query": ["../../node_modules/@tanstack/react-query"]
     },
     "skipLibCheck": true,
     "strict": true,
