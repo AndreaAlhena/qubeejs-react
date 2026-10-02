@@ -7,8 +7,6 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-## [1.0.0] - 2026-10-01
-
 ### Added
 
 - Project scaffold: TypeScript, tsup (ESM + CJS), vitest with jsdom and Testing Library, ESLint
@@ -35,6 +33,3 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Changed
 
 - Build against `@qubeejs/core` 1.3.0 from npm instead of a sibling checkout (#9)
-
-[unreleased]: https://github.com/AndreaAlhena/qubeejs-react/compare/v1.0.0...HEAD
-[1.0.0]: https://github.com/AndreaAlhena/qubeejs-react/releases/tag/v1.0.0
