@@ -253,23 +253,23 @@ function Root(): ReactElement {
 
 `useReactRouterAdapter()` is its hook form, for the second argument of `useQubeeList`.
 
-**TanStack Router**:
+**TanStack Router** (1.x) — the adapter ships as `@qubeejs/react/tanstack-router`. Wrap the root
+route's outlet once:
 
-```ts
-import type { RouterAdapter } from '@qubeejs/react';
-import { useRouter, useRouterState } from '@tanstack/react-router';
+```tsx
+import { TanStackRouterAdapter } from '@qubeejs/react/tanstack-router';
 
-export function useTanStackRouterList(): RouterAdapter {
-  const router = useRouter();
-  const { pathname, searchStr } = useRouterState({ select: (state) => state.location });
-
-  return {
-    navigate: (href, { replace }) => void router.navigate({ href, replace }),
-    pathname,
-    search: searchStr,
-  };
-}
+const rootRoute = createRootRoute({
+  component: () => (
+    <TanStackRouterAdapter>
+      <Outlet />
+    </TanStackRouterAdapter>
+  ),
+});
 ```
+
+It reads the raw query string and navigates with whole hrefs, so a `basepath` is honoured.
+`useTanStackRouterAdapter()` is its hook form.
 
 **Next.js App Router** (until `@qubeejs/react/next` ships its adapter): the package is marked as
 a client module, so a Server Component can import its components without a wrapper file; its hooks

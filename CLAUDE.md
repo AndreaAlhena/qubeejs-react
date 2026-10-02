@@ -44,13 +44,13 @@ list definitions, page URL ⇄ state ⇄ API request, pagination and sort helper
 ```
 src/
 ├─ entries/     one file per entry point besides index.ts, as entries.json lists them:
-│               react-router
+│               react-router · tanstack-router
 ├─ components/  QubeeProvider · BrowserAdapter · MemoryAdapter · ReactRouterAdapter ·
-│               AdapterScopeProvider (internal)
+│               TanStackRouterAdapter · AdapterScopeProvider (internal)
 ├─ contexts/    qubeeContext · adapterContext (both internal)
 ├─ errors/      MissingQubeeProviderError · MissingRouterAdapterError
 ├─ hooks/       useQubee · useQubeeContext · useBrowserAdapter · useMemoryAdapter ·
-│               useReactRouterAdapter · useQubeeList,
+│               useReactRouterAdapter · useTanStackRouterAdapter · useQubeeList,
 │               plus internal useQubeeHandle · useRouterAdapter · useNoAdapter · useMemoryLocation
 ├─ types/       public handles and props, plus internal machine / store / debouncer / loose-list /
 │               adapter-scope / list-registry shapes
