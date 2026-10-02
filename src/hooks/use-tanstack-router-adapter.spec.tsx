@@ -57,6 +57,22 @@ function Passed(): ReactElement {
   );
 }
 
+/** Every adapter the probe below was handed, in render order. */
+const probed: unknown[] = [];
+
+/** Renders again without the location changing, and records the adapter each time. */
+function Probe(): ReactElement {
+  const [tick, setTick] = useState(0);
+
+  probed.push(useTanStackRouterAdapter());
+
+  return (
+    <button onClick={() => setTick(tick + 1)} type="button">
+      tick {tick}
+    </button>
+  );
+}
+
 /** A list that passes its own adapter, with scrolling on. */
 function Scrolling(): ReactElement {
   const list = useQubeeList(articleList, useTanStackRouterAdapter({ scroll: true }));
@@ -124,6 +140,7 @@ async function start(
     routeTree: rootRoute.addChildren([
       createRoute({ component: Articles, getParentRoute: () => rootRoute, path: '/articles' }),
       createRoute({ component: Passed, getParentRoute: () => rootRoute, path: '/passed' }),
+      createRoute({ component: Probe, getParentRoute: () => rootRoute, path: '/probe' }),
       createRoute({ component: Scrolling, getParentRoute: () => rootRoute, path: '/scrolling' }),
       createRoute({ component: Other, getParentRoute: () => rootRoute, path: '/other' }),
     ]),
@@ -175,6 +192,7 @@ describe('useTanStackRouterAdapter', () => {
   });
 
   afterEach(() => {
+    probed.length = 0;
     vi.restoreAllMocks();
   });
 
@@ -368,6 +386,17 @@ describe('useTanStackRouterAdapter', () => {
       await click('button', 'passed page 4');
 
       expect(screen.getByRole('button').textContent).toBe('passed page 5');
+    });
+
+    it('should keep the same adapter while the location is unchanged', async () => {
+      await start('/probe');
+
+      const before = probed.length;
+
+      await click('button', 'tick 0');
+
+      expect(probed.length).toBeGreaterThan(before);
+      expect(probed.at(-1)).toBe(probed.at(before - 1));
     });
   });
 });
