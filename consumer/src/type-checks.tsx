@@ -39,6 +39,7 @@ import type {
   ReactRouterAdapterOptions,
   ReactRouterAdapterProps,
 } from '@qubeejs/react/react-router';
+import type { QubeeQueryKey } from '@qubeejs/react/tanstack-query';
 import type {
   TanStackRouterAdapterOptions,
   TanStackRouterAdapterProps,
@@ -47,7 +48,9 @@ import type {
 import { fetchQubeePage, QubeeFetchError } from '@qubeejs/react/fetch';
 import { NextAdapter, useNextAdapter } from '@qubeejs/react/next';
 import { ReactRouterAdapter, useReactRouterAdapter } from '@qubeejs/react/react-router';
+import { qubeeQueryOptions } from '@qubeejs/react/tanstack-query';
 import { TanStackRouterAdapter, useTanStackRouterAdapter } from '@qubeejs/react/tanstack-router';
+import { keepPreviousData, QueryClient, useQuery, useSuspenseQuery } from '@tanstack/react-query';
 
 import { articleList, tagList } from './article-list.js';
 import { ArticleStatusEnum } from './article-status.enum.js';
@@ -211,4 +214,27 @@ export async function fetchChecks(list: QubeeListHandle<typeof articleList>): Pr
   void fetchQubeePage(list.request, { fetcher: () => Promise.resolve({ data: [] }) });
 
   void [globalFetch, title, lastPage];
+}
+
+/** The TanStack Query entry: its options fit TanStack's hooks and its client, with typed data. */
+export function QueryChecks({ list }: { list: QubeeListHandle<typeof articleList> }): null {
+  const client = new QueryClient();
+  const options = qubeeQueryOptions<Article>(list.request);
+  const key: QubeeQueryKey = options.queryKey;
+  const query = useQuery({ ...options, placeholderData: keepPreviousData });
+  const data: PaginatedResult<Article> | undefined = query.data;
+  const suspended: PaginatedResult<Article> = useSuspenseQuery(options).data;
+  const maybe = list.isPending ? null : list.request;
+  const skipped = useQuery(qubeeQueryOptions<Article>(maybe));
+  const cached: PaginatedResult<Article> | undefined = client.getQueryData(options.queryKey);
+
+  void client.prefetchQuery(options);
+  void client.ensureQueryData(qubeeQueryOptions<Article>(list.request, { fetcher: fetch }));
+
+  // @ts-expect-error — a query that may be skipped cannot suspend
+  useSuspenseQuery(qubeeQueryOptions<Article>(maybe));
+
+  void [key, data, suspended, skipped.data, cached];
+
+  return null;
 }

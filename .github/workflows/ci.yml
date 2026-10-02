@@ -133,7 +133,7 @@ jobs:
         run: npm run test:next
 
   floors:
-    name: lowest supported routers
+    name: lowest supported peers
     runs-on: ubuntu-latest
 
     steps:
@@ -146,10 +146,10 @@ jobs:
 
       - run: npm ci
 
-      # The lowest release each router's peer range admits, read from package.json: a range must
-      # not promise a release the adapter does not work with.
-      - name: Install the lowest supported React Router and TanStack Router
-        run: npm install --no-save $(node scripts/peer-floors.mjs react-router @tanstack/react-router)
+      # The lowest release each optional peer's range admits, read from package.json: a range
+      # must not promise a release the entry does not work with.
+      - name: Install the lowest supported React Router, TanStack Router and TanStack Query
+        run: npm install --no-save $(node scripts/peer-floors.mjs react-router @tanstack/react-router @tanstack/react-query)
 
-      - name: Run the adapter specs against them
-        run: npx vitest run src/hooks/use-react-router-adapter.spec.tsx src/hooks/use-tanstack-router-adapter.spec.tsx
+      - name: Run the specs of their entries against them
+        run: npx vitest run src/hooks/use-react-router-adapter.spec.tsx src/hooks/use-tanstack-router-adapter.spec.tsx src/utils/qubee-query-options.spec.tsx

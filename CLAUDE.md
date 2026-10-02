@@ -46,7 +46,7 @@ list definitions, page URL ⇄ state ⇄ API request, pagination and sort helper
 ```
 src/
 ├─ entries/     one file per entry point besides index.ts, as entries.json lists them:
-│               fetch (server-safe) · next · react-router · tanstack-router
+│               fetch · tanstack-query (both server-safe) · next · react-router · tanstack-router
 ├─ components/  QubeeProvider · QubeeFetchProvider · BrowserAdapter · MemoryAdapter · NextAdapter ·
 │               ReactRouterAdapter · TanStackRouterAdapter · AdapterScopeProvider (internal)
 ├─ contexts/    qubeeContext · adapterContext · fetcherContext (all internal)
@@ -57,9 +57,9 @@ src/
 │               useQubeeFetcher
 ├─ types/       public handles, props and options, plus internal machine / store / debouncer /
 │               loose-list / adapter-scope / list-registry / query-state shapes
-└─ utils/       createAdapterProvider · fetchQubeePage, plus internal href, browser history, local
-                store, list-state machine, debouncer, list registry, memory location, adapter
-                options binding, query state, request key
+└─ utils/       createAdapterProvider · fetchQubeePage · qubeeQueryOptions, plus internal href,
+                browser history, local store, list-state machine, debouncer, list registry, memory
+                location, adapter options binding, query state, request key
 ```
 
 A list finds its router adapter in the second argument of `useQubeeList`, else in the nearest

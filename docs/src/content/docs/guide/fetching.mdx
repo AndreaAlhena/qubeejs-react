@@ -155,5 +155,11 @@ Its `request.uri` carries no offset. `request.headers` carries `Range-Unit: item
 `Range: 0-19` for the first page, `Range: 20-39` for the second — which is why a request is
 identified by its headers as well as its address.
 
+## Cache keys
+
+The TanStack Query and SWR integrations key their cache on `['qubee', request.uri,
+request.headers]`. `request` is built from the committed state, so the key changes once per
+navigation, and a cache never sees the half-typed searches in between.
+
 PostgREST reports the total only when asked. Add `Prefer: count=exact` in a fetcher —
 `headers: { ...init.headers, Prefer: 'count=exact' }` — or `total` and `lastPage` stay `null`.

@@ -41,10 +41,10 @@ A third job builds the Next.js app in `fixtures/next-app` with the packed tarbal
 current Next.js major, drives it in a browser with Playwright (`npm run test:next`, after a
 build). It uses an installed Chrome; set `PLAYWRIGHT_CHANNEL=msedge` to use Edge instead.
 
-A fourth job installs the lowest release that the peer ranges of React Router and TanStack Router
-admit (`node scripts/peer-floors.mjs` reads them from `package.json`) and runs the two adapter
-specs against them, so a range cannot promise a release the adapter does not work with. When you
-change a range, that job tests the new floor.
+A fourth job installs the lowest release that the peer ranges of React Router, TanStack Router
+and TanStack Query admit (`node scripts/peer-floors.mjs` reads them from `package.json`) and runs
+the specs of their entries against them, so a range cannot promise a release the entry does not
+work with. When you change a range, that job tests the new floor.
 
 Entry points are listed once, in `entries.json`. To add one: add its line there, its source file
 under `src/entries/`, its block in `package.json` `exports`, and — when it has an optional peer —

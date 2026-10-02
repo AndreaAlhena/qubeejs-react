@@ -61,6 +61,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   status that is not `ok` becomes a `QubeeFetchError` (#25)
 - `@qubeejs/react/fetch`: `fetchQubeePage(request, options?)`, the function the hooks fetch with —
   a server-safe entry point, callable from a Server Component, a route loader or a script (#25)
+- `@qubeejs/react/tanstack-query`: `qubeeQueryOptions(request, options?)`, the TanStack Query
+  options of a list request — its key and a `queryFn` with TanStack's abort signal — for
+  `useQuery`, `useSuspenseQuery`, `prefetchQuery` and the rest. A server-safe entry point of its
+  own, with `@tanstack/react-query` 5.62 or later as an optional peer dependency (#26)
 - A client boundary built in: the entry point is marked `'use client'`, so a Next.js Server
   Component can import the package's components without a wrapper file (#19)
 
