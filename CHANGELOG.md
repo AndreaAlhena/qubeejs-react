@@ -45,6 +45,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `@qubeejs/react/tanstack-router`: `<TanStackRouterAdapter>` and `useTanStackRouterAdapter()`,
   for TanStack Router 1.49 and later, the first release whose `navigate` takes an href — an
   entry point of its own, with `@tanstack/react-router` as an optional peer dependency (#23, #32)
+- `parseSearch` and `stringifySearch` in `@qubeejs/react/tanstack-router`: search serialisers
+  for `createRouter` that keep a query as plain text, so that a search box keeps what was typed —
+  TanStack Router's own read every value as JSON, and `10 ` lands as `10` (#34)
 - A debounced change is committed at once when the user clicks a link, so that on routers that
   report the new URL late — the Next.js App Router, loaders that take time — a search still
   waiting cannot fire after the link was followed and pull the user back (#31)

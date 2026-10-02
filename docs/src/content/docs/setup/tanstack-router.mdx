@@ -1,6 +1,6 @@
 ---
 title: TanStack Router
-description: Lists in the URL on TanStack Router — the shipped adapter, set once at the root route, and the search serialisers that keep a search box as typed.
+description: Lists in the URL on TanStack Router — the shipped adapter, set once at the root route, and the shipped search serialisers that keep a search box as typed.
 sidebar:
   label: TanStack Router
   order: 3
@@ -10,7 +10,6 @@ import { Code } from '@astrojs/starlight/components';
 import tanStackRouter from '../../../../examples/tanstack-router.tsx?raw';
 import tanStackRouterArticles from '../../../../examples/tanstack-router-articles.tsx?raw';
 import tanStackRouterRoot from '../../../../examples/tanstack-router-root.tsx?raw';
-import tanStackRouterSearch from '../../../../examples/tanstack-router-search.ts?raw';
 
 The adapter for TanStack Router is an entry point of its own, `@qubeejs/react/tanstack-router`. It
 needs TanStack Router 1.49 or later, the first release whose `navigate` takes an href.
@@ -42,14 +41,15 @@ The list settles on what the router wrote — the URL always wins — so a searc
 characters when its debounce lands: `10 years`, typed with a pause after the space, ends up as
 `10years`.
 
-If the app has a free-text search, give the router serialisers that keep text as text:
-
-<Code code={tanStackRouterSearch} lang="ts" title="src/router-search.ts" />
+If the app has a free-text search, give the router the two serialisers the entry ships, which
+keep text as text:
 
 <Code code={tanStackRouter} lang="tsx" title="src/router.tsx" />
 
-With them, every search value in the app is a string, or a list of strings: a route whose
-`validateSearch` wants a number has to coerce it. TanStack Router's guide to
+[`parseSearch`](/api/tanstack-router/parse-search/) reads every value as the string it is in the
+URL, and a repeated name as a list; [`stringifySearch`](/api/tanstack-router/stringify-search/)
+writes it back. With them, every search value in the app is a string, or a list of strings: a
+route whose `validateSearch` wants a number has to coerce it. TanStack Router's guide to
 [custom search param serialization](https://tanstack.com/router/latest/docs/framework/react/guide/custom-search-param-serialization)
 covers the alternatives.
 

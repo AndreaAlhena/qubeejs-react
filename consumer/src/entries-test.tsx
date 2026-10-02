@@ -55,9 +55,11 @@ const passed = renderToString(
 check('the react-router adapter hook drives a list', passed === '<output>7</output>', passed);
 
 check(
-  'the tanstack-router entry exports its provider and its hook',
+  'the tanstack-router entry exports its provider, its hook and the search serialisers',
   typeof tanstackRouter.TanStackRouterAdapter === 'function' &&
-    typeof tanstackRouter.useTanStackRouterAdapter === 'function',
+    typeof tanstackRouter.useTanStackRouterAdapter === 'function' &&
+    tanstackRouter.stringifySearch(tanstackRouter.parseSearch('?q=10+&tag=a&tag=b')) ===
+      '?q=10+&tag=a&tag=b',
   Object.keys(tanstackRouter)
 );
 

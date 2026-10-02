@@ -75,6 +75,8 @@ const PLANNED = new Set([
   'api/tanstack-query/qubee-query-key',
   'api/tanstack-query/qubee-query-options',
   'api/tanstack-router',
+  'api/tanstack-router/parse-search',
+  'api/tanstack-router/stringify-search',
   'api/tanstack-router/tanstack-router-adapter',
   'api/tanstack-router/tanstack-router-adapter-options',
   'api/tanstack-router/tanstack-router-adapter-props',
