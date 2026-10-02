@@ -131,3 +131,25 @@ jobs:
           NEXT_BUILD_ONLY: ${{ matrix.build-only }}
           NEXT_VERSION: ${{ matrix.next }}
         run: npm run test:next
+
+  floors:
+    name: lowest supported routers
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          cache: npm
+          node-version: '24'
+
+      - run: npm ci
+
+      # The lowest release each router's peer range admits, read from package.json: a range must
+      # not promise a release the adapter does not work with.
+      - name: Install the lowest supported React Router and TanStack Router
+        run: npm install --no-save $(node scripts/peer-floors.mjs react-router @tanstack/react-router)
+
+      - name: Run the adapter specs against them
+        run: npx vitest run src/hooks/use-react-router-adapter.spec.tsx src/hooks/use-tanstack-router-adapter.spec.tsx

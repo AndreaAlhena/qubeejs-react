@@ -253,9 +253,10 @@ function Root(): ReactElement {
 }
 ```
 
-`useReactRouterAdapter()` is its hook form, for the second argument of `useQubeeList`.
+`useReactRouterAdapter()` is its hook form, for the second argument of `useQubeeList`. A list
+navigation keeps the scroll position; `<ReactRouterAdapter scroll>` lets React Router reset it.
 
-**TanStack Router** (1.x) — the adapter ships as `@qubeejs/react/tanstack-router`. Wrap the root
+**TanStack Router** (1.49 or later) — the adapter ships as `@qubeejs/react/tanstack-router`. Wrap the root
 route's outlet once:
 
 ```tsx
@@ -270,8 +271,14 @@ const rootRoute = createRootRoute({
 });
 ```
 
-It reads the raw query string and navigates with whole hrefs, so a `basepath` is honoured.
-`useTanStackRouterAdapter()` is its hook form.
+It navigates with whole hrefs, so a `basepath` is honoured, and keeps the scroll position;
+`<TanStackRouterAdapter scroll>` turns the scrolling back on. `useTanStackRouterAdapter()` is its
+hook form.
+
+TanStack Router's default search serialisers read every value as JSON, so a search box can lose
+what was typed — `10 ` lands as `10`. The
+[TanStack Router recipe](https://qubeejs-react.andreatantimonaco.me/recipes/tanstack-router/) has
+a pair of serialisers that keeps text as text.
 
 **Next.js App Router** (15 or later) — the adapter ships as `@qubeejs/react/next`. Render it in
 the root layout; a Server Component can render it directly:

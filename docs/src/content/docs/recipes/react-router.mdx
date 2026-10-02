@@ -26,6 +26,10 @@ Every list under the root route now reads and writes the URL through React Route
 - It reads `useSearchParams()` and `useLocation()`, and navigates with `useNavigate()`. React
   Router's `navigate` may return a promise; the list does not wait for it.
 - `<Link to={list.href(…)}>` navigates in place and keeps a real href, so no click handler is needed.
+- A list navigation keeps the scroll position: where the app renders `<ScrollRestoration />`,
+  React Router would otherwise scroll to the top on every sort, page or search.
+  `<ReactRouterAdapter scroll>` — or `useReactRouterAdapter({ scroll: true })` — hands the reset
+  back to React Router.
 - Every component under the route reads the same URL, so each can call `useQubeeList(articleList)`.
   The draft and `isPending` stay with the component that made a change — see
   [Lists in the URL](/guide/url-lists/).

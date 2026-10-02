@@ -1,8 +1,11 @@
 import type { ReactElement } from 'react';
 
-import type { AdapterProviderProps } from '../types/adapter-provider-props.type';
+import { useState } from 'react';
+
+import type { TanStackRouterAdapterProps } from '../types/tanstack-router-adapter-props.type';
 
 import { useTanStackRouterAdapter } from '../hooks/use-tanstack-router-adapter';
+import { bindAdapterOptions } from '../utils/bind-adapter-options';
 import { AdapterScopeProvider } from './adapter-scope-provider';
 
 /**
@@ -12,7 +15,7 @@ import { AdapterScopeProvider } from './adapter-scope-provider';
  * lists read TanStack Router's location and navigate through it. Only the components that use a
  * list re-render when the URL changes.
  *
- * @param props - The subtree
+ * @param props - The subtree, and whether a list navigation scrolls to the top
  * @returns The subtree, with the adapter in context
  *
  * @example
@@ -26,10 +29,10 @@ import { AdapterScopeProvider } from './adapter-scope-provider';
  * });
  * ```
  */
-export function TanStackRouterAdapter(props: AdapterProviderProps): ReactElement {
-  return (
-    <AdapterScopeProvider useAdapter={useTanStackRouterAdapter}>
-      {props.children}
-    </AdapterScopeProvider>
+export function TanStackRouterAdapter(props: TanStackRouterAdapterProps): ReactElement {
+  const [useAdapter] = useState(() =>
+    bindAdapterOptions(useTanStackRouterAdapter, { scroll: props.scroll })
   );
+
+  return <AdapterScopeProvider useAdapter={useAdapter}>{props.children}</AdapterScopeProvider>;
 }

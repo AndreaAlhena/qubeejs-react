@@ -43,14 +43,18 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   Router 7 and later — an entry point of its own, with `react-router` as an optional peer
   dependency (#22)
 - `@qubeejs/react/tanstack-router`: `<TanStackRouterAdapter>` and `useTanStackRouterAdapter()`,
-  for TanStack Router 1.x — an entry point of its own, with `@tanstack/react-router` as an
-  optional peer dependency (#23)
+  for TanStack Router 1.49 and later, the first release whose `navigate` takes an href — an
+  entry point of its own, with `@tanstack/react-router` as an optional peer dependency (#23, #32)
 - A debounced change is committed at once when the user clicks a link, so that on routers that
   report the new URL late — the Next.js App Router, loaders that take time — a search still
   waiting cannot fire after the link was followed and pull the user back (#31)
 - `@qubeejs/react/next`: `<NextAdapter>` and `useNextAdapter()`, for the Next.js App Router (15
   and later) — an entry point of its own, with `next` as an optional peer dependency. A Server
   Component layout can render the provider directly (#24)
+- Every router adapter keeps the scroll position when a list navigates — a sort, a page, a
+  debounced search landing — and takes `scroll` to hand it back to the router:
+  `<ReactRouterAdapter scroll>`, `<TanStackRouterAdapter scroll>`, `<NextAdapter scroll>`, and the
+  same option on their hooks (#24, #32)
 - A client boundary built in: the entry point is marked `'use client'`, so a Next.js Server
   Component can import the package's components without a wrapper file (#19)
 
