@@ -2,6 +2,13 @@
   { "client": true, "name": "index", "peer": null, "source": "src/index.ts", "subpath": "." },
   {
     "client": true,
+    "name": "next",
+    "peer": "next",
+    "source": "src/entries/next.ts",
+    "subpath": "./next"
+  },
+  {
+    "client": true,
     "name": "react-router",
     "peer": "react-router",
     "source": "src/entries/react-router.ts",
