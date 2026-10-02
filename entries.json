@@ -1,1 +1,10 @@
-[{ "client": true, "name": "index", "peer": null, "source": "src/index.ts", "subpath": "." }]
+[
+  { "client": true, "name": "index", "peer": null, "source": "src/index.ts", "subpath": "." },
+  {
+    "client": true,
+    "name": "react-router",
+    "peer": "react-router",
+    "source": "src/entries/react-router.ts",
+    "subpath": "./react-router"
+  }
+]

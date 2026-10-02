@@ -8,7 +8,8 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "paths": {
-      "@qubeejs/react": ["../../dist/index.d.ts"]
+      "@qubeejs/react": ["../../dist/index.d.ts"],
+      "@qubeejs/react/*": ["../../dist/*.d.ts"]
     },
     "skipLibCheck": true,
     "strict": true,

@@ -9,9 +9,17 @@ import { defineConfig } from 'vitest/config';
  */
 export default defineConfig({
   resolve: {
-    alias: {
-      '@qubeejs/react': fileURLToPath(new URL('../../dist/index.js', import.meta.url)),
-    },
+    alias: [
+      // The other entry points: `@qubeejs/react/react-router` is dist/react-router.js.
+      {
+        find: /^@qubeejs\/react\/(.+)$/,
+        replacement: `${fileURLToPath(new URL('../../dist/', import.meta.url))}$1.js`,
+      },
+      {
+        find: '@qubeejs/react',
+        replacement: fileURLToPath(new URL('../../dist/index.js', import.meta.url)),
+      },
+    ],
     dedupe: ['react', 'react-dom'],
   },
   root: fileURLToPath(new URL('../..', import.meta.url)),

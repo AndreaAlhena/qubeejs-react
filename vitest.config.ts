@@ -3,7 +3,8 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig({
   test: {
     coverage: {
-      exclude: ['**/*.spec.ts', '**/*.spec.tsx', '**/*.type.ts', 'src/index.ts'],
+      // Entry files only re-export: there is nothing in them to cover.
+      exclude: ['**/*.spec.ts', '**/*.spec.tsx', '**/*.type.ts', 'src/entries/**', 'src/index.ts'],
       include: ['src/**/*.ts', 'src/**/*.tsx'],
       provider: 'v8',
       reporter: ['text-summary', 'lcov', 'html'],

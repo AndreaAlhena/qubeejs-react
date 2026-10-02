@@ -236,20 +236,22 @@ It observes only its own `navigate` and Back/Forward: a `history.pushState` by o
 seen until the next `popstate`, so parameters that code added can be dropped by the next `set()`.
 When something else also writes the URL, use your router's adapter below.
 
-**React Router v7** (on v6.4+ the same hooks come from `'react-router-dom'`):
+**React Router** (7 or later) — the adapter ships as `@qubeejs/react/react-router`. Wrap the
+routes once, inside the router:
 
-```ts
-import type { RouterAdapter } from '@qubeejs/react';
-import { useLocation, useNavigate, useSearchParams } from 'react-router';
+```tsx
+import { ReactRouterAdapter } from '@qubeejs/react/react-router';
 
-export function useReactRouterList(): RouterAdapter {
-  const [search] = useSearchParams();
-  const navigate = useNavigate();
-  const { pathname } = useLocation();
-
-  return { navigate: (href, { replace }) => void navigate(href, { replace }), pathname, search };
+function Root(): ReactElement {
+  return (
+    <ReactRouterAdapter>
+      <Outlet />
+    </ReactRouterAdapter>
+  );
 }
 ```
+
+`useReactRouterAdapter()` is its hook form, for the second argument of `useQubeeList`.
 
 **TanStack Router**:
 
