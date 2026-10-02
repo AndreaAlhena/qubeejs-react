@@ -6,9 +6,12 @@ import type {
   ListSetOptions,
   MemoryAdapterProps,
   QubeeFetcher,
+  QubeeFetchProviderProps,
   QubeeHandle,
   QubeeListHandle,
   QubeeProviderProps,
+  QubeeQueryOptions,
+  QubeeQueryResult,
   RouterAdapter,
   SortToggle,
 } from '../src/index';
@@ -23,6 +26,7 @@ describe('public API', () => {
       'MissingQubeeProviderError',
       'MissingRouterAdapterError',
       'QubeeFetchError',
+      'QubeeFetchProvider',
       'QubeeProvider',
       'createAdapterProvider',
       'useBrowserAdapter',
@@ -30,6 +34,7 @@ describe('public API', () => {
       'useQubee',
       'useQubeeContext',
       'useQubeeList',
+      'useQubeeQuery',
     ]);
   });
 
@@ -39,9 +44,12 @@ describe('public API', () => {
     expectTypeOf<ListSetOptions>().toHaveProperty('debounce');
     expectTypeOf<MemoryAdapterProps>().toHaveProperty('initialSearch');
     expectTypeOf<QubeeFetcher>().returns.toEqualTypeOf<Promise<Response>>();
+    expectTypeOf<QubeeFetchProviderProps>().toHaveProperty('fetcher');
     expectTypeOf<QubeeHandle>().toHaveProperty('state');
     expectTypeOf<QubeeListHandle<unknown>>().toHaveProperty('set');
     expectTypeOf<QubeeProviderProps>().toHaveProperty('children');
+    expectTypeOf<QubeeQueryOptions<object>>().toHaveProperty('initialData');
+    expectTypeOf<QubeeQueryResult<object>>().toHaveProperty('refetch');
     expectTypeOf<RouterAdapter>().toHaveProperty('navigate');
     expectTypeOf<SortToggle<unknown>>().toEqualTypeOf<Record<never, never>>();
   });
