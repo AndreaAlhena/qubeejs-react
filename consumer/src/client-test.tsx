@@ -39,7 +39,7 @@ async function main(): Promise<void> {
 
   const { createRoot, hydrateRoot } = await import('react-dom/client');
   const { renderToString } = await import('react-dom/server');
-  const { App, Articles } = await import('./app.js');
+  const { App, Articles, asked } = await import('./app.js');
 
   const rootElement = window.document.getElementById('root') as HTMLElement;
   const within = (scope: Element, id: string): HTMLElement =>
@@ -48,13 +48,21 @@ async function main(): Promise<void> {
   const text = (id: string): string => $(id).textContent ?? '';
   const state = (): State => JSON.parse(text('state')) as State;
   const search = (): URLSearchParams => new URLSearchParams(window.location.search);
+  // A fetch started by an interaction is answered a few ticks later: waiting for it inside
+  // `act` keeps React's "not wrapped in act" warning for updates that really are stray.
+  const answered = (): Promise<void> =>
+    new Promise((resolve) => {
+      setTimeout(resolve, 0);
+    });
   const click = (id: string): Promise<void> =>
     act(async () => {
       $(id).dispatchEvent(new window.MouseEvent('click', { bubbles: true, cancelable: true }));
+      await answered();
     });
   const wait = (ms: number): Promise<void> =>
     act(async () => {
       await new Promise((resolve) => setTimeout(resolve, ms));
+      await answered();
     });
   const type = (value: string): Promise<void> =>
     act(async () => {
@@ -76,6 +84,7 @@ async function main(): Promise<void> {
 
   await act(async () => {
     root.render(wrap(<App />));
+    await answered();
   });
 
   // A — the first render reads the URL.
@@ -99,7 +108,20 @@ async function main(): Promise<void> {
     $('th').getAttribute('aria-sort') ?? 'null'
   );
 
+  // Q — the built-in fetching hook, through the provider's fetcher.
+  check(
+    'Q1 useQubeeQuery fetched the page the URL asks for',
+    asked.at(-1) === text('uri') && text('rows') === `Row ${asked.length}`,
+    { asked, rows: text('rows') }
+  );
+  check(
+    'Q2 the page is parsed by the driver',
+    text('lastpage') === '3' && text('fetching') === 'false',
+    { fetching: text('fetching'), lastPage: text('lastpage') }
+  );
+
   // B — typing with a debounce.
+  const askedBefore = asked.length;
   const uriBefore = text('uri');
   const lengthBefore = window.history.length;
 
@@ -118,6 +140,7 @@ async function main(): Promise<void> {
   );
   check('B4 the URL has not changed yet', search().get('q') === 'old', window.location.search);
   check('B5 the request has not changed yet', text('uri') === uriBefore, text('uri'));
+  check('Q3 nothing is fetched while the debounce waits', asked.length === askedBefore, asked);
 
   await wait(450);
   trace.push(
@@ -128,6 +151,14 @@ async function main(): Promise<void> {
     'B6 after the debounce the URL has the new query',
     search().get('q') === 'react',
     window.location.search
+  );
+  check(
+    'Q4 after the debounce the new request is fetched, once it is committed',
+    asked.at(-1) === text('uri') &&
+      text('uri') !== uriBefore &&
+      text('rows') === `Row ${asked.length}` &&
+      text('fetching') === 'false',
+    { asked, rows: text('rows') }
   );
   check(
     'B7 a filter change returns to page 1',

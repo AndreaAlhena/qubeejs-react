@@ -5,8 +5,12 @@ import type {
   AdapterProviderProps,
   RouterAdapter,
   QubeeListHandle,
+  QubeeFetcher as MainQubeeFetcher,
+  QubeeFetchProviderProps,
   QubeeHandle,
   QubeeProviderProps,
+  QubeeQueryOptions,
+  QubeeQueryResult,
   ListSetOptions,
   MemoryAdapterProps,
   SortToggle,
@@ -19,11 +23,14 @@ import {
   BrowserAdapter,
   createAdapterProvider,
   MemoryAdapter,
+  QubeeFetchError as MainQubeeFetchError,
+  QubeeFetchProvider,
   QubeeProvider,
   useBrowserAdapter,
   useMemoryAdapter,
   useQubee,
   useQubeeList,
+  useQubeeQuery,
 } from '@qubeejs/react';
 
 import type { QubeeFetcher } from '@qubeejs/react/fetch';
@@ -143,6 +150,34 @@ export function Checks(): null {
   void [viaReactRouter, viaTanStackRouter, viaNext, nextProps, routerProps];
   void [reactRouterProps, tanStackRouterProps, useReactRouterAdapter(), useTanStackRouterAdapter()];
   void [NextAdapter, ReactRouterAdapter, TanStackRouterAdapter];
+
+  // Built-in fetching: the hook takes the list's request, or null, and types the rows.
+  const fetcher: MainQubeeFetcher = (address, init) => fetch(address, init);
+  const queryOptions: QubeeQueryOptions<Article> = {
+    enabled: true,
+    fetcher,
+    initialData: undefined,
+    keepPreviousData: false,
+  };
+  const articles: QubeeQueryResult<Article> = useQubeeQuery<Article>(list.request, queryOptions);
+  const nothing = useQubeeQuery<Article>(null);
+  const firstTitle: string | undefined = articles.data?.data[0]?.title;
+  const failure: Error | undefined = articles.error;
+  const flags: boolean[] = [articles.isFetching, articles.isLoading];
+  const fetchProviderProps: QubeeFetchProviderProps = { children: null, fetcher };
+
+  articles.refetch();
+
+  if (failure instanceof MainQubeeFetchError) {
+    void failure.status;
+  }
+
+  // @ts-expect-error — the built-in hook has no retries: use the TanStack Query or SWR entry
+  useQubeeQuery<Article>(list.request, { retry: 3 });
+  // @ts-expect-error — the provider needs a fetcher
+  void ({ children: null } satisfies QubeeFetchProviderProps);
+
+  void [nothing, firstTitle, flags, fetchProviderProps, QubeeFetchProvider];
 
   return null;
 }
