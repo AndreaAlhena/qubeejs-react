@@ -1,23 +1,29 @@
 ---
 title: TanStack Router
-description: useQubeeList on TanStack Router — the shipped adapter, set once at the root route, and the search serialisers that keep a search box as typed.
+description: Lists in the URL on TanStack Router — the shipped adapter, set once at the root route, and the search serialisers that keep a search box as typed.
 sidebar:
   label: TanStack Router
-  order: 5
+  order: 3
 ---
 
 import { Code } from '@astrojs/starlight/components';
+import tanStackRouter from '../../../../examples/tanstack-router.tsx?raw';
+import tanStackRouterArticles from '../../../../examples/tanstack-router-articles.tsx?raw';
 import tanStackRouterRoot from '../../../../examples/tanstack-router-root.tsx?raw';
 import tanStackRouterSearch from '../../../../examples/tanstack-router-search.ts?raw';
 
-The adapter for TanStack Router ships with the package, as an entry point of its own:
-`@qubeejs/react/tanstack-router`. It needs TanStack Router 1.49 or later, the first release whose
-`navigate` takes an href. Wrap the root route's outlet in it once:
+The adapter for TanStack Router is an entry point of its own, `@qubeejs/react/tanstack-router`. It
+needs TanStack Router 1.49 or later, the first release whose `navigate` takes an href.
+
+```sh
+npm install @qubeejs/react @qubeejs/core @tanstack/react-router
+```
+
+## Wrap once
 
 <Code code={tanStackRouterRoot} lang="tsx" title="src/routes/root.tsx" />
 
-Every list under the root route then calls `useQubeeList(articleList)` and goes through TanStack
-Router.
+Every list under the root route then goes through TanStack Router.
 
 ## Keep the query as typed
 
@@ -40,14 +46,21 @@ If the app has a free-text search, give the router serialisers that keep text as
 
 <Code code={tanStackRouterSearch} lang="ts" title="src/router-search.ts" />
 
-```ts
-const router = createRouter({ parseSearch, routeTree, stringifySearch });
-```
+<Code code={tanStackRouter} lang="tsx" title="src/router.tsx" />
 
 With them, every search value in the app is a string, or a list of strings: a route whose
 `validateSearch` wants a number has to coerce it. TanStack Router's guide to
 [custom search param serialization](https://tanstack.com/router/latest/docs/framework/react/guide/custom-search-param-serialization)
 covers the alternatives.
+
+## A list page
+
+<Code code={tanStackRouterArticles} lang="tsx" title="src/articles/articles-page.tsx" />
+
+The links are real anchors with a plain-click handler, as in the
+[Pagination bar](/recipes/pagination-bar/). Under a `basepath`, `list.href(…)` is the path inside
+it — TanStack strips the basepath from the location's pathname — so give the anchor
+`router.buildLocation({ href: list.href(…) }).publicHref`, which adds the basepath back.
 
 ## How it works
 
@@ -61,9 +74,5 @@ covers the alternatives.
   `useTanStackRouterAdapter({ scroll: true })` — hands the scrolling back to the router.
 - If the route declares `validateSearch`, let it pass the list's keys through untouched: a validator
   that drops unknown keys drops the list's.
-- For links, render `<a href={list.href(…)}>` with a plain-click handler, as the
-  [Pagination bar](/recipes/pagination-bar/) does. Under a `basepath`, `list.href(…)` is the path
-  inside it (TanStack strips the basepath from the location's pathname), so give the anchor
-  `router.buildLocation({ href: list.href(…) }).publicHref`, which adds the basepath back.
 - For the one list that should not follow the provider, pass `useTanStackRouterAdapter()` as the
   second argument — see [Adapters & providers](/guide/adapters/).

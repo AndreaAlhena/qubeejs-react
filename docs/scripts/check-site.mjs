@@ -91,18 +91,19 @@ const PLANNED = new Set([
   'guide/testing',
   'guide/url-lists',
   'guide/use-qubee',
-  'introduction/frameworks',
   'introduction/installation',
   'introduction/quick-start',
   'introduction/why-an-adapter',
   'recipes/debounced-search',
   'recipes/pagination-bar',
-  'recipes/react-router',
   'recipes/sortable-table',
   'recipes/swr',
   'recipes/tanstack-query',
-  'recipes/tanstack-router',
   'recipes/testing-with-msw',
+  'setup/next',
+  'setup/plain-react',
+  'setup/react-router',
+  'setup/tanstack-router',
 ]);
 
 /** Core pages its build generates, so a source checkout does not have them. */

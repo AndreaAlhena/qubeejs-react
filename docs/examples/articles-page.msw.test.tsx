@@ -1,3 +1,4 @@
+import { BrowserAdapter } from '@qubeejs/react';
 import { render, screen } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
@@ -39,7 +40,11 @@ afterAll(() => {
 
 describe('ArticlesPage', () => {
   it('should render the rows the API returns', async () => {
-    render(<ArticlesPage />);
+    render(
+      <BrowserAdapter>
+        <ArticlesPage />
+      </BrowserAdapter>
+    );
 
     expect(await screen.findByText('Hooks, not plumbing')).toBeTruthy();
     expect(screen.getByText('The URL is the state')).toBeTruthy();
@@ -48,7 +53,11 @@ describe('ArticlesPage', () => {
   it('should send the search in the page URL to the API', async () => {
     window.history.replaceState(null, '', '/articles?q=react');
 
-    render(<ArticlesPage />);
+    render(
+      <BrowserAdapter>
+        <ArticlesPage />
+      </BrowserAdapter>
+    );
     await screen.findByText('Hooks, not plumbing');
 
     expect(requests[0]?.searchParams.get('filters[title][$containsi]')).toBe('react');

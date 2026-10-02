@@ -27,8 +27,9 @@ Every list below it uses that adapter, and names no router:
 
 `<BrowserAdapter>` is for apps without a router: it reads `location` and writes with
 `history.pushState` and `replaceState`. Inside React Router, TanStack Router or Next.js, use that
-router's adapter instead — see [Vite / Next.js / React Router](/introduction/frameworks/) — because
-their router would not see these navigations.
+router's adapter instead — [React Router](/setup/react-router/),
+[TanStack Router](/setup/tanstack-router/), [Next.js](/setup/next/) — because their router would
+not see these navigations.
 
 The three router adapters keep the scroll position when a list navigates: a filter or a page
 number that changes should not send the reader back to the top. Each takes `scroll` to hand that

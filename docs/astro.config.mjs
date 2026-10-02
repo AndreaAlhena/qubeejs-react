@@ -47,6 +47,7 @@ export default defineConfig({
       lastUpdated: true,
       sidebar: [
         { items: [{ autogenerate: { directory: 'introduction' } }], label: 'Introduction' },
+        { items: [{ autogenerate: { directory: 'setup' } }], label: 'Setup' },
         { items: [{ autogenerate: { directory: 'guide' } }], label: 'Guide' },
         { items: ENTRIES.map(entry), label: 'API' },
         { items: [{ autogenerate: { directory: 'recipes' } }], label: 'Recipes' },

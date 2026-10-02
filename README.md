@@ -277,7 +277,7 @@ hook form.
 
 TanStack Router's default search serialisers read every value as JSON, so a search box can lose
 what was typed — `10 ` lands as `10`. The
-[TanStack Router recipe](https://qubeejs-react.andreatantimonaco.me/recipes/tanstack-router/) has
+[TanStack Router setup page](https://qubeejs-react.andreatantimonaco.me/setup/tanstack-router/) has
 a pair of serialisers that keeps text as text.
 
 **Next.js App Router** (15 or later) — the adapter ships as `@qubeejs/react/next`. Render it in
