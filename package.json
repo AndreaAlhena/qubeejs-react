@@ -127,6 +127,7 @@
     "test": "vitest run",
     "test:consumer": "node scripts/test-consumer.mjs",
     "test:coverage": "vitest run --coverage",
+    "test:next": "node scripts/test-next.mjs",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit"
   },

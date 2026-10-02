@@ -94,3 +94,40 @@ jobs:
         env:
           CONSUMER_REACT: ${{ matrix.react }}
         run: npm run test:consumer
+
+  next:
+    name: next (${{ matrix.next }})
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # The oldest Next.js the entry supports: the fixture app must build on it.
+          - build-only: '1'
+            next: '15'
+          # The current one: build, then drive the app in a browser.
+          - build-only: '0'
+            next: '16'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          cache: npm
+          node-version: '24'
+
+      - run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      # fixtures/next-app, built with the packed tarball: a Server Component renders the adapter,
+      # a static route builds behind a Suspense boundary, and Playwright drives the result in the
+      # runner's own Chrome.
+      - name: Build the Next.js fixture app and drive it in a browser
+        env:
+          NEXT_BUILD_ONLY: ${{ matrix.build-only }}
+          NEXT_VERSION: ${{ matrix.next }}
+        run: npm run test:next
