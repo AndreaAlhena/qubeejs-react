@@ -1,6 +1,6 @@
 ---
 title: SWR
-description: Cache every page with SWR, keyed on the list's committed request.
+description: Cache every page with SWR — the shipped hook, keyed on the list's committed request.
 sidebar:
   label: SWR
   order: 7
@@ -9,21 +9,29 @@ sidebar:
 import { Code } from '@astrojs/starlight/components';
 import useArticlesSWR from '../../../../examples/use-articles-swr.ts?raw';
 
+The entry point `@qubeejs/react/swr` fetches a list's request through SWR. It needs `swr` 2.
+
 <Code code={useArticlesSWR} lang="ts" title="src/articles/use-articles-swr.ts" />
 
 In a component:
 
 ```tsx
-const router = useBrowserAdapter();
-const list = useQubeeList(articleList, router);
-const { data, isValidating } = useArticlesSWR(list);
+const list = useQubeeList(articleList);
+const { data, error, isValidating } = useArticlesSWR(list);
 ```
 
 ## How it works
 
-- The key is `['articles', request.uri, request.headers]`, built from the committed state: it changes
-  once per navigation, after any debounce.
-- `keepPreviousData: true` keeps the last page on screen while the next one loads.
-- `fetchQubeePage` passes `response.headers` to `paginate` and returns a plain object, which SWR
-  can compare between revalidations.
+- `useQubeeSWR(request, options?)` is `useSWR` with the key `['qubee', request.uri,
+  request.headers]` and a fetcher that calls [`fetchQubeePage`](/api/functions/fetch-qubee-page/).
+  It returns what `useSWR` returns, with `data` typed as `PaginatedResult<Article>`.
+- The key is built from the committed state: it changes once per navigation, after any debounce.
+- `keepPreviousData` is on by default, so the last page stays on screen while the next one loads.
+  Pass `keepPreviousData: false` to turn it off.
+- The options are SWR's own — `revalidateOnFocus`, `refreshInterval`, `fallbackData` and the
+  rest — except `fetcher`, which is a [`QubeeFetcher`](/api/types/qubee-fetcher/): a function with
+  the shape of `fetch`, not an SWR fetcher. Without one, the hook uses the nearest
+  `<QubeeFetchProvider>`'s, else the global `fetch`.
+- A `null` request fetches nothing.
+- A status that is not `ok` is a [`QubeeFetchError`](/api/errors/qubee-fetch-error/) in `error`.
 - `list.isPending` covers the debounce and the navigation, `isValidating` the request.

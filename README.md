@@ -379,25 +379,22 @@ The options also fit `useSuspenseQuery`, `useQueries`, `prefetchQuery` and `ensu
 `null` request skips the query. The entry is not a client module, so a Server Component or a
 loader can prefetch with it.
 
-**SWR**:
+**SWR** (2.x) — `@qubeejs/react/swr` is `useSWR` with the same key, a fetcher that goes through
+yours, and the previous page kept while the next one loads:
 
 ```tsx
-const { request } = useQubeeList(articleList, router);
+import { useQubeeSWR } from '@qubeejs/react/swr';
 
-const { data } = useSWR(
-  [request.uri, request.headers],
-  async ([uri, headers]) => {
-    const response = await fetch(uri, { headers: headers ?? {} });
+const list = useQubeeList(articleList);
 
-    return request.paginate<Article>(await response.json(), response.headers).toPlain();
-  },
-  { keepPreviousData: true }
-);
+const { data, error, isValidating } = useQubeeSWR<Article>(list.request);
 ```
 
-`toPlain()` returns a plain object, which TanStack Query can share structurally and a Server
-Component can hand to a Client Component. `request.headers` is `null` unless the driver pages
-over headers (PostgREST in `RANGE` mode).
+Its options are SWR's own, except `fetcher`, which is a `QubeeFetcher`; without one it uses the
+nearest `<QubeeFetchProvider>`'s.
+
+`request.headers` is `null` unless the driver pages over headers (PostgREST in `RANGE` mode);
+every fetching API sends them, and identifies a request by its address and its headers.
 
 ## Contributing
 

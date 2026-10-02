@@ -65,6 +65,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   options of a list request — its key and a `queryFn` with TanStack's abort signal — for
   `useQuery`, `useSuspenseQuery`, `prefetchQuery` and the rest. A server-safe entry point of its
   own, with `@tanstack/react-query` 5.62 or later as an optional peer dependency (#26)
+- `@qubeejs/react/swr`: `useQubeeSWR(request, options?)`, `useSWR` keyed on a list request, with
+  the previous page kept while the next one loads and SWR's own options (`QubeeSWROptions`) — an
+  entry point of its own, with `swr` 2 as an optional peer dependency (#27)
 - A client boundary built in: the entry point is marked `'use client'`, so a Next.js Server
   Component can import the package's components without a wrapper file (#19)
 
