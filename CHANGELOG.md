@@ -34,6 +34,11 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   as the second argument wins, and `MissingRouterAdapterError` reports that there is neither. In
   development, two different lists under one provider that claim the same URL parameter log a
   warning (#20)
+- Lists in memory: `<MemoryAdapter>` and `useMemoryAdapter()` run a `defineList` definition
+  without a URL — shared by the components under the provider, or owned by one component — for
+  dialogs and pickers (#21)
+- `reset()` on the list handle: every param back to its default in one navigation, keeping
+  parameters the list does not own (#21)
 - A client boundary built in: the entry point is marked `'use client'`, so a Next.js Server
   Component can import the package's components without a wrapper file (#19)
 

@@ -42,15 +42,15 @@ list definitions, page URL ⇄ state ⇄ API request, pagination and sort helper
 
 ```
 src/
-├─ components/  QubeeProvider · BrowserAdapter · AdapterScopeProvider (internal)
+├─ components/  QubeeProvider · BrowserAdapter · MemoryAdapter · AdapterScopeProvider (internal)
 ├─ contexts/    qubeeContext · adapterContext (both internal)
 ├─ errors/      MissingQubeeProviderError · MissingRouterAdapterError
-├─ hooks/       useQubee · useQubeeContext · useBrowserAdapter · useQubeeList, plus internal
-│               useQubeeHandle · useRouterAdapter · useNoAdapter
+├─ hooks/       useQubee · useQubeeContext · useBrowserAdapter · useMemoryAdapter · useQubeeList,
+│               plus internal useQubeeHandle · useRouterAdapter · useNoAdapter · useMemoryLocation
 ├─ types/       public handles and props, plus internal machine / store / debouncer / loose-list /
 │               adapter-scope / list-registry shapes
 └─ utils/       createAdapterProvider, plus internal href, browser history, local store,
-                list-state machine, debouncer, list registry
+                list-state machine, debouncer, list registry, memory location
 ```
 
 A list finds its router adapter in the second argument of `useQubeeList`, else in the nearest
