@@ -3,7 +3,7 @@
  *
  * Ported from qubeejs-core's docs/scripts/generate-api.mjs. What differs:
  *
- * - four groups of the adapter's own — provider, hooks, types, errors — and an
+ * - five groups of the adapter's own — provider, hooks, functions, types, errors — and an
  *   export that fits none of them fails the build, instead of landing on a page
  *   no sidebar links to;
  * - every page carries a `kind` (hook, component, type, error) that the
@@ -44,10 +44,16 @@ const REFLECTION = {
 const PROVIDER = new Set(['QubeeProvider', 'QubeeProviderProps', 'useQubeeContext']);
 
 /** The sidebar group of each kind, outside the provider group. */
-const GROUP_OF_KIND = { component: 'provider', error: 'errors', hook: 'hooks', type: 'types' };
+const GROUP_OF_KIND = {
+  component: 'provider',
+  error: 'errors',
+  function: 'functions',
+  hook: 'hooks',
+  type: 'types',
+};
 
 /** The sidebar groups, each of which must end up with at least one page. */
-const GROUPS = ['provider', 'hooks', 'types', 'errors'];
+const GROUPS = ['provider', 'hooks', 'functions', 'types', 'errors'];
 
 /** Stop with a message that names the command which fixes it. */
 function fail(message) {
@@ -183,14 +189,16 @@ function kindOf(node) {
   if (node.kind === REFLECTION.TYPE_ALIAS) return 'type';
   if (isFunction && /^use[A-Z]/.test(node.name)) return 'hook';
   if (isFunction && /^[A-Z]/.test(node.name)) return 'component';
+  if (isFunction) return 'function';
 
   return fail(
-    `export "${node.name}" is no hook, component, type or error — teach kindOf() and GROUP_OF_KIND about it.`
+    `export "${node.name}" is no hook, component, function, type or error — teach kindOf() and GROUP_OF_KIND about it.`
   );
 }
 
 /** How a page names its export: `useQubee()`, `<QubeeProvider>`, `RouterAdapter`. */
-const titleOf = (name, kind) => ({ component: `<${name}>`, hook: `${name}()` })[kind] ?? name;
+const titleOf = (name, kind) =>
+  ({ component: `<${name}>`, function: `${name}()`, hook: `${name}()` })[kind] ?? name;
 
 /** Every type name referenced anywhere inside a TypeDoc node. */
 function referencedNames(value, found = new Set()) {
@@ -419,7 +427,13 @@ function renderClass(node, pages) {
 }
 
 /** How each kind of export is rendered. */
-const RENDERERS = { component: renderFunction, error: renderClass, hook: renderFunction, type: renderType };
+const RENDERERS = {
+  component: renderFunction,
+  error: renderClass,
+  function: renderFunction,
+  hook: renderFunction,
+  type: renderType,
+};
 
 /** One export's whole page. */
 function renderPage(node, page, order, pages) {

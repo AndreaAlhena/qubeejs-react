@@ -1,9 +1,9 @@
 // Server rendering in plain Node: no window, no document.
-import { MissingQubeeProviderError } from '@qubeejs/react';
+import { MissingQubeeProviderError, MissingRouterAdapterError } from '@qubeejs/react';
 import { version } from 'react';
 import { renderToString } from 'react-dom/server';
 
-import { App, Orphan } from './app.js';
+import { App, NoAdapter, Orphan } from './app.js';
 import { check, finish } from './report.js';
 
 const hasWindow = typeof (globalThis as { window?: unknown }).window !== 'undefined';
@@ -42,6 +42,20 @@ check(
   'useQubeeContext outside a provider throws MissingQubeeProviderError',
   thrown instanceof MissingQubeeProviderError,
   String(thrown)
+);
+
+let missing: unknown;
+
+try {
+  renderToString(<NoAdapter />);
+} catch (error) {
+  missing = error;
+}
+
+check(
+  'useQubeeList with no adapter throws MissingRouterAdapterError',
+  missing instanceof MissingRouterAdapterError,
+  String(missing)
 );
 
 finish(`SSR (React ${version})`);

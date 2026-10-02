@@ -20,7 +20,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `RouterAdapter`, the router contract of URL-driven lists, with `AdapterNavigateOptions` for its
   `navigate`, and `useBrowserAdapter()` for apps without a router — every instance in sync, safe
   to render on the server (#6, #13)
-- `useQubeeList(list, router)`: a list whose state lives in the page URL. Its `QubeeListHandle`
+- `useQubeeList(list, adapter?)`: a list whose state lives in the page URL. Its `QubeeListHandle`
   has a draft `state` that updates synchronously, a typed `set()` that navigates at most once per
   call, optional debounce (`ListSetOptions`), `isPending`, `href()`, `setPage()`, `toggleSort()`
   when the list declares one `sortParam` (`SortToggle`), and a `request` that changes once per
@@ -29,6 +29,11 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   lists whose query lives in the URL, eight recipes, and an API reference generated from JSDoc.
   Every usage sample is type-checked against the build, and the testing samples run, on each
   build (#8)
+- Adapter providers: `<BrowserAdapter>` and `createAdapterProvider()` set a list's router adapter
+  once for a subtree. `useQubeeList(list)` takes it from the nearest provider, an adapter passed
+  as the second argument wins, and `MissingRouterAdapterError` reports that there is neither. In
+  development, two different lists under one provider that claim the same URL parameter log a
+  warning (#20)
 - A client boundary built in: the entry point is marked `'use client'`, so a Next.js Server
   Component can import the package's components without a wrapper file (#19)
 

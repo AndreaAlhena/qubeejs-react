@@ -21,9 +21,11 @@ button all land on the same list.
   they become a query. The [Quick start](/introduction/quick-start/) declares `articleList`; every
   param and the rules the URL follows are documented with the core:
   [Lists & URL state ↗](https://qubeejs.andreatantimonaco.me/guide/lists/).
-- **A router**: any object with `navigate(href, { replace })`, `pathname` and `search`. Use
-  `useBrowserAdapter()`, or an adapter for [React Router](/recipes/react-router/),
-  [TanStack Router](/recipes/tanstack-router/) or [Next.js](/introduction/frameworks/).
+- **A router adapter**: any object with `navigate(href, { replace })`, `pathname` and `search`.
+  Set it once for the whole app with a provider such as `<BrowserAdapter>`, or pass one as the
+  second argument: `useBrowserAdapter()`, or an adapter for
+  [React Router](/recipes/react-router/), [TanStack Router](/recipes/tanstack-router/) or
+  [Next.js](/introduction/frameworks/). [Adapters & providers](/guide/adapters/) explains both.
 
 ## What it returns
 

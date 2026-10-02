@@ -1,0 +1,74 @@
+---
+title: Adapters & providers
+description: How a list finds its router — an adapter provider at the root, an adapter passed to the hook, and a provider for a router of your own.
+sidebar:
+  label: Adapters & providers
+  order: 4.5
+---
+
+import { Code } from '@astrojs/starlight/components';
+import articlePager from '../../../../examples/article-pager.tsx?raw';
+import browserRoot from '../../../../examples/browser-root.tsx?raw';
+import hashAdapter from '../../../../examples/hash-adapter.ts?raw';
+
+A list reads and writes its query through a **router adapter**: an object with `pathname`, `search`
+and `navigate(href, { replace })` — the [`RouterAdapter`](/api/types/router-adapter/) type.
+`useQubeeList` finds its adapter in one of two ways.
+
+## Set it once, with a provider
+
+Wrap the app in an adapter provider:
+
+<Code code={browserRoot} lang="tsx" title="src/main.tsx" />
+
+Every list below it uses that adapter, and names no router:
+
+<Code code={articlePager} lang="tsx" title="src/articles/article-pager.tsx" />
+
+`<BrowserAdapter>` is for apps without a router: it reads `location` and writes with
+`history.pushState` and `replaceState`. Inside React Router, TanStack Router or Next.js, use that
+router's adapter instead — see [Vite / Next.js / React Router](/introduction/frameworks/) — because
+their router would not see these navigations.
+
+The provider hands down the adapter _hook_, not a router value. Only the components that use a
+list re-render when the URL changes, never the whole subtree. The nearest provider wins, so a
+provider around part of the tree gives that part its own adapter.
+
+## Or pass it to the hook
+
+```tsx
+const list = useQubeeList(articleList, useBrowserAdapter());
+```
+
+An adapter passed as the second argument wins over the provider. Use it for the one list that must
+not follow the rest of the tree. The component still re-renders when the provider's URL changes:
+hooks cannot be called conditionally, so the provider's adapter is read either way.
+
+With neither a provider nor an argument, `useQubeeList` throws
+[`MissingRouterAdapterError`](/api/errors/missing-router-adapter-error/). It never falls back to
+browser history by itself: inside a router library, that would leave the router out of step with
+the URL.
+
+## A provider for your own router
+
+For a router this package ships no adapter for, write a hook that returns a `RouterAdapter` and
+turn it into a provider:
+
+<Code code={hashAdapter} lang="ts" title="src/routing/hash-adapter.ts" />
+
+[`createAdapterProvider`](/api/functions/create-adapter-provider/) takes a hook with no arguments.
+Call it once, at module level: a provider keeps the hook it was created with.
+
+## Two lists, one URL
+
+Two different lists under one provider that name a URL parameter the same — both `page`, say —
+read and write the same value, so paging one pages the other. In development the hook logs a
+warning that names both lists and the parameter. Give one of them another name:
+
+```ts
+page: integerParam('tagPage', { default: 1, min: 1 }),
+```
+
+When two lists _should_ share a value — one search box driving two result lists — declare the
+param once and use the same object in both definitions. Lists that share a param object do not
+warn, and neither does one list used by several components.

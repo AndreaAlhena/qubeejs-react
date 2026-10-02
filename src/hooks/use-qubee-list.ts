@@ -34,6 +34,7 @@ import {
   draftLocation,
   observeLocation,
 } from '../utils/list-state-machine';
+import { useRouterAdapter } from './use-router-adapter';
 
 /**
  * The key of the list's one `sortParam`, or `undefined` when it has none or several.
@@ -71,13 +72,18 @@ function locationOf(list: LooseList, location: ListLocation): string {
  * yet in the URL. Unmounting (or hiding the tree with `<Activity>`) cancels a pending debounce and drops its draft too. `toggleSort` is there when the list
  * declares exactly one `sortParam`.
  *
+ * The list reads and writes the URL through a router adapter: the one passed as `adapter`, else
+ * the nearest adapter provider's — {@link BrowserAdapter}, or the one for your router.
+ *
  * @param list - A list declared once with `defineList`, as a module-level constant
- * @param router - The current location and a `navigate`, rebuilt every render
+ * @param adapter - A router adapter that takes the place of the nearest provider's: the current
+ * location and a `navigate`, rebuilt every render
  * @returns The state, request, pending flag, and the functions that change them
+ * @throws {MissingRouterAdapterError} When no adapter is passed and no adapter provider is above
  *
  * @example
  * ```tsx
- * const list = useQubeeList(articleList, useBrowserAdapter());
+ * const list = useQubeeList(articleList);
  *
  * <input value={list.state.q ?? ''} onChange={(e) => list.set({ q: e.target.value }, { debounce: 300, replace: true })} />
  * <th aria-sort={getAriaSort(list.state.sort, 'title')} onClick={() => list.toggleSort('title')}>Title</th>
@@ -86,12 +92,13 @@ function locationOf(list: LooseList, location: ListLocation): string {
  */
 export function useQubeeList<TList extends ListDefinition<ListParams>>(
   list: TList,
-  router: RouterAdapter
+  adapter?: RouterAdapter
 ): QubeeListHandle<TList> {
   // `QubeeListHandle<TList>` is built on `ListState<TList>`, a conditional type the compiler
   // cannot evaluate while `TList` is generic. The hook works on the list as a `LooseList` —
   // which every definition is — and narrows the handle once, where it returns it.
   const loose: LooseList = list;
+  const router = useRouterAdapter(loose, adapter);
   const location = locationOf(loose, router);
   const [machine] = useState(() => createLocalStore(createListStateMachine(location)));
   const [debouncer] = useState(createDebouncer);
