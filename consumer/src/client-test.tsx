@@ -32,10 +32,14 @@ async function main(): Promise<void> {
 
   const errors: string[] = [];
   const originalError = console.error;
-
-  console.error = (...parts: unknown[]): void => {
+  const originalWarn = console.warn;
+  const record = (...parts: unknown[]): void => {
     errors.push(parts.map(String).join(' ').slice(0, 300));
   };
+
+  // Warnings count too: the package's own development warnings go through console.warn.
+  console.error = record;
+  console.warn = record;
 
   const { createRoot, hydrateRoot } = await import('react-dom/client');
   const { renderToString } = await import('react-dom/server');
@@ -377,6 +381,7 @@ async function main(): Promise<void> {
   check('K2 React logged no error or warning in the whole run', errors.length === 0, errors);
 
   console.error = originalError;
+  console.warn = originalWarn;
   console.log(`${trace.join('\n')}\n`);
   finish(`Client (React ${version}${strict ? ', StrictMode' : ''})`);
 }
