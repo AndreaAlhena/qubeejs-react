@@ -35,6 +35,7 @@ function Articles(): ReactElement {
       </button>
       <Link to={list.href({ page: list.state.page + 1 })}>Next page</Link>
       <Link to="/other">Elsewhere</Link>
+      <Link to="/slow">Somewhere slow</Link>
       <output data-testid="page">{list.state.page}</output>
       <output data-testid="q">{list.state.q ?? ''}</output>
       <output data-testid="pending">{String(list.isPending)}</output>
@@ -93,6 +94,9 @@ function Other(): ReactElement {
   return <output data-testid="url">{pathname}</output>;
 }
 
+/** How long the slow route's loader takes: longer than the 300 ms search debounce. */
+const SLOW_ROUTE_MS = 500;
+
 function start(
   initial: string,
   root: ReactElement = <Root />
@@ -104,6 +108,15 @@ function start(
           { element: <Articles />, path: 'articles' },
           { element: <ScrollingArticles />, path: 'scrolling' },
           { element: <Other />, path: 'other' },
+          {
+            element: <Other />,
+            // Slower than the search debounce: the route is still loading when the debounce is due.
+            loader: (): Promise<null> =>
+              new Promise((resolve) => {
+                setTimeout(() => resolve(null), SLOW_ROUTE_MS);
+              }),
+            path: 'slow',
+          },
         ],
         element: root,
         path: '/',
@@ -221,6 +234,20 @@ describe('useReactRouterAdapter', () => {
       await act(() => vi.advanceTimersByTimeAsync(300));
 
       expect(text('url')).toBe('/other');
+    });
+
+    it('should not pull the user back from a route that loads longer than the debounce', async () => {
+      start('/articles');
+
+      await type('gone');
+      await click('link', 'Somewhere slow');
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, SLOW_ROUTE_MS + 200));
+      });
+
+      // The click on the link committed the search first; without that, the debounce fires while
+      // the loader runs, navigates back to the list, and the slow route never arrives.
+      expect(text('url')).toBe('/slow');
     });
   });
 
