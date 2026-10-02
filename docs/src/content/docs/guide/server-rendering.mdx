@@ -32,14 +32,16 @@ browser. The adapter's hooks support it through the server snapshot of `useSyncE
 ## React Server Components
 
 A Server Component never calls the hooks of `@qubeejs/react`: hooks and context exist only in
-client components. For its own work it imports `@qubeejs/core`, which never imports React — and the
-core has everything a server needs to read the URL, fetch the page and link onward:
+client components. For its own work it imports `@qubeejs/core`, which never imports React, and
+`fetchQubeePage` from `@qubeejs/react/fetch`, an entry that is not a client module. Together they
+read the URL, fetch the page and link onward:
 
 <Code code={nextPage} lang="tsx" title="app/articles/page.tsx" />
 
 - `readListState` takes Next's `searchParams` record as it is.
-- `fetchPage` returns `toPlain()`, a plain object — the only kind a Server Component can hand to a
-  Client Component.
+- `fetchQubeePage` returns a plain object — the only kind a Server Component can hand to a Client
+  Component. Import it from `@qubeejs/react/fetch`: the main entry is a client module, and what a
+  Server Component imports from a client module is a reference, not a function it can call.
 - `buildListHref` gives server-rendered links the same URL rules as the client: defaults left out,
   the page reset, foreign parameters kept.
 
@@ -54,7 +56,9 @@ until it has arrived. The list takes its adapter from the `<NextAdapter>` in the
 
 This page reads `searchParams` on the server, which makes the route dynamic: it renders on each
 request, so the `useSearchParams` the adapter reads needs no `<Suspense>` boundary. A statically
-rendered route that calls `useSearchParams` does need one above it, or `next build` fails.
+rendered route that calls `useSearchParams` does need one above it, or `next build` fails. On such
+a route nothing is fetched on the server: the client component fetches with
+[`useQubeeQuery`](/guide/fetching/).
 
 :::caution[Bee aware]
 Declare the list — `articleList` — in a module both sides import. It holds functions, so it can never

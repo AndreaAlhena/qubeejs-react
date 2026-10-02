@@ -55,6 +55,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   debounced search landing — and takes `scroll` to hand it back to the router:
   `<ReactRouterAdapter scroll>`, `<TanStackRouterAdapter scroll>`, `<NextAdapter scroll>`, and the
   same option on their hooks (#24, #32)
+- Built-in fetching: `useQubeeQuery(request, options?)` fetches the page a list asks for and
+  fetches again when the request changes — the previous page kept meanwhile, a replaced request
+  aborted, no cache. `<QubeeFetchProvider>` sets the fetcher (`QubeeFetcher`) for a subtree, and a
+  status that is not `ok` becomes a `QubeeFetchError` (#25)
+- `@qubeejs/react/fetch`: `fetchQubeePage(request, options?)`, the function the hooks fetch with —
+  a server-safe entry point, callable from a Server Component, a route loader or a script (#25)
 - A client boundary built in: the entry point is marked `'use client'`, so a Next.js Server
   Component can import the package's components without a wrapper file (#19)
 

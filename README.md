@@ -8,10 +8,10 @@ per component or per subtree, and lists whose state lives in the URL.
 
 **[Documentation](https://qubeejs-react.andreatantimonaco.me)**
 
-The adapter re-renders your components when a query changes. It performs no I/O: it hands you
-`{ uri, headers, paginate }`, and your fetching library — TanStack Query, SWR, plain `fetch` —
-does the rest. Everything framework-free (drivers, the query builder, list definitions,
-pagination helpers) is imported from `@qubeejs/core` and documented there.
+The adapter re-renders your components when a query changes, keeps a list's state in the URL
+through your router, and fetches the page that state asks for — with a hook of its own, or
+through TanStack Query or SWR. Everything framework-free (drivers, the query builder, list
+definitions, pagination helpers) is imported from `@qubeejs/core` and documented there.
 
 ## Install
 
@@ -302,13 +302,63 @@ export default function RootLayout({ children }: { children: ReactNode }): React
   `useNextAdapter()` is its hook form.
 - A component that uses a list on a statically rendered route needs a `<Suspense>` boundary above
   it, or `next build` fails: the adapter reads `useSearchParams`.
-- `QubeeProvider` takes a driver, which cannot cross the server–client boundary as a prop, so it
-  goes in a client component of your own.
-- Server Components read state, build requests and build links with `@qubeejs/core`.
+- `QubeeProvider` takes a driver and `QubeeFetchProvider` a function, which cannot cross the
+  server–client boundary as props, so they go in a client component of your own.
+- Server Components read state, build requests and build links with `@qubeejs/core`, and fetch
+  with `fetchQubeePage` from `@qubeejs/react/fetch`.
 
 ## Fetching
 
-The adapter performs no I/O. `request` holds everything a fetch needs.
+`list.request` describes the page to fetch. `useQubeeQuery` fetches it, and fetches again when it
+changes — once per navigation, never per keystroke:
+
+```tsx
+import { useQubeeList, useQubeeQuery } from '@qubeejs/react';
+
+const list = useQubeeList(articleList);
+const articles = useQubeeQuery<Article>(list.request);
+
+<ul aria-busy={list.isPending || articles.isFetching}>
+  {articles.data?.data.map((article) => (
+    <li key={article.id}>{article.title}</li>
+  ))}
+</ul>;
+```
+
+- It returns `{ data, error, isFetching, isLoading, refetch }`. `data` is core's plain
+  `PaginatedResult`: the rows, and `lastPage`, `total`, `from`, `to` beside them.
+- The previous page stays on screen while the next one loads; a request that is replaced is
+  aborted, and its answer ignored.
+- A status that is not `ok` becomes a `QubeeFetchError`, with `status`, `uri` and `response`.
+- `null` — or `enabled: false` — fetches nothing. `initialData` is the page of the first render's
+  request, when the server already fetched it.
+- It keeps no cache: for one, and for retries and refetching on focus, use TanStack Query or SWR.
+
+What performs the request is the global `fetch`, or your own fetcher — a function with the shape
+of `fetch` — for a subtree or for one hook:
+
+```tsx
+import type { QubeeFetcher } from '@qubeejs/react';
+import { QubeeFetchProvider } from '@qubeejs/react';
+
+const authFetch: QubeeFetcher = (uri, init) =>
+  fetch(uri, { ...init, headers: { ...init.headers, Authorization: `Bearer ${token()}` } });
+
+<QubeeFetchProvider fetcher={authFetch}>
+  <App />
+</QubeeFetchProvider>;
+```
+
+**On the server**, or anywhere outside React, call the function the hook is built on. It lives in
+`@qubeejs/react/fetch`, an entry that is not a client module, so a Server Component can call it:
+
+```tsx
+import { buildListRequest, readListState } from '@qubeejs/core';
+import { fetchQubeePage } from '@qubeejs/react/fetch';
+
+const request = buildListRequest(articleList, readListState(articleList, await searchParams));
+const page = await fetchQubeePage<Article>(request);
+```
 
 **TanStack Query**:
 

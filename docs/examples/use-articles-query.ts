@@ -2,7 +2,7 @@ import type { QubeeListHandle } from '@qubeejs/react';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 
 import type { Article, articleList } from './article-list';
-import { fetchPage } from './fetch-page';
+import { fetchQubeePage } from '@qubeejs/react/fetch';
 
 /**
  * The page the list's committed state asks for, cached by TanStack Query. The
@@ -14,7 +14,7 @@ export function useArticlesQuery(list: QubeeListHandle<typeof articleList>) {
 
   return useQuery({
     placeholderData: keepPreviousData,
-    queryFn: ({ signal }) => fetchPage<Article>(request, signal),
+    queryFn: ({ signal }) => fetchQubeePage<Article>(request, { signal }),
     queryKey: ['articles', request.uri, request.headers],
   });
 }

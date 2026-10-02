@@ -13,7 +13,8 @@
  *   reads as text rather than as an unknown JSX tag;
  * - TypeDoc runs from docs/node_modules, so the library needs no TypeDoc of
  *   its own;
- * - every entry point of entries.json is documented, not only the main one.
+ * - every entry point of entries.json is documented, not only the main one, and an export that
+ *   two entries share gets one page.
  *
  * Every page here is generated — never hand-edit src/content/docs/api/.
  */
@@ -38,6 +39,7 @@ const REFLECTION = {
   METHOD: 2048,
   MODULE: 2,
   PROPERTY: 1024,
+  REFERENCE: 4194304,
   TYPE_ALIAS: 2097152,
   VARIABLE: 32,
 };
@@ -494,10 +496,13 @@ execFileSync(
 );
 
 // With several entry points TypeDoc nests each one's exports in a module; with one, it does not.
+// An export that a second entry re-exports appears there as a reference to the first: the
+// declaration is the one to document.
 const nodes = [
   ...new Map(
     (JSON.parse(readFileSync(jsonPath, 'utf8')).children ?? [])
       .flatMap((child) => (child.kind === REFLECTION.MODULE ? (child.children ?? []) : [child]))
+      .filter((node) => node.kind !== REFLECTION.REFERENCE)
       .map((node) => [node.name, node])
   ).values(),
 ];

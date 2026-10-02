@@ -61,13 +61,15 @@ and needs none.
 
 A Server Component never calls the hooks of `@qubeejs/react` — hooks and context exist only in
 client components. It imports `@qubeejs/core`, which never imports React: `readListState`,
-`buildListRequest` and `buildListHref` all run on the server. See
+`buildListRequest` and `buildListHref` all run on the server. To fetch the page there, it calls
+`fetchQubeePage` from `@qubeejs/react/fetch`, an entry that is not a client module. See
 [Server rendering](/guide/server-rendering/).
 
 ### `QubeeProvider` in a client file
 
 `QubeeProvider` takes a driver, which holds functions and so cannot cross the server–client
-boundary as a prop. Render it from a file of your own that starts with `'use client'`:
+boundary as a prop. The same goes for `QubeeFetchProvider` and its fetcher. Render them from a
+file of your own that starts with `'use client'`:
 
 <Code code={nextProviders} lang="tsx" title="app/providers.tsx" />
 
