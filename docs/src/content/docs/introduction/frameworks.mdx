@@ -7,7 +7,7 @@ sidebar:
 ---
 
 import { Code } from '@astrojs/starlight/components';
-import nextListRouter from '../../../../examples/next/use-next-list-router.ts?raw';
+import nextLayout from '../../../../examples/next/layout.tsx?raw';
 import nextProviders from '../../../../examples/next/providers.tsx?raw';
 import reactRouterRoot from '../../../../examples/react-router-root.tsx?raw';
 import viteMain from '../../../../examples/vite-main.tsx?raw';
@@ -44,10 +44,18 @@ shows a complete pager.
 
 ## Next.js (App Router)
 
-`@qubeejs/react` is marked as a client module, so a Server Component can import its components;
-its hooks still run in client components only. Two things remain yours: `QubeeProvider` goes in
-your own client component, as below, and `useSearchParams` on a statically rendered route needs a
-`<Suspense>` boundary above it, or `next build` fails.
+The adapter ships with the package, as the entry point `@qubeejs/react/next`, for Next.js 15 and
+later. Render it in the root layout — a Server Component can render it directly:
+
+<Code code={nextLayout} lang="tsx" title="app/layout.tsx" />
+
+Every Client Component under it then calls `useQubeeList(articleList)` and navigates through the
+App Router, without scrolling to the top; `<NextAdapter scroll>` turns that scrolling back on.
+
+One thing remains yours: a component that uses a list on a **statically rendered** route needs a
+`<Suspense>` boundary above it, or `next build` fails. The adapter reads `useSearchParams`, which
+Next.js cannot resolve ahead of time. A route that reads `searchParams` on the server is dynamic,
+and needs none.
 
 ### Server Components import the core
 
@@ -62,14 +70,6 @@ client components. It imports `@qubeejs/core`, which never imports React: `readL
 boundary as a prop. Render it from a file of your own that starts with `'use client'`:
 
 <Code code={nextProviders} lang="tsx" title="app/providers.tsx" />
-
-### Next's router, as a `RouterAdapter`
-
-<Code code={nextListRouter} lang="ts" title="app/articles/use-next-list-router.ts" />
-
-A Next.js adapter is planned as an entry point of this package, `@qubeejs/react/next`: it will
-ship this router adapter ready-made. Until it exists, the two files above are the whole
-integration.
 
 ## TanStack Router
 

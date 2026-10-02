@@ -273,31 +273,31 @@ const rootRoute = createRootRoute({
 It reads the raw query string and navigates with whole hrefs, so a `basepath` is honoured.
 `useTanStackRouterAdapter()` is its hook form.
 
-**Next.js App Router** (until `@qubeejs/react/next` ships its adapter): the package is marked as
-a client module, so a Server Component can import its components without a wrapper file; its hooks
-still run in client components only. `QubeeProvider` takes a driver, which cannot cross the
-server–client boundary as a prop, so wrap it in your own client component. `useSearchParams` on a
-statically rendered route needs a `<Suspense>` boundary above it, or `next build` fails.
+**Next.js App Router** (15 or later) — the adapter ships as `@qubeejs/react/next`. Render it in
+the root layout; a Server Component can render it directly:
 
-```ts
-'use client';
+```tsx
+// app/layout.tsx
+import { NextAdapter } from '@qubeejs/react/next';
 
-import type { RouterAdapter } from '@qubeejs/react';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-
-export function useNextRouterList(): RouterAdapter {
-  const router = useRouter();
-  const pathname = usePathname();
-  const search = useSearchParams();
-
-  return {
-    navigate: (href, { replace }) =>
-      replace ? router.replace(href, { scroll: false }) : router.push(href, { scroll: false }),
-    pathname,
-    search,
-  };
+export default function RootLayout({ children }: { children: ReactNode }): ReactElement {
+  return (
+    <html lang="en">
+      <body>
+        <NextAdapter>{children}</NextAdapter>
+      </body>
+    </html>
+  );
 }
 ```
+
+- Lists navigate without scrolling to the top; `<NextAdapter scroll>` turns that back on.
+  `useNextAdapter()` is its hook form.
+- A component that uses a list on a statically rendered route needs a `<Suspense>` boundary above
+  it, or `next build` fails: the adapter reads `useSearchParams`.
+- `QubeeProvider` takes a driver, which cannot cross the server–client boundary as a prop, so it
+  goes in a client component of your own.
+- Server Components read state, build requests and build links with `@qubeejs/core`.
 
 ## Fetching
 

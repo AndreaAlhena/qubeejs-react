@@ -6,16 +6,17 @@ import Link from 'next/link';
 
 import { type Article, articleList } from '@/articles/article-list';
 
-import { useNextListRouter } from './use-next-list-router';
-
 type ArticleListViewProps = {
   nextHref: string;
   result: PaginatedResult<Article>;
 };
 
-/** The interactive half of /articles: the search box, and the page the server fetched. */
+/**
+ * The interactive half of /articles: the search box, and the page the server fetched. The list
+ * takes its adapter from the `<NextAdapter>` in the root layout.
+ */
 export function ArticleListView({ nextHref, result }: ArticleListViewProps) {
-  const list = useQubeeList(articleList, useNextListRouter());
+  const list = useQubeeList(articleList);
 
   return (
     <section aria-busy={list.isPending}>

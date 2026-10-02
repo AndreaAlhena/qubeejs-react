@@ -48,6 +48,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - A debounced change is committed at once when the user clicks a link, so that on routers that
   report the new URL late — the Next.js App Router, loaders that take time — a search still
   waiting cannot fire after the link was followed and pull the user back (#31)
+- `@qubeejs/react/next`: `<NextAdapter>` and `useNextAdapter()`, for the Next.js App Router (15
+  and later) — an entry point of its own, with `next` as an optional peer dependency. A Server
+  Component layout can render the provider directly (#24)
 - A client boundary built in: the entry point is marked `'use client'`, so a Next.js Server
   Component can import the package's components without a wrapper file (#19)
 
