@@ -4,6 +4,7 @@ import type { SWRResponse } from 'swr';
 
 import { buildListRequest, readListState } from '@qubeejs/core';
 import { act, renderHook, waitFor } from '@testing-library/react';
+import { StrictMode } from 'react';
 import { SWRConfig } from 'swr';
 
 import type { QubeeFetcher } from '../types/qubee-fetcher.type';
@@ -39,12 +40,17 @@ function createFetcher(init: ResponseInit = {}): ReturnType<typeof vi.fn<QubeeFe
   });
 }
 
-/** A cache of its own for every test, and no retry after a failure. */
+/**
+ * StrictMode, as in a development build, with a cache of its own for every test and no retry
+ * after a failure. SWR de-duplicates the request StrictMode's second mount would repeat.
+ */
 function Cache({ children }: { children: ReactNode }): ReactElement {
   return (
-    <SWRConfig value={{ provider: () => new Map<string, never>(), shouldRetryOnError: false }}>
-      {children}
-    </SWRConfig>
+    <StrictMode>
+      <SWRConfig value={{ provider: () => new Map<string, never>(), shouldRetryOnError: false }}>
+        {children}
+      </SWRConfig>
+    </StrictMode>
   );
 }
 

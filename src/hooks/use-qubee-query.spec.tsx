@@ -39,9 +39,15 @@ const bodyOf = (page: number): RawResponse => ({
 const pageOf = (page: number): PaginatedResult<ArticleRow> =>
   requestFor(`page=${page}`).paginate<ArticleRow>(bodyOf(page)).toPlain();
 
+/** The calls of every fetcher the running test created, for `renderQuery` to tidy. */
+const everyCalls: Call[][] = [];
+
 /** A fetcher that leaves every request pending until the test answers it. */
 function createFetcher(): { calls: Call[]; fetcher: QubeeFetcher } {
   const calls: Call[] = [];
+
+  everyCalls.push(calls);
+
   const fetcher: QubeeFetcher = (uri, init) =>
     new Promise<Response>((resolve, reject) => {
       calls.push({ reject, resolve, signal: init.signal, uri });
@@ -68,17 +74,39 @@ const fail = async (call: Call, reason: unknown): Promise<void> => {
   await settle();
 };
 
-const renderQuery = (
+/**
+ * Render the hook under StrictMode, as a development build does.
+ *
+ * StrictMode mounts every effect twice, so a fetch that is due at mount is started, aborted and
+ * started again. The aborted twin is dropped from each fetcher's calls, which then hold one call
+ * per request the hook made — the way the tests below read them. One test further down renders
+ * without this helper, to look at the twin itself.
+ */
+function renderQuery(
   initialProps: Props,
-  wrapper?: (props: { children: ReactNode }) => ReactElement
-): ReturnType<typeof renderHook<QubeeQueryResult<ArticleRow>, Props>> =>
-  renderHook(({ options, request }: Props) => useQubeeQuery<ArticleRow>(request, options), {
-    initialProps,
-    wrapper,
+  Wrapper?: (props: { children: ReactNode }) => ReactElement
+): ReturnType<typeof renderHook<QubeeQueryResult<ArticleRow>, Props>> {
+  function Strict({ children }: { children: ReactNode }): ReactElement {
+    return <StrictMode>{Wrapper ? <Wrapper>{children}</Wrapper> : children}</StrictMode>;
+  }
+
+  const rendered = renderHook(
+    ({ options, request }: Props) => useQubeeQuery<ArticleRow>(request, options),
+    { initialProps, wrapper: Strict }
+  );
+
+  everyCalls.forEach((calls) => {
+    if (calls.length === 2 && calls[0].signal?.aborted) {
+      calls.shift();
+    }
   });
+
+  return rendered;
+}
 
 describe('useQubeeQuery', () => {
   afterEach(() => {
+    everyCalls.length = 0;
     vi.unstubAllGlobals();
   });
 
@@ -526,7 +554,7 @@ describe('useQubeeQuery', () => {
       expect(calls[0].signal?.aborted).toBe(true);
     });
 
-    it('should show one request state under StrictMode', async () => {
+    it('should show one request state while StrictMode mounts its effect twice', async () => {
       const { calls, fetcher } = createFetcher();
       const seen: boolean[] = [];
       const { result } = renderHook(
