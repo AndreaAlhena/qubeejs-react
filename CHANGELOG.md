@@ -45,6 +45,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `@qubeejs/react/tanstack-router`: `<TanStackRouterAdapter>` and `useTanStackRouterAdapter()`,
   for TanStack Router 1.x — an entry point of its own, with `@tanstack/react-router` as an
   optional peer dependency (#23)
+- A debounced change is committed at once when the user clicks a link, so that on routers that
+  report the new URL late — the Next.js App Router, loaders that take time — a search still
+  waiting cannot fire after the link was followed and pull the user back (#31)
 - A client boundary built in: the entry point is marked `'use client'`, so a Next.js Server
   Component can import the package's components without a wrapper file (#19)
 

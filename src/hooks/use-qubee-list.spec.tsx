@@ -546,6 +546,92 @@ describe('useQubeeList', () => {
       expect(router.navigations).toEqual([{ href: '/articles?q=re', options: { replace: false } }]);
     });
 
+    it('should commit at once when the user clicks a link, before the link navigates', () => {
+      const router = createTestRouter('/articles');
+      const seen: string[] = [];
+
+      function Page(): ReactElement {
+        const adapter = router.useRouter();
+        const list = useQubeeList(articleList, adapter);
+
+        return (
+          <>
+            <button onClick={() => list.set({ q: 'react' }, { debounce: 300 })} type="button">
+              type
+            </button>
+            <a
+              href="/other"
+              onClick={(event) => {
+                event.preventDefault();
+                seen.push(...router.navigations.map((navigation) => navigation.href));
+                adapter.navigate('/other', { replace: false });
+              }}
+            >
+              <span>leave</span>
+            </a>
+          </>
+        );
+      }
+
+      const { getByRole, getByText } = render(<Page />, { wrapper: StrictMode });
+
+      act(() => getByRole('button', { name: 'type' }).click());
+      // The click lands on an element inside the link, as it does on a link with an icon.
+      act(() => getByText('leave').click());
+      act(() => {
+        vi.advanceTimersByTime(300);
+      });
+
+      // The search was already committed when the link's own handler ran, and nothing follows.
+      expect(seen).toEqual(['/articles?q=react']);
+      expect(router.navigations.map((navigation) => navigation.href)).toEqual([
+        '/articles?q=react',
+        '/other',
+      ]);
+    });
+
+    it('should leave a click that is not on a link to the debounce', () => {
+      const router = createTestRouter('/articles');
+      const { result } = renderList(router);
+
+      act(() => result.current.set({ q: 'react' }, { debounce: 300 }));
+      act(() => {
+        document.body.click();
+      });
+
+      expect(router.navigations).toEqual([]);
+      expect(result.current.isPending).toBe(true);
+
+      act(() => {
+        vi.advanceTimersByTime(300);
+      });
+
+      expect(router.navigations).toHaveLength(1);
+    });
+
+    it('should listen for clicks only while a debounce is waiting', () => {
+      const add = vi.spyOn(document, 'addEventListener');
+      const remove = vi.spyOn(document, 'removeEventListener');
+      const { result } = renderList(createTestRouter('/articles'));
+      const clicks = (spy: typeof add): number =>
+        spy.mock.calls.filter(([type]) => type === 'click').length;
+
+      expect(clicks(add)).toBe(0);
+
+      act(() => result.current.set({ q: 'react' }, { debounce: 300 }));
+
+      expect(clicks(add)).toBeGreaterThan(0);
+
+      act(() => {
+        vi.advanceTimersByTime(300);
+      });
+
+      expect(clicks(remove)).toBe(clicks(add));
+
+      add.mockRestore();
+      remove.mockRestore();
+    });
+
     it('should update the state at once and report pending while waiting', () => {
       const router = createTestRouter('/articles');
       const { result } = renderList(router);

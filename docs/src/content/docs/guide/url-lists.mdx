@@ -117,8 +117,11 @@ draft and any waiting debounce are dropped, and `state` shows what the address s
 Some routers report the new URL only after a transition — the Next.js App Router, for one. Two
 edge cases follow from the gap between calling `navigate` and hearing the new URL back:
 
-- A debounced change can fire after the user has started another navigation, but before the router
-  reports it. The change then goes out anyway, and pulls them back.
+- A debounced change could fire after the user has started another navigation, but before the
+  router reports it, and pull them back. So a click on a link while a debounce is waiting commits
+  the change at once: the link the user follows always comes after it. What remains is a
+  navigation started without a link — by a button's handler, a timer, a keyboard shortcut of your
+  own — while a debounce is waiting.
 - An external navigation to a URL that is canonically equal to the current one, made while the
   hook's own navigation is in flight, can leave `state`, `request` and `isPending` on the
   superseded navigation until the next change.
