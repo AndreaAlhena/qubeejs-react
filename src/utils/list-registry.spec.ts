@@ -46,7 +46,7 @@ describe('list registry', () => {
     claimListParams(registry, tagList);
 
     expect(warn).toHaveBeenCalledWith(
-      '[@qubeejs/react] The lists "articles" and "tags" both own the URL parameter "page", so changing one changes the other. Give one of them another name, or declare the param once and use the same object in both lists if this is intended.'
+      '[@qubeejs/react] The lists "articles" and "tags" both own the URL parameter "page", so changing one changes the other. Give the param another URL name in one of them, or declare the param once and use the same object in both lists if this is intended.'
     );
   });
 

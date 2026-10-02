@@ -4,10 +4,11 @@
  *
  * The app is fixtures/next-app. It is copied to a temporary directory and gets the package from
  * its tarball, so nothing resolves to the repository's source. `next build` proves what a unit
- * test cannot: that a Server Component can render `<NextAdapter>` and call `fetchQubeePage`, that
- * the client boundary is in the right place, and that a statically rendered route builds behind
- * a `<Suspense>` boundary. Playwright then loads the production build and types, sorts, pages and
- * goes Back, with the first page fetched on the server and the next ones in the browser.
+ * test cannot: that a Server Component can render `<NextAdapter>`, call `fetchQubeePage` and
+ * prefetch with `qubeeQueryOptions`, that the client boundary is in the right place, and that a
+ * statically rendered route builds behind a `<Suspense>` boundary. Playwright then loads the
+ * production build and types, sorts, pages and goes Back, with the first page fetched on the
+ * server and the next ones in the browser.
  *
  * - `NEXT_VERSION=15` builds against that Next.js major; the default is the fixture's own.
  * - `NEXT_BUILD_ONLY=1` stops after `next build`.

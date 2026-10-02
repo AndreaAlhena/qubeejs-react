@@ -41,10 +41,11 @@ A third job builds the Next.js app in `fixtures/next-app` with the packed tarbal
 current Next.js major, drives it in a browser with Playwright (`npm run test:next`, after a
 build). It uses an installed Chrome; set `PLAYWRIGHT_CHANNEL=msedge` to use Edge instead.
 
-A fourth job installs React 18.3 and the lowest release that the peer ranges of React Router,
-TanStack Router, TanStack Query and SWR admit (`node scripts/peer-floors.mjs` reads them from
-`package.json`) and runs the specs of their entries against them, so a range cannot promise a
-release the entry does not work with. When you change a range, that job tests the new floor.
+A fourth job installs the lowest release that the peer ranges of React Router, TanStack Router,
+TanStack Query and SWR admit (`node scripts/peer-floors.mjs` reads them from `package.json`) and
+runs the specs of their entries against them, so a range cannot promise a release the entry does
+not work with. It runs twice: on React 18.3 with all four, and on React 19 without SWR, whose
+lowest release accepts React 18 at most. When you change a range, that job tests the new floor.
 
 Entry points are listed once, in `entries.json`. To add one: add its line there, its source file
 under `src/entries/`, its block in `package.json` `exports`, and — when it has an optional peer —
