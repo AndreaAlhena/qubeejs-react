@@ -1,5 +1,5 @@
-import { useListState } from '@qubeejs/react';
-import type { ListRouter } from '@qubeejs/react';
+import { useQubeeList } from '@qubeejs/react';
+import type { RouterAdapter } from '@qubeejs/react';
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -7,13 +7,13 @@ import { articleList } from './article-list';
 import { ArticleSearch } from './article-search';
 
 /** The search box, wired to the article list and to a router the test controls. */
-function Harness({ router }: { router: ListRouter }) {
-  return <ArticleSearch list={useListState(articleList, router)} />;
+function Harness({ router }: { router: RouterAdapter }) {
+  return <ArticleSearch list={useQubeeList(articleList, router)} />;
 }
 
 /** Render the box at /articles, with the given query string (none by default). */
 function renderSearch(search = '') {
-  const navigate = vi.fn<ListRouter['navigate']>();
+  const navigate = vi.fn<RouterAdapter['navigate']>();
 
   render(<Harness router={{ navigate, pathname: '/articles', search }} />);
 

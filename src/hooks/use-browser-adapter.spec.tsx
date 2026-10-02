@@ -5,23 +5,23 @@ import { act, renderHook } from '@testing-library/react';
 import { StrictMode } from 'react';
 import { renderToString } from 'react-dom/server';
 
-import { useBrowserRouter } from './use-browser-router';
+import { useBrowserAdapter } from './use-browser-adapter';
 
-describe('useBrowserRouter', () => {
+describe('useBrowserAdapter', () => {
   beforeEach(() => {
     window.history.replaceState(null, '', '/articles?q=react');
   });
 
   describe('location', () => {
     it('should read the current pathname and query', () => {
-      const { result } = renderHook(() => useBrowserRouter(), { wrapper: StrictMode });
+      const { result } = renderHook(() => useBrowserAdapter(), { wrapper: StrictMode });
 
       expect(result.current.pathname).toBe('/articles');
       expect(result.current.search).toBe('q=react');
     });
 
     it('should keep the same router while the URL is unchanged', () => {
-      const { rerender, result } = renderHook(() => useBrowserRouter(), { wrapper: StrictMode });
+      const { rerender, result } = renderHook(() => useBrowserAdapter(), { wrapper: StrictMode });
       const router = result.current;
 
       rerender();
@@ -32,7 +32,7 @@ describe('useBrowserRouter', () => {
 
   describe('navigate', () => {
     it('should follow its own navigations', () => {
-      const { result } = renderHook(() => useBrowserRouter(), { wrapper: StrictMode });
+      const { result } = renderHook(() => useBrowserAdapter(), { wrapper: StrictMode });
 
       act(() => {
         result.current.navigate('/articles?page=2', { replace: false });
@@ -43,8 +43,8 @@ describe('useBrowserRouter', () => {
     });
 
     it('should keep every instance in sync', () => {
-      const first = renderHook(() => useBrowserRouter(), { wrapper: StrictMode });
-      const second = renderHook(() => useBrowserRouter(), { wrapper: StrictMode });
+      const first = renderHook(() => useBrowserAdapter(), { wrapper: StrictMode });
+      const second = renderHook(() => useBrowserAdapter(), { wrapper: StrictMode });
 
       act(() => {
         first.result.current.navigate('/authors', { replace: true });
@@ -57,7 +57,7 @@ describe('useBrowserRouter', () => {
 
   describe('history', () => {
     it('should follow the back and forward buttons', () => {
-      const { result } = renderHook(() => useBrowserRouter(), { wrapper: StrictMode });
+      const { result } = renderHook(() => useBrowserAdapter(), { wrapper: StrictMode });
 
       act(() => {
         window.history.pushState(null, '', '/authors?page=3');
@@ -72,7 +72,7 @@ describe('useBrowserRouter', () => {
   describe('server rendering', () => {
     it('should render with an empty location', () => {
       function Probe(): ReactElement {
-        const router = useBrowserRouter();
+        const router = useBrowserAdapter();
 
         return <output>{`${router.pathname}|${toSearchParams(router.search).toString()}`}</output>;
       }

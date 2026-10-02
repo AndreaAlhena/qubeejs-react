@@ -34,7 +34,7 @@ const FEATURES = [
     title: 'Store-backed hooks',
   },
   {
-    html: '<code>useListState</code> reads a list from the page URL and writes it back: at most one navigation per change, a draft that keeps inputs responsive while a search debounces, and a back button that simply works.',
+    html: '<code>useQubeeList</code> reads a list from the page URL and writes it back: at most one navigation per change, a draft that keeps inputs responsive while a search debounces, and a back button that simply works.',
     title: 'The URL is the state',
   },
   {
@@ -49,7 +49,7 @@ const FEATURES = [
 
 const CORE_LINKS = [
   {
-    description: 'defineList, the six params, and the URL rules useListState follows.',
+    description: 'defineList, the six params, and the URL rules useQubeeList follows.',
     href: `${CORE}/guide/lists/`,
     title: 'Lists & URL state',
   },
@@ -135,7 +135,7 @@ const CORE_LINKS = [
             <p class="lede">
               <strong>@qubeejs/react</strong> connects <strong>@qubeejs/core</strong> to React. A hook
               gives a component its own query, a provider shares one across a subtree, and{' '}
-              <code>useListState</code> keeps a list's query in the page URL. Components re-render when
+              <code>useQubeeList</code> keeps a list's query in the page URL. Components re-render when
               the query changes; fetching stays yours.
             </p>
             <p class="aside">
@@ -177,7 +177,7 @@ const CORE_LINKS = [
           <p>
             Wrap a subtree in <code>&lt;QubeeProvider&gt;</code> with a driver and a base URL, then call{' '}
             <code>useQubeeContext()</code> anywhere below it. Lists whose query lives in the URL need no
-            provider at all: <code>useListState</code> reads the address directly.
+            provider at all: <code>useQubeeList</code> reads the address directly.
           </p>
           <table>
             <thead>

@@ -1,5 +1,5 @@
 import { getPageWindow } from '@qubeejs/core';
-import type { ListStateHandle } from '@qubeejs/react';
+import type { QubeeListHandle } from '@qubeejs/react';
 import type { MouseEvent } from 'react';
 
 import type { articleList } from './article-list';
@@ -8,7 +8,7 @@ import { isPlainClick } from './plain-click';
 type PaginationBarProps = {
   /** The last page the API reported; 1 until the first page arrives. */
   lastPage: number;
-  list: ListStateHandle<typeof articleList>;
+  list: QubeeListHandle<typeof articleList>;
 };
 
 /** Previous, the page window with its gaps, and next — every page a real link. */

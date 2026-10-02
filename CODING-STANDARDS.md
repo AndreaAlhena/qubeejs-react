@@ -90,7 +90,7 @@ index signatures → static props → private props → protected props → publ
   (`set(changes): void`), so a caller can destructure a handle without tripping
   `@typescript-eslint/unbound-method`.
 - **Casts** (`as`) only at a documented generic boundary, with a comment saying what the compiler
-  cannot see. Today there are two, both in `useListState`: `as unknown as ListStateHandle<TList>`
+  cannot see. Today there are two, both in `useQubeeList`: `as unknown as QubeeListHandle<TList>`
   narrows the handle, because `ListState<TList>` is a conditional type the compiler cannot
   evaluate while `TList` is generic; and `as readonly Sort[]` types the value at the list's
   `sortParam` key, because `readListState` returns `unknown` for a key the loose list only knows
@@ -146,8 +146,8 @@ components. The documentation site's API reference is generated from it.
 referencing the issue:
 
 ```
-feat(use-list-state): debounce set() and report it as pending (#7)
-fix(use-browser-router): stop listening on unmount (#12)
+feat(use-qubee-list): debounce set() and report it as pending (#7)
+fix(use-browser-adapter): stop listening on unmount (#12)
 ```
 
 **Commit messages must not contain AI assistant credits or co-author trailers.** Keep commits

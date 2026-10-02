@@ -1,4 +1,4 @@
-import type { ListStateHandle } from '@qubeejs/react';
+import type { QubeeListHandle } from '@qubeejs/react';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 
 import type { Article, articleList } from './article-list';
@@ -9,7 +9,7 @@ import { fetchPage } from './fetch-page';
  * key changes once per navigation — not per keystroke — because `request` is
  * built from the committed layer, after any debounce.
  */
-export function useArticlesQuery(list: ListStateHandle<typeof articleList>) {
+export function useArticlesQuery(list: QubeeListHandle<typeof articleList>) {
   const { request } = list;
 
   return useQuery({

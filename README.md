@@ -70,7 +70,7 @@ subtree: only components that call `useQubeeContext()` re-render. The nearest pr
 `value={qubee}` instead of a configuration to share an instance created elsewhere. Outside a
 provider, `useQubeeContext()` throws `MissingQubeeProviderError`.
 
-## Lists in the URL: `useListState`
+## Lists in the URL: `useQubeeList`
 
 Declare the list once, with `@qubeejs/core`, as a module-level constant:
 
@@ -118,10 +118,10 @@ Then drive it from any component:
 
 ```tsx
 import { getAriaSort } from '@qubeejs/core';
-import { useBrowserRouter, useListState } from '@qubeejs/react';
+import { useBrowserAdapter, useQubeeList } from '@qubeejs/react';
 
 function Articles(): ReactElement {
-  const list = useListState(articleList, useBrowserRouter());
+  const list = useQubeeList(articleList, useBrowserAdapter());
 
   return (
     <>
@@ -165,14 +165,14 @@ or `isPending`, call the hook once in their common parent and pass the handle do
 
 ## Routers
 
-`useListState` takes a `ListRouter`: the current `pathname` and `search`, and a
+`useQubeeList` takes a `RouterAdapter`: the current `pathname` and `search`, and a
 `navigate(href, { replace })`. Build it from your router's hooks on every render.
 
-**No router** — `useBrowserRouter()` uses `history.pushState` / `replaceState` and `popstate`, and
+**No router** — `useBrowserAdapter()` uses `history.pushState` / `replaceState` and `popstate`, and
 keeps every component on the page in sync:
 
 ```tsx
-const list = useListState(articleList, useBrowserRouter());
+const list = useQubeeList(articleList, useBrowserAdapter());
 ```
 
 It observes only its own `navigate` and Back/Forward: a `history.pushState` by other code is not
@@ -182,10 +182,10 @@ When something else also writes the URL, use your router's adapter below.
 **React Router v7** (on v6.4+ the same hooks come from `'react-router-dom'`):
 
 ```ts
-import type { ListRouter } from '@qubeejs/react';
+import type { RouterAdapter } from '@qubeejs/react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router';
 
-export function useReactRouterList(): ListRouter {
+export function useReactRouterList(): RouterAdapter {
   const [search] = useSearchParams();
   const navigate = useNavigate();
   const { pathname } = useLocation();
@@ -197,10 +197,10 @@ export function useReactRouterList(): ListRouter {
 **TanStack Router**:
 
 ```ts
-import type { ListRouter } from '@qubeejs/react';
+import type { RouterAdapter } from '@qubeejs/react';
 import { useRouter, useRouterState } from '@tanstack/react-router';
 
-export function useTanStackRouterList(): ListRouter {
+export function useTanStackRouterList(): RouterAdapter {
   const router = useRouter();
   const { pathname, searchStr } = useRouterState({ select: (state) => state.location });
 
@@ -221,10 +221,10 @@ boundary above it, or `next build` fails.
 ```ts
 'use client';
 
-import type { ListRouter } from '@qubeejs/react';
+import type { RouterAdapter } from '@qubeejs/react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
-export function useNextRouterList(): ListRouter {
+export function useNextRouterList(): RouterAdapter {
   const router = useRouter();
   const pathname = usePathname();
   const search = useSearchParams();
@@ -245,7 +245,7 @@ The adapter performs no I/O. `request` holds everything a fetch needs.
 **TanStack Query**:
 
 ```tsx
-const { request } = useListState(articleList, router);
+const { request } = useQubeeList(articleList, router);
 
 const articles = useQuery({
   placeholderData: keepPreviousData,
@@ -261,7 +261,7 @@ const articles = useQuery({
 **SWR**:
 
 ```tsx
-const { request } = useListState(articleList, router);
+const { request } = useQubeeList(articleList, router);
 
 const { data } = useSWR(
   [request.uri, request.headers],

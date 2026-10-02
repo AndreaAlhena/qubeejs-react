@@ -1,4 +1,4 @@
-import type { ListStateHandle } from '@qubeejs/react';
+import type { QubeeListHandle } from '@qubeejs/react';
 
 import type { articleList } from './article-list';
 
@@ -10,7 +10,7 @@ const SEARCH_DEBOUNCE_MS = 300;
  * 300 ms after the last keystroke, replacing the history entry; Clear goes out
  * at once.
  */
-export function ArticleSearch({ list }: { list: ListStateHandle<typeof articleList> }) {
+export function ArticleSearch({ list }: { list: QubeeListHandle<typeof articleList> }) {
   return (
     <div role="search">
       <label htmlFor="article-search">Search articles</label>

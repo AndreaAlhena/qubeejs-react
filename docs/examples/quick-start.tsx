@@ -1,5 +1,5 @@
 import type { PaginatedResult } from '@qubeejs/core';
-import { useBrowserRouter, useListState } from '@qubeejs/react';
+import { useBrowserAdapter, useQubeeList } from '@qubeejs/react';
 import { useEffect, useState } from 'react';
 
 import { type Article, articleList, ArticleStatusEnum } from './article-list';
@@ -10,8 +10,8 @@ const SEARCH_DEBOUNCE_MS = 300;
 
 /** Articles, searched, filtered, sorted and paged through the URL. */
 export function ArticlesPage() {
-  const router = useBrowserRouter();
-  const list = useListState(articleList, router);
+  const router = useBrowserAdapter();
+  const list = useQubeeList(articleList, router);
   const [result, setResult] = useState<PaginatedResult<Article> | null>(null);
   const { request, state } = list;
 

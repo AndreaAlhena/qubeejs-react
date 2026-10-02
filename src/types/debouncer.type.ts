@@ -1,5 +1,5 @@
 /**
- * One restartable timer. Internal to {@link useListState}.
+ * One restartable timer. Internal to {@link useQubeeList}.
  */
 export type Debouncer = {
   /** Drop the pending callback, if any. */

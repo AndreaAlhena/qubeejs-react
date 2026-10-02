@@ -1,5 +1,5 @@
 import { getAriaSort } from '@qubeejs/core';
-import type { ListStateHandle } from '@qubeejs/react';
+import type { QubeeListHandle } from '@qubeejs/react';
 import type { ReactNode } from 'react';
 
 import type { articleList } from './article-list';
@@ -7,7 +7,7 @@ import type { articleList } from './article-list';
 type SortHeaderProps = {
   children: ReactNode;
   field: 'publishedAt' | 'title';
-  list: ListStateHandle<typeof articleList>;
+  list: QubeeListHandle<typeof articleList>;
 };
 
 /** The arrow for the direction a column is sorted in, if it is the primary sort. */

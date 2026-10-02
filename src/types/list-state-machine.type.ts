@@ -1,5 +1,5 @@
 /**
- * What {@link useListState} tracks between the URL and what the user asked for. Every href in it
+ * What {@link useQubeeList} tracks between the URL and what the user asked for. Every href in it
  * is a pathname plus a normalised query, so hrefs compare as strings.
  *
  * Internal.

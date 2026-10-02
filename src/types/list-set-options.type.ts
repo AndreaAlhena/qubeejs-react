@@ -1,5 +1,5 @@
 /**
- * Options of {@link ListStateHandle}'s `set`.
+ * Options of {@link QubeeListHandle}'s `set`.
  */
 export type ListSetOptions = {
   /**

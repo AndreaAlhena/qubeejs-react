@@ -9,12 +9,12 @@
  */
 
 // Types
-export type { ListNavigateOptions } from './types/list-navigate-options.type';
-export type { ListRouter } from './types/list-router.type';
+export type { AdapterNavigateOptions } from './types/adapter-navigate-options.type';
 export type { ListSetOptions } from './types/list-set-options.type';
-export type { ListStateHandle } from './types/list-state-handle.type';
 export type { QubeeHandle } from './types/qubee-handle.type';
+export type { QubeeListHandle } from './types/qubee-list-handle.type';
 export type { QubeeProviderProps } from './types/qubee-provider-props.type';
+export type { RouterAdapter } from './types/router-adapter.type';
 export type { SortToggle } from './types/sort-toggle.type';
 
 // Components
@@ -24,7 +24,7 @@ export { QubeeProvider } from './components/qubee-provider';
 export { MissingQubeeProviderError } from './errors/missing-qubee-provider.error';
 
 // Hooks
-export { useBrowserRouter } from './hooks/use-browser-router';
-export { useListState } from './hooks/use-list-state';
+export { useBrowserAdapter } from './hooks/use-browser-adapter';
 export { useQubee } from './hooks/use-qubee';
 export { useQubeeContext } from './hooks/use-qubee-context';
+export { useQubeeList } from './hooks/use-qubee-list';

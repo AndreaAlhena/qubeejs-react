@@ -1,8 +1,8 @@
-import type { ListRouter } from '@qubeejs/react';
+import type { RouterAdapter } from '@qubeejs/react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router';
 
-/** React Router as a ListRouter: its location in, its navigate out. */
-export function useReactRouter(): ListRouter {
+/** React Router as a RouterAdapter: its location in, its navigate out. */
+export function useReactRouter(): RouterAdapter {
   const [search] = useSearchParams();
   const navigate = useNavigate();
   const { pathname } = useLocation();

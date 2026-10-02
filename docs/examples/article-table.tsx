@@ -1,11 +1,11 @@
-import type { ListStateHandle } from '@qubeejs/react';
+import type { QubeeListHandle } from '@qubeejs/react';
 
 import type { Article, articleList } from './article-list';
 import { SortHeader } from './sort-header';
 
 type ArticleTableProps = {
   articles: readonly Article[];
-  list: ListStateHandle<typeof articleList>;
+  list: QubeeListHandle<typeof articleList>;
 };
 
 /** How the table prints a publication date. */
