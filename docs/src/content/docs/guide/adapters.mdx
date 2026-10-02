@@ -63,13 +63,14 @@ turn it into a provider:
 <Code code={hashAdapter} lang="ts" title="src/routing/hash-adapter.ts" />
 
 [`createAdapterProvider`](/api/main/create-adapter-provider/) takes a hook with no arguments.
-Call it once, at module level: a provider keeps the hook it was created with.
+Call it once, at module level: a provider keeps the hook it was created with. After editing that
+hook, reload the page — Fast Refresh does not swap it.
 
 ## Two lists, one URL
 
 Two different lists under one provider that name a URL parameter the same — both `page`, say —
 read and write the same value, so paging one pages the other. In development the hook logs a
-warning that names both lists and the parameter. Give one of them another name:
+warning that names both lists and the parameter. Give the param another URL name in one of them:
 
 ```ts
 page: integerParam('tagPage', { default: 1, min: 1 }),

@@ -22,6 +22,6 @@ and parsing included. This test renders the [Quick start](/introduction/quick-st
 - The handler records every URL it is asked for. The second test checks that `?q=react` in the page
   URL became `filters[title][$containsi]=react` in the request — the Strapi driver's spelling of a
   case-insensitive "contains".
-- `useBrowserAdapter()` reads jsdom's `window.location`: set it with `history.replaceState` before
+- `<BrowserAdapter>` reads jsdom's `window.location`: set it with `history.replaceState` before
   rendering, and reset it after each test.
 - The payload is Strapi's envelope: rows in `data`, counts in `meta.pagination`.

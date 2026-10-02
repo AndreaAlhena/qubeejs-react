@@ -25,7 +25,7 @@ import type { TanStackRouterAdapterOptions } from '../types/tanstack-router-adap
  * function Articles(): ReactElement {
  *   const list = useQubeeList(articleList, useTanStackRouterAdapter());
  *
- *   return <a href={list.href({ page: 2 })}>2</a>;
+ *   return <button onClick={() => list.setPage(2)}>2</button>;
  * }
  * ```
  */
