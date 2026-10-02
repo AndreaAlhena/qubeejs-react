@@ -39,6 +39,7 @@ import type {
   ReactRouterAdapterOptions,
   ReactRouterAdapterProps,
 } from '@qubeejs/react/react-router';
+import type { QubeeSWROptions } from '@qubeejs/react/swr';
 import type { QubeeQueryKey } from '@qubeejs/react/tanstack-query';
 import type {
   TanStackRouterAdapterOptions,
@@ -48,6 +49,7 @@ import type {
 import { fetchQubeePage, QubeeFetchError } from '@qubeejs/react/fetch';
 import { NextAdapter, useNextAdapter } from '@qubeejs/react/next';
 import { ReactRouterAdapter, useReactRouterAdapter } from '@qubeejs/react/react-router';
+import { useQubeeSWR } from '@qubeejs/react/swr';
 import { qubeeQueryOptions } from '@qubeejs/react/tanstack-query';
 import { TanStackRouterAdapter, useTanStackRouterAdapter } from '@qubeejs/react/tanstack-router';
 import { keepPreviousData, QueryClient, useQuery, useSuspenseQuery } from '@tanstack/react-query';
@@ -235,6 +237,28 @@ export function QueryChecks({ list }: { list: QubeeListHandle<typeof articleList
   useSuspenseQuery(qubeeQueryOptions<Article>(maybe));
 
   void [key, data, suspended, skipped.data, cached];
+
+  return null;
+}
+
+/** The SWR entry: SWR's configuration with a qubee fetcher, and SWR's response with typed data. */
+export function SwrChecks({ list }: { list: QubeeListHandle<typeof articleList> }): null {
+  const options: QubeeSWROptions<Article> = {
+    fetcher: (uri, init) => fetch(uri, init),
+    keepPreviousData: false,
+    revalidateOnFocus: false,
+  };
+  const articles = useQubeeSWR<Article>(list.request, options);
+  const data: PaginatedResult<Article> | undefined = articles.data;
+  const failure: Error | undefined = articles.error;
+  const nothing = useQubeeSWR<Article>(null);
+
+  void articles.mutate();
+
+  // @ts-expect-error — the fetcher returns a Response, as fetch does, not the data
+  useQubeeSWR<Article>(list.request, { fetcher: (key: string) => Promise.resolve([key]) });
+
+  void [data, failure, articles.isLoading, articles.isValidating, nothing.data];
 
   return null;
 }

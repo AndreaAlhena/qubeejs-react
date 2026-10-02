@@ -4,6 +4,7 @@ import type {
   ReactRouterAdapterOptions,
   ReactRouterAdapterProps,
 } from '../src/entries/react-router';
+import type { QubeeSWROptions } from '../src/entries/swr';
 import type { QubeeQueryKey } from '../src/entries/tanstack-query';
 import type {
   TanStackRouterAdapterOptions,
@@ -13,6 +14,7 @@ import type {
 import * as fetchEntry from '../src/entries/fetch';
 import * as next from '../src/entries/next';
 import * as reactRouter from '../src/entries/react-router';
+import * as swr from '../src/entries/swr';
 import * as tanstackQuery from '../src/entries/tanstack-query';
 import * as tanstackRouter from '../src/entries/tanstack-router';
 import * as main from '../src/index';
@@ -54,6 +56,17 @@ describe('entry points', () => {
     it('should export the documented types', () => {
       expectTypeOf<ReactRouterAdapterOptions>().toHaveProperty('scroll');
       expectTypeOf<ReactRouterAdapterProps>().toHaveProperty('children');
+    });
+  });
+
+  describe('@qubeejs/react/swr', () => {
+    it('should export exactly the documented symbols', () => {
+      expect(Object.keys(swr).sort()).toEqual(['useQubeeSWR']);
+    });
+
+    it('should export the documented types', () => {
+      expectTypeOf<QubeeSWROptions>().toHaveProperty('fetcher');
+      expectTypeOf<QubeeSWROptions>().toHaveProperty('keepPreviousData');
     });
   });
 

@@ -49,8 +49,8 @@ Type declarations ship with the package; there is no `@types/…` package to add
 - **One main entry point, and one per integration.** The hooks, the providers and their types come
   from `@qubeejs/react`. Each router adapter and each fetching integration is an entry point of
   its own — `@qubeejs/react/react-router`, `@qubeejs/react/tanstack-router`, `@qubeejs/react/next`,
-  `@qubeejs/react/tanstack-query` — with its library as an optional peer dependency, so you install
-  only what you import.
+  `@qubeejs/react/tanstack-query`, `@qubeejs/react/swr` — with its library as an optional peer
+  dependency, so you install only what you import.
   `@qubeejs/react/fetch` holds `fetchQubeePage`, for servers, loaders and scripts.
 - **ES modules and CommonJS**, with source maps and `sideEffects: false`.
 - **Zero runtime dependencies.** React and the core are peers; nothing else is installed.

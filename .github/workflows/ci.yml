@@ -147,9 +147,10 @@ jobs:
       - run: npm ci
 
       # The lowest release each optional peer's range admits, read from package.json: a range
-      # must not promise a release the entry does not work with.
-      - name: Install the lowest supported React Router, TanStack Router and TanStack Query
-        run: npm install --no-save $(node scripts/peer-floors.mjs react-router @tanstack/react-router @tanstack/react-query)
+      # must not promise a release the entry does not work with. They run on React 18.3, the
+      # lowest React, which is also the newest one the lowest SWR accepts.
+      - name: Install the lowest supported React, routers and fetching libraries
+        run: npm install --no-save react@18.3 react-dom@18.3 $(node scripts/peer-floors.mjs react-router @tanstack/react-router @tanstack/react-query swr)
 
       - name: Run the specs of their entries against them
-        run: npx vitest run src/hooks/use-react-router-adapter.spec.tsx src/hooks/use-tanstack-router-adapter.spec.tsx src/utils/qubee-query-options.spec.tsx
+        run: npx vitest run src/hooks/use-react-router-adapter.spec.tsx src/hooks/use-tanstack-router-adapter.spec.tsx src/utils/qubee-query-options.spec.tsx src/hooks/use-qubee-swr.spec.tsx
