@@ -27,7 +27,7 @@ export function claimListParams(registry: ListRegistry, list: LooseList): () => 
     if (other && !registry.reported.has(report)) {
       registry.reported.add(report);
       console.warn(
-        `[@qubeejs/react] The lists "${other.list.resource}" and "${list.resource}" both own the URL parameter "${key}", so changing one changes the other. Give one of them another name, or declare the param once and use the same object in both lists if this is intended.`
+        `[@qubeejs/react] The lists "${other.list.resource}" and "${list.resource}" both own the URL parameter "${key}", so changing one changes the other. Give the param another URL name in one of them, or declare the param once and use the same object in both lists if this is intended.`
       );
     }
 
