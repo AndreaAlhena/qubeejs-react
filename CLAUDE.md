@@ -59,7 +59,8 @@ src/
 │               useQubeeFetcher
 ├─ types/       public handles, props and options, plus internal machine / store / debouncer /
 │               loose-list / adapter-scope / list-registry / query-state shapes
-└─ utils/       createAdapterProvider · fetchQubeePage · qubeeQueryOptions, plus internal href,
+└─ utils/       createAdapterProvider · fetchQubeePage · qubeeQueryOptions · parseSearch ·
+                stringifySearch (plain-search), plus internal href,
                 browser history, local store, list-state machine, debouncer, list registry, memory
                 location, adapter options binding, query state, request key
 ```

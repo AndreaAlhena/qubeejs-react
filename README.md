@@ -133,15 +133,15 @@ The component names no router: it is the same in every setup.
 
 ## Entry points
 
-| Import from                      | What it holds                                                              | Optional peer                      |
-| -------------------------------- | -------------------------------------------------------------------------- | ---------------------------------- |
-| `@qubeejs/react`                 | `useQubeeList`, `useQubeeQuery`, `useQubee`, the providers and their types | —                                  |
-| `@qubeejs/react/react-router`    | `ReactRouterAdapter`, `useReactRouterAdapter`                              | `react-router` `>=7.0.0`           |
-| `@qubeejs/react/tanstack-router` | `TanStackRouterAdapter`, `useTanStackRouterAdapter`                        | `@tanstack/react-router` `^1.49.0` |
-| `@qubeejs/react/next`            | `NextAdapter`, `useNextAdapter`                                            | `next` `>=15.0.0`                  |
-| `@qubeejs/react/tanstack-query`  | `qubeeQueryOptions`                                                        | `@tanstack/react-query` `^5.62.0`  |
-| `@qubeejs/react/swr`             | `useQubeeSWR`                                                              | `swr` `^2.0.0`                     |
-| `@qubeejs/react/fetch`           | `fetchQubeePage`, `QubeeFetchError`                                        | —                                  |
+| Import from                      | What it holds                                                                         | Optional peer                      |
+| -------------------------------- | ------------------------------------------------------------------------------------- | ---------------------------------- |
+| `@qubeejs/react`                 | `useQubeeList`, `useQubeeQuery`, `useQubee`, the providers and their types            | —                                  |
+| `@qubeejs/react/react-router`    | `ReactRouterAdapter`, `useReactRouterAdapter`                                         | `react-router` `>=7.0.0`           |
+| `@qubeejs/react/tanstack-router` | `TanStackRouterAdapter`, `useTanStackRouterAdapter`, `parseSearch`, `stringifySearch` | `@tanstack/react-router` `^1.49.0` |
+| `@qubeejs/react/next`            | `NextAdapter`, `useNextAdapter`                                                       | `next` `>=15.0.0`                  |
+| `@qubeejs/react/tanstack-query`  | `qubeeQueryOptions`                                                                   | `@tanstack/react-query` `^5.62.0`  |
+| `@qubeejs/react/swr`             | `useQubeeSWR`                                                                         | `swr` `^2.0.0`                     |
+| `@qubeejs/react/fetch`           | `fetchQubeePage`, `QubeeFetchError`                                                   | —                                  |
 
 You install only what you import. `fetch` and `tanstack-query` are not client modules, so a Server
 Component can call what they export; the others are marked `'use client'`. The package ships ES
@@ -199,9 +199,8 @@ hook once in their common parent and pass the handle down.
 - **React Router.** `<ReactRouterAdapter>` goes inside the router, around the root route's
   `<Outlet />`. Render links with `<Link to={list.href({ page: 2 })}>`.
 - **TanStack Router.** Its default search serialisers read every value as JSON, so a search box
-  can lose what was typed — `10 ` lands as `10`. The
-  [setup page](https://qubeejs-react.andreatantimonaco.me/setup/tanstack-router/) has a pair of
-  serialisers that keeps text as text.
+  can lose what was typed — `10 ` lands as `10`. The entry ships a pair that keeps text as text:
+  `createRouter({ parseSearch, routeTree, stringifySearch })`.
 - **Next.js App Router.** A Server Component layout renders `<NextAdapter>` directly. A component
   that uses a list on a statically rendered route needs a `<Suspense>` boundary above it, or
   `next build` fails: the adapter reads `useSearchParams`. `QubeeProvider` takes a driver and

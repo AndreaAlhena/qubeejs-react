@@ -1,8 +1,8 @@
+import { parseSearch, stringifySearch } from '@qubeejs/react/tanstack-router';
 import { createRoute, createRouter } from '@tanstack/react-router';
 
 import { ArticlesPage } from './tanstack-router-articles';
 import { rootRoute } from './tanstack-router-root';
-import { parseSearch, stringifySearch } from './tanstack-router-search';
 
 const articlesRoute = createRoute({
   component: ArticlesPage,

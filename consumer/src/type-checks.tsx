@@ -51,7 +51,12 @@ import { NextAdapter, useNextAdapter } from '@qubeejs/react/next';
 import { ReactRouterAdapter, useReactRouterAdapter } from '@qubeejs/react/react-router';
 import { useQubeeSWR } from '@qubeejs/react/swr';
 import { qubeeQueryOptions } from '@qubeejs/react/tanstack-query';
-import { TanStackRouterAdapter, useTanStackRouterAdapter } from '@qubeejs/react/tanstack-router';
+import {
+  parseSearch,
+  stringifySearch,
+  TanStackRouterAdapter,
+  useTanStackRouterAdapter,
+} from '@qubeejs/react/tanstack-router';
 import { keepPreviousData, QueryClient, useQuery, useSuspenseQuery } from '@tanstack/react-query';
 
 import { articleList, tagList } from './article-list.js';
@@ -155,6 +160,12 @@ export function Checks(): null {
   void [viaReactRouter, viaTanStackRouter, viaNext, nextProps, routerProps];
   void [reactRouterProps, tanStackRouterProps, useReactRouterAdapter(), useTanStackRouterAdapter()];
   void [NextAdapter, ReactRouterAdapter, TanStackRouterAdapter];
+
+  // The search serialisers fit TanStack Router's options.
+  const parsed: Record<string, string | string[]> = parseSearch('?q=10+');
+  const written: string = stringifySearch(parsed);
+
+  void [written];
 
   // Built-in fetching: the hook takes the list's request, or null, and types the rows.
   const fetcher: MainQubeeFetcher = (address, init) => fetch(address, init);

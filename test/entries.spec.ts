@@ -84,6 +84,8 @@ describe('entry points', () => {
     it('should export exactly the documented symbols', () => {
       expect(Object.keys(tanstackRouter).sort()).toEqual([
         'TanStackRouterAdapter',
+        'parseSearch',
+        'stringifySearch',
         'useTanStackRouterAdapter',
       ]);
     });
