@@ -4,6 +4,7 @@ import type {
   AdapterNavigateOptions,
   AdapterProviderProps,
   ListSetOptions,
+  MemoryAdapterProps,
   QubeeHandle,
   QubeeListHandle,
   QubeeProviderProps,
@@ -17,11 +18,13 @@ describe('public API', () => {
   it('should export exactly the documented runtime symbols', () => {
     expect(Object.keys(api).sort()).toEqual([
       'BrowserAdapter',
+      'MemoryAdapter',
       'MissingQubeeProviderError',
       'MissingRouterAdapterError',
       'QubeeProvider',
       'createAdapterProvider',
       'useBrowserAdapter',
+      'useMemoryAdapter',
       'useQubee',
       'useQubeeContext',
       'useQubeeList',
@@ -32,6 +35,7 @@ describe('public API', () => {
     expectTypeOf<AdapterNavigateOptions>().toHaveProperty('replace');
     expectTypeOf<AdapterProviderProps>().toHaveProperty('children');
     expectTypeOf<ListSetOptions>().toHaveProperty('debounce');
+    expectTypeOf<MemoryAdapterProps>().toHaveProperty('initialSearch');
     expectTypeOf<QubeeHandle>().toHaveProperty('state');
     expectTypeOf<QubeeListHandle<unknown>>().toHaveProperty('set');
     expectTypeOf<QubeeProviderProps>().toHaveProperty('children');
