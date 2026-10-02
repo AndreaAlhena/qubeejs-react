@@ -59,6 +59,11 @@ jobs:
       - name: Check the built package
         run: npm run check:dist
 
+      # publint checks package.json against what is published; attw checks that every entry's
+      # types resolve under node16 and bundler resolution, from ESM and from CommonJS.
+      - name: Lint the package
+        run: npm run lint:package
+
   consumer:
     name: consumer (react ${{ matrix.react }})
     runs-on: ubuntu-latest
