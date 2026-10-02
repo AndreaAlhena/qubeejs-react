@@ -4,6 +4,8 @@
  * Its own entry point, so that only apps that import it need `next` installed. Server Components
  * need nothing from here beyond rendering {@link NextAdapter}: they read state, build requests
  * and build links with `@qubeejs/core`.
+ *
+ * @module
  */
 
 // Types

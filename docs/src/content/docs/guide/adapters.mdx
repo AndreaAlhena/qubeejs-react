@@ -12,7 +12,7 @@ import browserRoot from '../../../../examples/browser-root.tsx?raw';
 import hashAdapter from '../../../../examples/hash-adapter.ts?raw';
 
 A list reads and writes its query through a **router adapter**: an object with `pathname`, `search`
-and `navigate(href, { replace })` — the [`RouterAdapter`](/api/types/router-adapter/) type.
+and `navigate(href, { replace })` — the [`RouterAdapter`](/api/main/router-adapter/) type.
 `useQubeeList` finds its adapter in one of two ways.
 
 ## Set it once, with a provider
@@ -50,7 +50,7 @@ not follow the rest of the tree. The component still re-renders when the provide
 hooks cannot be called conditionally, so the provider's adapter is read either way.
 
 With neither a provider nor an argument, `useQubeeList` throws
-[`MissingRouterAdapterError`](/api/errors/missing-router-adapter-error/). It never falls back to
+[`MissingRouterAdapterError`](/api/main/missing-router-adapter-error/). It never falls back to
 browser history by itself: inside a router library, that would leave the router out of step with
 the URL.
 
@@ -61,7 +61,7 @@ turn it into a provider:
 
 <Code code={hashAdapter} lang="ts" title="src/routing/hash-adapter.ts" />
 
-[`createAdapterProvider`](/api/functions/create-adapter-provider/) takes a hook with no arguments.
+[`createAdapterProvider`](/api/main/create-adapter-provider/) takes a hook with no arguments.
 Call it once, at module level: a provider keeps the hook it was created with.
 
 ## Two lists, one URL

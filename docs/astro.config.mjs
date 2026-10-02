@@ -1,14 +1,30 @@
 import starlight from '@astrojs/starlight';
 import { defineConfig } from 'astro/config';
+import { readFileSync } from 'node:fs';
 
 const CORE = 'https://qubeejs.andreatantimonaco.me';
 const REPO = 'https://github.com/AndreaAlhena/qubeejs-react';
+
+/**
+ * The package's entry points, the main one first — the order scripts/generate-api.mjs writes
+ * their folders in.
+ */
+const ENTRIES = JSON.parse(readFileSync(new URL('../entries.json', import.meta.url), 'utf8')).sort(
+  (a, b) => Number(b.name === 'index') - Number(a.name === 'index') || a.name.localeCompare(b.name)
+);
 
 /** A sidebar link into the core docs, opened in a new tab. */
 const core = (label, slug) => ({
   attrs: { rel: 'noopener', target: '_blank' },
   label: `${label} ↗`,
   link: `${CORE}/${slug}/`,
+});
+
+/** The sidebar group of one entry point's generated pages. Only the main entry starts open. */
+const entry = ({ name }) => ({
+  collapsed: name !== 'index',
+  items: [{ autogenerate: { directory: `api/${name === 'index' ? 'main' : name}` } }],
+  label: name === 'index' ? '@qubeejs/react' : `…/${name}`,
 });
 
 export default defineConfig({
@@ -32,16 +48,7 @@ export default defineConfig({
       sidebar: [
         { items: [{ autogenerate: { directory: 'introduction' } }], label: 'Introduction' },
         { items: [{ autogenerate: { directory: 'guide' } }], label: 'Guide' },
-        {
-          items: [
-            { items: [{ autogenerate: { directory: 'api/provider' } }], label: 'Provider' },
-            { items: [{ autogenerate: { directory: 'api/hooks' } }], label: 'Hooks' },
-            { items: [{ autogenerate: { directory: 'api/functions' } }], label: 'Functions' },
-            { items: [{ autogenerate: { directory: 'api/types' } }], label: 'Types' },
-            { items: [{ autogenerate: { directory: 'api/errors' } }], label: 'Errors' },
-          ],
-          label: 'API',
-        },
+        { items: ENTRIES.map(entry), label: 'API' },
         { items: [{ autogenerate: { directory: 'recipes' } }], label: 'Recipes' },
         {
           items: [

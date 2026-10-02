@@ -2,6 +2,8 @@
  * `@qubeejs/react/swr` — fetch a list's pages through SWR 2.
  *
  * Its own entry point, so that only apps that import it need `swr` installed.
+ *
+ * @module
  */
 
 // Types

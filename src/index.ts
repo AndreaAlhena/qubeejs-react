@@ -1,12 +1,15 @@
 /**
- * Public API of `@qubeejs/react`.
- *
- * Named re-exports only — never `export *`. A barrel that re-exports blindly cannot be
- * reviewed, and an omission is invisible until someone reports it.
+ * `@qubeejs/react` — the hooks and the providers: lists whose state lives in the URL or in
+ * memory, the page they ask for fetched for you, and a query builder per component or per subtree.
  *
  * Nothing from `@qubeejs/core` is re-exported: list definitions, params, drivers and the
- * pagination helpers are imported from core, and documented there.
+ * pagination helpers are imported from the core, and documented there.
+ *
+ * @module
  */
+
+// Named re-exports only — never `export *`. A barrel that re-exports blindly cannot be reviewed,
+// and an omission is invisible until someone reports it.
 
 // Types
 export type { AdapterNavigateOptions } from './types/adapter-navigate-options.type';

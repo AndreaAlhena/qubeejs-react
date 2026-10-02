@@ -16,9 +16,9 @@ ways, all built on one function:
 
 | You want | Use |
 | --- | --- |
-| No extra dependency | [`useQubeeQuery`](/api/hooks/use-qubee-query/), in the main entry |
+| No extra dependency | [`useQubeeQuery`](/api/main/use-qubee-query/), in the main entry |
 | A cache, retries, refetch on focus | [TanStack Query](/recipes/tanstack-query/) or [SWR](/recipes/swr/) |
-| A page on the server, in a loader or a script | [`fetchQubeePage`](/api/functions/fetch-qubee-page/), in `@qubeejs/react/fetch` |
+| A page on the server, in a loader or a script | [`fetchQubeePage`](/api/fetch/fetch-qubee-page/), in `@qubeejs/react/fetch` |
 
 What performs the request stays yours: the global `fetch` by default, your own fetcher when the
 API wants a token.
@@ -81,7 +81,7 @@ fetcher function does not fetch again: it is used from the next request on.
 ## Errors
 
 A response whose status is not `ok` becomes a
-[`QubeeFetchError`](/api/errors/qubee-fetch-error/), with the `status`, the `uri` and the
+[`QubeeFetchError`](/api/main/qubee-fetch-error/), with the `status`, the `uri` and the
 `response` itself — its body unread, for the message your API sent:
 
 ```tsx
