@@ -24,6 +24,9 @@ import {
   useQubeeList,
 } from '@qubeejs/react';
 
+import type { NextAdapterOptions, NextAdapterProps } from '@qubeejs/react/next';
+
+import { NextAdapter, useNextAdapter } from '@qubeejs/react/next';
 import { ReactRouterAdapter, useReactRouterAdapter } from '@qubeejs/react/react-router';
 import { TanStackRouterAdapter, useTanStackRouterAdapter } from '@qubeejs/react/tanstack-router';
 
@@ -110,10 +113,16 @@ export function Checks(): null {
   // The router entries: each hook returns a RouterAdapter, each provider takes children.
   const viaReactRouter: RouterAdapter = useReactRouterAdapter();
   const viaTanStackRouter: RouterAdapter = useTanStackRouterAdapter();
+  const nextOptions: NextAdapterOptions = { scroll: true };
+  const viaNext: RouterAdapter = useNextAdapter(nextOptions);
+  const nextProps: NextAdapterProps = { children: null, scroll: true };
   const routerProps: AdapterProviderProps = { children: null };
 
-  void [viaReactRouter, viaTanStackRouter, routerProps];
-  void [ReactRouterAdapter, TanStackRouterAdapter];
+  // @ts-expect-error — the Next adapter has no such option
+  useNextAdapter({ shallow: true });
+
+  void [viaReactRouter, viaTanStackRouter, viaNext, nextProps, routerProps];
+  void [NextAdapter, ReactRouterAdapter, TanStackRouterAdapter];
 
   return null;
 }
