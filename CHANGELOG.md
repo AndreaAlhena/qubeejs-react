@@ -39,6 +39,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   dialogs and pickers (#21)
 - `reset()` on the list handle: every param back to its default in one navigation, keeping
   parameters the list does not own (#21)
+- `@qubeejs/react/react-router`: `<ReactRouterAdapter>` and `useReactRouterAdapter()`, for React
+  Router 7 and later — an entry point of its own, with `react-router` as an optional peer
+  dependency (#22)
 - A client boundary built in: the entry point is marked `'use client'`, so a Next.js Server
   Component can import the package's components without a wrapper file (#19)
 

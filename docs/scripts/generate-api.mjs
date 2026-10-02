@@ -12,7 +12,8 @@
  * - prose from JSDoc is escaped for MDX, so `<QubeeProvider>` in a comment
  *   reads as text rather than as an unknown JSX tag;
  * - TypeDoc runs from docs/node_modules, so the library needs no TypeDoc of
- *   its own.
+ *   its own;
+ * - every entry point of entries.json is documented, not only the main one.
  *
  * Every page here is generated — never hand-edit src/content/docs/api/.
  */
@@ -35,6 +36,7 @@ const REFLECTION = {
   CONSTRUCTOR: 512,
   FUNCTION: 64,
   METHOD: 2048,
+  MODULE: 2,
   PROPERTY: 1024,
   TYPE_ALIAS: 2097152,
   VARIABLE: 32,
@@ -480,7 +482,7 @@ execFileSync(
     '--json',
     jsonPath,
     '--entryPoints',
-    'src/index.ts',
+    ...JSON.parse(readFileSync(join(repo, 'entries.json'), 'utf8')).map((entry) => entry.source),
     '--tsconfig',
     'tsconfig.json',
     '--excludeInternal',
@@ -491,7 +493,14 @@ execFileSync(
   { cwd: repo, stdio: 'inherit' }
 );
 
-const nodes = JSON.parse(readFileSync(jsonPath, 'utf8')).children ?? [];
+// With several entry points TypeDoc nests each one's exports in a module; with one, it does not.
+const nodes = [
+  ...new Map(
+    (JSON.parse(readFileSync(jsonPath, 'utf8')).children ?? [])
+      .flatMap((child) => (child.kind === REFLECTION.MODULE ? (child.children ?? []) : [child]))
+      .map((node) => [node.name, node])
+  ).values(),
+];
 
 /** Every export's page: its group, its address and its title. */
 const pages = new Map(
