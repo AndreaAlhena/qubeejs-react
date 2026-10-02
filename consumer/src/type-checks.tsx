@@ -25,6 +25,14 @@ import {
 } from '@qubeejs/react';
 
 import type { NextAdapterOptions, NextAdapterProps } from '@qubeejs/react/next';
+import type {
+  ReactRouterAdapterOptions,
+  ReactRouterAdapterProps,
+} from '@qubeejs/react/react-router';
+import type {
+  TanStackRouterAdapterOptions,
+  TanStackRouterAdapterProps,
+} from '@qubeejs/react/tanstack-router';
 
 import { NextAdapter, useNextAdapter } from '@qubeejs/react/next';
 import { ReactRouterAdapter, useReactRouterAdapter } from '@qubeejs/react/react-router';
@@ -110,9 +118,14 @@ export function Checks(): null {
 
   void [CustomAdapter, inMemory, memoryProps, MemoryAdapter];
 
-  // The router entries: each hook returns a RouterAdapter, each provider takes children.
-  const viaReactRouter: RouterAdapter = useReactRouterAdapter();
-  const viaTanStackRouter: RouterAdapter = useTanStackRouterAdapter();
+  // The router entries: each hook returns a RouterAdapter and takes `scroll`, each provider
+  // takes children and `scroll`.
+  const reactRouterOptions: ReactRouterAdapterOptions = { scroll: true };
+  const viaReactRouter: RouterAdapter = useReactRouterAdapter(reactRouterOptions);
+  const reactRouterProps: ReactRouterAdapterProps = { children: null, scroll: true };
+  const tanStackRouterOptions: TanStackRouterAdapterOptions = { scroll: true };
+  const viaTanStackRouter: RouterAdapter = useTanStackRouterAdapter(tanStackRouterOptions);
+  const tanStackRouterProps: TanStackRouterAdapterProps = { children: null, scroll: true };
   const nextOptions: NextAdapterOptions = { scroll: true };
   const viaNext: RouterAdapter = useNextAdapter(nextOptions);
   const nextProps: NextAdapterProps = { children: null, scroll: true };
@@ -122,6 +135,7 @@ export function Checks(): null {
   useNextAdapter({ shallow: true });
 
   void [viaReactRouter, viaTanStackRouter, viaNext, nextProps, routerProps];
+  void [reactRouterProps, tanStackRouterProps, useReactRouterAdapter(), useTanStackRouterAdapter()];
   void [NextAdapter, ReactRouterAdapter, TanStackRouterAdapter];
 
   return null;
