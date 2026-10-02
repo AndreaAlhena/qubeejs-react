@@ -2,6 +2,7 @@ import { createQubee, STRAPI_DRIVER } from '@qubeejs/core';
 
 import type {
   AdapterNavigateOptions,
+  AdapterProviderProps,
   ListSetOptions,
   QubeeHandle,
   QubeeListHandle,
@@ -15,8 +16,11 @@ import * as api from '../src/index';
 describe('public API', () => {
   it('should export exactly the documented runtime symbols', () => {
     expect(Object.keys(api).sort()).toEqual([
+      'BrowserAdapter',
       'MissingQubeeProviderError',
+      'MissingRouterAdapterError',
       'QubeeProvider',
+      'createAdapterProvider',
       'useBrowserAdapter',
       'useQubee',
       'useQubeeContext',
@@ -26,6 +30,7 @@ describe('public API', () => {
 
   it('should export the documented types', () => {
     expectTypeOf<AdapterNavigateOptions>().toHaveProperty('replace');
+    expectTypeOf<AdapterProviderProps>().toHaveProperty('children');
     expectTypeOf<ListSetOptions>().toHaveProperty('debounce');
     expectTypeOf<QubeeHandle>().toHaveProperty('state');
     expectTypeOf<QubeeListHandle<unknown>>().toHaveProperty('set');

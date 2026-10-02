@@ -10,6 +10,7 @@
 
 // Types
 export type { AdapterNavigateOptions } from './types/adapter-navigate-options.type';
+export type { AdapterProviderProps } from './types/adapter-provider-props.type';
 export type { ListSetOptions } from './types/list-set-options.type';
 export type { QubeeHandle } from './types/qubee-handle.type';
 export type { QubeeListHandle } from './types/qubee-list-handle.type';
@@ -18,10 +19,15 @@ export type { RouterAdapter } from './types/router-adapter.type';
 export type { SortToggle } from './types/sort-toggle.type';
 
 // Components
+export { BrowserAdapter } from './components/browser-adapter';
 export { QubeeProvider } from './components/qubee-provider';
 
 // Errors
 export { MissingQubeeProviderError } from './errors/missing-qubee-provider.error';
+export { MissingRouterAdapterError } from './errors/missing-router-adapter.error';
+
+// Functions
+export { createAdapterProvider } from './utils/create-adapter-provider';
 
 // Hooks
 export { useBrowserAdapter } from './hooks/use-browser-adapter';
