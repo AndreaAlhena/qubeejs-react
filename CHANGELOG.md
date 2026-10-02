@@ -58,7 +58,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Built-in fetching: `useQubeeQuery(request, options?)` fetches the page a list asks for and
   fetches again when the request changes — the previous page kept meanwhile, a replaced request
   aborted, no cache. `<QubeeFetchProvider>` sets the fetcher (`QubeeFetcher`) for a subtree, and a
-  status that is not `ok` becomes a `QubeeFetchError` (#25)
+  status that is not `ok` becomes a `QubeeFetchError` (#25, #33)
 - `@qubeejs/react/fetch`: `fetchQubeePage(request, options?)`, the function the hooks fetch with —
   a server-safe entry point, callable from a Server Component, a route loader or a script (#25)
 - `@qubeejs/react/tanstack-query`: `qubeeQueryOptions(request, options?)`, the TanStack Query

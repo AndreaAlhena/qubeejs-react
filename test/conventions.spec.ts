@@ -22,6 +22,12 @@ const COMMENTS = /\/\*[\s\S]*?\*\/|\/\/.*/g;
 
 const IMPORT = /(?:\bfrom|\bimport)\s*\(?\s*['"]([^'"]+)['"]/g;
 
+/**
+ * `fetch` as a name of its own, however it is reached: `fetch(…)`, `= fetch`, `window.fetch(…)`.
+ * Not `fetchQubeePage`, `fetcher`, `prefetchQuery` or the `fetch-qubee-page` of an import path.
+ */
+const NAMES_FETCH = /(?<![\w-])fetch(?![\w-])/;
+
 /** What any entry may import from outside the package, besides its own optional peer. */
 const ALWAYS_ALLOWED = ['@qubeejs/core', 'react'];
 
@@ -302,12 +308,32 @@ describe('repository conventions', () => {
     ]);
   });
 
+  it('recognises fetch however it is reached', () => {
+    const named = [
+      'fetch(uri)',
+      'const { fetcher = fetch } = options;',
+      'globalThis.fetch(uri)',
+      'window.fetch(uri)',
+      'self.fetch(uri)',
+    ];
+    const other = [
+      'fetchQubeePage(request)',
+      'fetcher(uri, init)',
+      "import { fetchQubeePage } from '../utils/fetch-qubee-page';",
+      'useQubeeFetcher(own)',
+      'client.prefetchQuery(options)',
+    ];
+
+    expect(named.filter((text) => !NAMES_FETCH.test(text))).toEqual([]);
+    expect(other.filter((text) => NAMES_FETCH.test(text))).toEqual([]);
+  });
+
   it('performs network I/O in one place only, and through nothing but fetch', () => {
     // `fetch` is named once: as the default fetcher of fetchQubeePage. Everything else that
     // fetches goes through that function, so an app's own fetcher always applies.
     const offenders = files
       .filter((f) => f.path !== 'src/utils/fetch-qubee-page.ts')
-      .filter((f) => /(?<![\w.-])fetch(?![\w-])/.test(f.text.replace(COMMENTS, '')))
+      .filter((f) => NAMES_FETCH.test(f.text.replace(COMMENTS, '')))
       .map((f) => `${f.path} names fetch`);
     const others = files
       .filter((f) => /\b(XMLHttpRequest|axios)\b/.test(f.text.replace(COMMENTS, '')))

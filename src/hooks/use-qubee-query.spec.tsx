@@ -39,9 +39,15 @@ const bodyOf = (page: number): RawResponse => ({
 const pageOf = (page: number): PaginatedResult<ArticleRow> =>
   requestFor(`page=${page}`).paginate<ArticleRow>(bodyOf(page)).toPlain();
 
+/** The calls of every fetcher the running test created, for `renderQuery` to tidy. */
+const everyCalls: Call[][] = [];
+
 /** A fetcher that leaves every request pending until the test answers it. */
 function createFetcher(): { calls: Call[]; fetcher: QubeeFetcher } {
   const calls: Call[] = [];
+
+  everyCalls.push(calls);
+
   const fetcher: QubeeFetcher = (uri, init) =>
     new Promise<Response>((resolve, reject) => {
       calls.push({ reject, resolve, signal: init.signal, uri });
@@ -68,17 +74,39 @@ const fail = async (call: Call, reason: unknown): Promise<void> => {
   await settle();
 };
 
-const renderQuery = (
+/**
+ * Render the hook under StrictMode, as a development build does.
+ *
+ * StrictMode mounts every effect twice, so a fetch that is due at mount is started, aborted and
+ * started again. The aborted twin is dropped from each fetcher's calls, which then hold one call
+ * per request the hook made — the way the tests below read them. One test further down renders
+ * without this helper, to look at the twin itself.
+ */
+function renderQuery(
   initialProps: Props,
-  wrapper?: (props: { children: ReactNode }) => ReactElement
-): ReturnType<typeof renderHook<QubeeQueryResult<ArticleRow>, Props>> =>
-  renderHook(({ options, request }: Props) => useQubeeQuery<ArticleRow>(request, options), {
-    initialProps,
-    wrapper,
+  Wrapper?: (props: { children: ReactNode }) => ReactElement
+): ReturnType<typeof renderHook<QubeeQueryResult<ArticleRow>, Props>> {
+  function Strict({ children }: { children: ReactNode }): ReactElement {
+    return <StrictMode>{Wrapper ? <Wrapper>{children}</Wrapper> : children}</StrictMode>;
+  }
+
+  const rendered = renderHook(
+    ({ options, request }: Props) => useQubeeQuery<ArticleRow>(request, options),
+    { initialProps, wrapper: Strict }
+  );
+
+  everyCalls.forEach((calls) => {
+    if (calls.length === 2 && calls[0].signal?.aborted) {
+      calls.shift();
+    }
   });
+
+  return rendered;
+}
 
 describe('useQubeeQuery', () => {
   afterEach(() => {
+    everyCalls.length = 0;
     vi.unstubAllGlobals();
   });
 
@@ -245,6 +273,28 @@ describe('useQubeeQuery', () => {
       expect(result.current.data).toEqual(pageOf(2));
     });
 
+    it('should fetch a request again when the list comes back to it before its replacement answered', async () => {
+      const { calls, fetcher } = createFetcher();
+      const options = { fetcher };
+      const { rerender, result } = renderQuery({ options, request: requestFor('page=1') });
+
+      await answer(calls[0], 1);
+      rerender({ options, request: requestFor('page=2') });
+      rerender({ options, request: requestFor('page=1') });
+
+      // Whether the page is fetched again must not depend on which request answered first.
+      expect(calls.map((call) => call.uri)).toEqual([
+        requestFor('page=1').uri,
+        requestFor('page=2').uri,
+        requestFor('page=1').uri,
+      ]);
+      expect(result.current).toMatchObject({ data: pageOf(1), isFetching: true, isLoading: false });
+
+      await answer(calls[2], 1);
+
+      expect(result.current).toMatchObject({ data: pageOf(1), isFetching: false });
+    });
+
     it('should not report the abort of a replaced request as an error', async () => {
       const { calls, fetcher } = createFetcher();
       const options = { fetcher };
@@ -297,6 +347,23 @@ describe('useQubeeQuery', () => {
         'The request was rejected with a value that is not an Error.'
       );
       expect(result.current.error?.cause).toBe('offline');
+    });
+
+    it('should try again when the list comes back to a request that failed', async () => {
+      const { calls, fetcher } = createFetcher();
+      const options = { fetcher };
+      const { rerender, result } = renderQuery({ options, request: requestFor('page=1') });
+
+      await fail(calls[0], new Error('offline'));
+      rerender({ options, request: requestFor('page=2') });
+      rerender({ options, request: requestFor('page=1') });
+
+      expect(calls).toHaveLength(3);
+      expect(result.current).toMatchObject({ error: undefined, isFetching: true, isLoading: true });
+
+      await answer(calls[2], 1);
+
+      expect(result.current).toMatchObject({ data: pageOf(1), error: undefined });
     });
 
     it('should drop the error when the next request starts', async () => {
@@ -443,6 +510,21 @@ describe('useQubeeQuery', () => {
       expect(calls).toHaveLength(2);
     });
 
+    it('should not show the page from before it was disabled as the previous page', async () => {
+      const { calls, fetcher } = createFetcher();
+      const { rerender, result } = renderQuery({
+        options: { fetcher },
+        request: requestFor('page=1'),
+      });
+
+      await answer(calls[0], 1);
+      rerender({ options: { fetcher }, request: requestFor('page=2') });
+      rerender({ options: { enabled: false, fetcher }, request: requestFor('page=2') });
+      rerender({ options: { fetcher }, request: requestFor('page=3') });
+
+      expect(result.current).toMatchObject({ data: undefined, isFetching: true, isLoading: true });
+    });
+
     it('should abort the request in flight when it is disabled', () => {
       const { calls, fetcher } = createFetcher();
       const { rerender } = renderQuery({ options: { fetcher }, request: requestFor('page=1') });
@@ -526,7 +608,7 @@ describe('useQubeeQuery', () => {
       expect(calls[0].signal?.aborted).toBe(true);
     });
 
-    it('should show one request state under StrictMode', async () => {
+    it('should show one request state while StrictMode mounts its effect twice', async () => {
       const { calls, fetcher } = createFetcher();
       const seen: boolean[] = [];
       const { result } = renderHook(

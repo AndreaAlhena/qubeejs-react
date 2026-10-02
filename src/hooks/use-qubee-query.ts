@@ -91,6 +91,8 @@ export function useQubeeQuery<T extends PaginatedObject>(
       return undefined;
     }
 
+    dispatch({ key, type: 'started' });
+
     const controller = new AbortController();
 
     fetchQubeePage<T>(current.request, {

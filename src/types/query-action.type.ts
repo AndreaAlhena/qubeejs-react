@@ -29,6 +29,12 @@ export type QueryAction<T extends PaginatedObject> =
       type: 'failed';
     }
   | {
+      /** The key of the request. */
+      key: string;
+      /** A fetch started: an answer held for another request no longer answers anything. */
+      type: 'started';
+    }
+  | {
       /** Nothing is asked for any more: forget the last answer. */
       type: 'cleared';
     };

@@ -39,6 +39,8 @@ export async function fetchQubeePage<T extends PaginatedObject>(
     throw new QubeeFetchError(request.uri, response);
   }
 
+  // `json()` returns `any`: what an API answers with is unknown to the compiler. The cast gives
+  // it the type of the parser's parameter, and the driver's parser is what makes sense of it.
   const body = (await response.json()) as RawResponse;
 
   return request.paginate<T>(body, response.headers).toPlain();

@@ -91,12 +91,13 @@ index signatures → static props → private props → protected props → publ
 - **Function members of public types are properties** (`set: (changes) => void`), not methods
   (`set(changes): void`), so a caller can destructure a handle without tripping
   `@typescript-eslint/unbound-method`.
-- **Casts** (`as`) only at a documented generic boundary, with a comment saying what the compiler
-  cannot see. Today there are two, both in `useQubeeList`: `as unknown as QubeeListHandle<TList>`
-  narrows the handle, because `ListState<TList>` is a conditional type the compiler cannot
-  evaluate while `TList` is generic; and `as readonly Sort[]` types the value at the list's
-  `sortParam` key, because `readListState` returns `unknown` for a key the loose list only knows
-  as a `string`.
+- **Casts** (`as`) only at a documented boundary, with a comment saying what the compiler cannot
+  see. Today there are three. Two are at a generic boundary, both in `useQubeeList`:
+  `as unknown as QubeeListHandle<TList>` narrows the handle, because `ListState<TList>` is a
+  conditional type the compiler cannot evaluate while `TList` is generic; and `as readonly Sort[]`
+  types the value at the list's `sortParam` key, because `readListState` returns `unknown` for a
+  key the loose list only knows as a `string`. The third is at the network boundary, in
+  `fetchQubeePage`: `as RawResponse` types the body of a response, which `json()` returns as `any`.
 
 ## React
 

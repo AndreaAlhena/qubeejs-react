@@ -12,10 +12,16 @@ import type { PaginatedObject, PaginatedResult } from '@qubeejs/core';
 export type QueryState<T extends PaginatedObject> = {
   /** How many times `refetch()` had been called when the answered request started. */
   attempt: number;
-  /** The page, when the request succeeded. */
+  /**
+   * The page, when the request succeeded. With a `null` key it is the page of the request before,
+   * kept only to be shown while the next one loads.
+   */
   data: PaginatedResult<T> | undefined;
   /** The failure, when it did not. */
   error: Error | undefined;
-  /** The key of the answered request; `null` while nothing has been answered. */
+  /**
+   * The key of the answered request. `null` while nothing has been answered, and again as soon
+   * as a fetch for another request starts.
+   */
   key: null | string;
 };
