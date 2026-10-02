@@ -75,10 +75,12 @@ Branch from `develop` as `feature/<issue-number>`; `master` is release-only.
 
 ## Releasing
 
-1. Bump the version and date the `CHANGELOG.md` section.
+1. Bump the version, and in `CHANGELOG.md` turn `## [Unreleased]` into
+   `## [<version>] - <date>`, with a new empty `## [Unreleased]` above it.
 2. Merge `develop` into `master`.
 3. Tag `v<version>` and publish a GitHub Release.
 
 The publish workflow verifies that the tag matches `package.json`, re-runs the type check, the
-linter, the tests and the build, and publishes to npm with provenance via OIDC trusted publishing
-— there is no npm token.
+linter, the tests and the build, checks the built package entry by entry, lints it, tests the
+packed tarball in a fresh project, and publishes to npm with provenance via OIDC trusted
+publishing — there is no npm token.
