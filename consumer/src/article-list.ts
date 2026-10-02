@@ -1,4 +1,4 @@
-// Verbatim from the README ("Lists in the URL"), except the `.js` extension node16 requires.
+// Verbatim from the README ("Declare the list"), except the `.js` extension node16 requires.
 import { ArticleStatusEnum } from './article-status.enum.js';
 import {
   defineList,

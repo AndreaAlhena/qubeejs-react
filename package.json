@@ -3,7 +3,7 @@
     "name": "Andrea Tantimonaco",
     "url": "https://andreatantimonaco.me"
   },
-  "description": "React hooks for @qubeejs/core: a query builder per component or per subtree, and lists whose state lives in the URL",
+  "description": "React hooks for @qubeejs/core: lists whose state lives in the URL of your router, fetched for you, and a query builder per component or per subtree",
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.5",
     "@eslint/js": "^10.0.1",
@@ -113,12 +113,18 @@
   "files": ["dist"],
   "homepage": "https://qubeejs-react.andreatantimonaco.me",
   "keywords": [
+    "data-fetching",
     "hooks",
+    "nextjs",
     "pagination",
     "qubee",
     "query-builder",
     "react",
+    "react-router",
     "search-params",
+    "swr",
+    "tanstack-query",
+    "tanstack-router",
     "url-state",
     "use-sync-external-store"
   ],

@@ -37,7 +37,7 @@ export default defineConfig({
       credits: false,
       customCss: ['./src/styles/qubee-react.css'],
       description:
-        'React hooks for @qubeejs/core: a query per component or per subtree, and lists whose query lives in the page URL.',
+        'React hooks for @qubeejs/core: lists whose query lives in the URL of your router, fetched for you, and a query builder per component or per subtree.',
       // src/pages/404.astro is the site's 404, drawn from the mockup.
       disable404Route: true,
       editLink: { baseUrl: `${REPO}/edit/develop/docs/` },
