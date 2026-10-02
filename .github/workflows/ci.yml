@@ -34,9 +34,11 @@ jobs:
 
       - run: npm ci
 
+      # React Router 8 needs React 19.2 or later, so the React 18 leg tests the entry against
+      # React Router 7.
       - name: Switch to React 18
         if: matrix.react == '18'
-        run: npm install --no-save react@18.3 react-dom@18.3 @types/react@18 @types/react-dom@18
+        run: npm install --no-save react@18.3 react-dom@18.3 @types/react@18 @types/react-dom@18 react-router@7
 
       - name: Typecheck
         run: npm run typecheck
