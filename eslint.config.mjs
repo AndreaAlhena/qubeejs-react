@@ -7,8 +7,9 @@ import tseslint from 'typescript-eslint';
 export default tseslint.config(
   {
     // docs/ holds the specs, the plans and the documentation site, which has its own toolchain.
-    // consumer/ is a project of its own: the packed-tarball test installs and type-checks it.
-    ignores: ['consumer/**', 'coverage/**', 'dist/**', 'docs/**', 'node_modules/**'],
+    // consumer/ and fixtures/ hold projects of their own: the packed-tarball tests install them,
+    // and build, type-check and run them there.
+    ignores: ['consumer/**', 'coverage/**', 'dist/**', 'docs/**', 'fixtures/**', 'node_modules/**'],
   },
 
   js.configs.recommended,

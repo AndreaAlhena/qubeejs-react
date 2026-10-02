@@ -37,6 +37,10 @@ A second job installs the packed tarball in a fresh project outside the reposito
 type-checks and runs it there, as ESM and as CommonJS, on React 18 and 19
 (`npm run test:consumer`, after a build). The project is `consumer/`.
 
+A third job builds the Next.js app in `fixtures/next-app` with the packed tarball and, on the
+current Next.js major, drives it in a browser with Playwright (`npm run test:next`, after a
+build). It uses an installed Chrome; set `PLAYWRIGHT_CHANNEL=msedge` to use Edge instead.
+
 Entry points are listed once, in `entries.json`. To add one: add its line there, its source file
 under `src/entries/`, its block in `package.json` `exports`, and — when it has an optional peer —
 the peer in `peerDependencies` and `peerDependenciesMeta`.

@@ -24,6 +24,11 @@ const tags = useQubeeList(tagList, useMemoryAdapter());
 
 Two components that each call `useMemoryAdapter()` get two separate states.
 
+A list that passes its own adapter still reads the provider's, if there is one above it: hooks
+cannot be called conditionally. Under `<NextAdapter>` that read is `useSearchParams`, which on a
+statically rendered route needs a `<Suspense>` boundary. There, wrap the list in `<MemoryAdapter>`
+instead: the nearest provider is then the in-memory one, and the App Router is not read at all.
+
 ## Several components: `<MemoryAdapter>`
 
 When the search box, the table and the pager are separate components, they must see the same

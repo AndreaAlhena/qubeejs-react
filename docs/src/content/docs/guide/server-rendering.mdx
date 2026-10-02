@@ -49,11 +49,11 @@ The interactive half is a client component reading the same list with `useQubeeL
 
 When the search changes, the router navigates, Next renders the Server Component again with the new
 `searchParams`, and the client component receives the new page as props. `isPending` stays `true`
-until it has arrived. `useNextListRouter` is the small adapter you write yourself, on
+until it has arrived. The list takes its adapter from the `<NextAdapter>` in the root layout — see
 [Vite / Next.js / React Router](/introduction/frameworks/).
 
 This page reads `searchParams` on the server, which makes the route dynamic: it renders on each
-request, so `useSearchParams` in the router adapter needs no `<Suspense>` boundary. A statically
+request, so the `useSearchParams` the adapter reads needs no `<Suspense>` boundary. A statically
 rendered route that calls `useSearchParams` does need one above it, or `next build` fails.
 
 :::caution[Bee aware]
@@ -61,8 +61,8 @@ Declare the list — `articleList` — in a module both sides import. It holds f
 travel from a Server Component to a Client Component as a prop.
 :::
 
-## A Next.js adapter
+## The Next.js entry
 
-A Next.js adapter is planned as an entry point of this package, `@qubeejs/react/next`, not as a
-package of its own. It will ship the router adapter that replaces the `useNextListRouter` above.
-Until then, this page is the whole integration.
+`@qubeejs/react/next` ships the adapter used above: `<NextAdapter>` for the root layout, and
+`useNextAdapter()` for the one list that should pass its own. It is an entry point of this
+package, not a package of its own, with `next` as an optional peer dependency.

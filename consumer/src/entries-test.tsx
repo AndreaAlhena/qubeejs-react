@@ -2,6 +2,7 @@
 import type { ReactElement } from 'react';
 
 import { useQubeeList } from '@qubeejs/react';
+import * as next from '@qubeejs/react/next';
 import { ReactRouterAdapter, useReactRouterAdapter } from '@qubeejs/react/react-router';
 import * as tanstackRouter from '@qubeejs/react/tanstack-router';
 import { version } from 'react';
@@ -54,6 +55,12 @@ check(
   typeof tanstackRouter.TanStackRouterAdapter === 'function' &&
     typeof tanstackRouter.useTanStackRouterAdapter === 'function',
   Object.keys(tanstackRouter)
+);
+
+check(
+  'the next entry exports its provider and its hook',
+  typeof next.NextAdapter === 'function' && typeof next.useNextAdapter === 'function',
+  Object.keys(next)
 );
 
 finish(`Entries (React ${version})`);

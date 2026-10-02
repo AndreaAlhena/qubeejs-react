@@ -26,6 +26,7 @@ See **[CODING-STANDARDS.md](./CODING-STANDARDS.md)** — the single source of tr
 npm run build         # tsup → dual ESM + CJS, shared chunks, 'use client' on client entries
 npm run check:dist    # after a build: every entry exists, loads and imports only what it may
 npm run test:consumer # after a build: install the packed tarball in a fresh project and run it
+npm run test:next     # after a build: build fixtures/next-app with the tarball, drive it in Chrome
 npm run lint:package  # publint + are-the-types-wrong
 npm test              # vitest run (jsdom)
 npm run test:coverage
@@ -44,12 +45,12 @@ list definitions, page URL ⇄ state ⇄ API request, pagination and sort helper
 ```
 src/
 ├─ entries/     one file per entry point besides index.ts, as entries.json lists them:
-│               react-router · tanstack-router
-├─ components/  QubeeProvider · BrowserAdapter · MemoryAdapter · ReactRouterAdapter ·
+│               next · react-router · tanstack-router
+├─ components/  QubeeProvider · BrowserAdapter · MemoryAdapter · NextAdapter · ReactRouterAdapter ·
 │               TanStackRouterAdapter · AdapterScopeProvider (internal)
 ├─ contexts/    qubeeContext · adapterContext (both internal)
 ├─ errors/      MissingQubeeProviderError · MissingRouterAdapterError
-├─ hooks/       useQubee · useQubeeContext · useBrowserAdapter · useMemoryAdapter ·
+├─ hooks/       useQubee · useQubeeContext · useBrowserAdapter · useMemoryAdapter · useNextAdapter ·
 │               useReactRouterAdapter · useTanStackRouterAdapter · useQubeeList,
 │               plus internal useQubeeHandle · useRouterAdapter · useNoAdapter · useMemoryLocation
 ├─ types/       public handles and props, plus internal machine / store / debouncer / loose-list /
