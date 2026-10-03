@@ -73,6 +73,15 @@ jobs:
             echo "already=false" >> "$GITHUB_OUTPUT"
           fi
 
+      # A prerelease version — a `-` before any `+build` part, as in 1.0.0-rc.1 — goes out under
+      # the `next` dist-tag, so that `npm install @qubeejs/react` keeps installing the latest
+      # stable release; `@qubeejs/react@next` installs the candidate.
       - name: Publish
         if: steps.published.outputs.already == 'false'
-        run: npm publish --provenance --access public
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          case "${VERSION%%+*}" in
+            *-*) DIST_TAG=next ;;
+            *) DIST_TAG=latest ;;
+          esac
+          npm publish --provenance --access public --tag "$DIST_TAG"

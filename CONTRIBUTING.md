@@ -80,7 +80,15 @@ Branch from `develop` as `feature/<issue-number>`; `master` is release-only.
 2. Merge `develop` into `master`.
 3. Tag `v<version>` and publish a GitHub Release.
 
+A release candidate follows the same steps with a prerelease version, `<version>-rc.<n>` — for
+example `1.0.0-rc.1` — and its own changelog section, `## [1.0.0-rc.1] - <date>`. Tick "Set as a
+pre-release" on its GitHub Release, so that the repository keeps showing the stable release as
+its latest. The stable release that follows gets a section of its own that lists what changed
+since the last candidate.
+
 The publish workflow verifies that the tag matches `package.json`, re-runs the type check, the
 linter, the tests and the build, checks the built package entry by entry, lints it, tests the
 packed tarball in a fresh project, and publishes to npm with provenance via OIDC trusted
-publishing — there is no npm token.
+publishing — there is no npm token. A prerelease version goes out under the `next` dist-tag, so
+`npm install @qubeejs/react` keeps installing the latest stable release and
+`npm install @qubeejs/react@next` installs the candidate; any other version goes out as `latest`.
