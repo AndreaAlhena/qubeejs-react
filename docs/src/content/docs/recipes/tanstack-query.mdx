@@ -1,0 +1,63 @@
+---
+title: TanStack Query
+description: Cache every page with TanStack Query — the shipped query options, keyed on the list's committed request.
+sidebar:
+  label: TanStack Query
+  order: 6
+---
+
+import { Code } from '@astrojs/starlight/components';
+import queryRoot from '../../../../examples/query-root.tsx?raw';
+import useArticlesQuery from '../../../../examples/use-articles-query.ts?raw';
+
+The entry point `@qubeejs/react/tanstack-query` turns a list's request into TanStack Query
+options. It needs `@tanstack/react-query` 5.62 or later.
+
+<Code code={queryRoot} lang="tsx" title="src/query-root.tsx" />
+
+<Code code={useArticlesQuery} lang="ts" title="src/articles/use-articles-query.ts" />
+
+In a component under `QueryRoot`:
+
+```tsx
+const list = useQubeeList(articleList);
+const { data, isFetching } = useArticlesQuery(list);
+```
+
+## How it works
+
+- `qubeeQueryOptions(request)` returns what TanStack's own `queryOptions()` returns, with two things
+  set: the `queryKey` — `['qubee', request.uri, request.headers]` — and a `queryFn` that calls
+  [`fetchQubeePage`](/api/fetch/fetch-qubee-page/) with TanStack's abort signal. Everything else
+  is yours to add beside it, as `placeholderData` is here.
+- `request` is built from the committed state, so the key changes once per navigation — never for a
+  keystroke still inside its debounce.
+- `placeholderData: keepPreviousData` keeps the current page on screen while the next one loads, so
+  the table does not flash empty.
+- The data is typed from the options: `data` is `PaginatedResult<Article>`, and so is
+  `queryClient.getQueryData(options.queryKey)`.
+- A status that is not `ok` is a [`QubeeFetchError`](/api/main/qubee-fetch-error/) in `error`.
+- `list.isPending` covers the debounce and the navigation, `isFetching` the request. Dim the table
+  for either.
+
+## The rest of TanStack Query
+
+The options fit wherever TanStack Query takes options:
+
+```tsx
+// Suspense
+const { data } = useSuspenseQuery(qubeeQueryOptions<Article>(list.request));
+
+// A loader, or a Server Component: prefetch, then hydrate
+await queryClient.prefetchQuery(qubeeQueryOptions<Article>(request));
+
+// Refetch every list
+await queryClient.invalidateQueries({ queryKey: ['qubee'] });
+```
+
+- **A `null` request skips the query**: the `queryFn` is TanStack's `skipToken`. Such options do
+  not fit `useSuspenseQuery`, which cannot skip — the types say so.
+- **The fetcher is an argument**: `qubeeQueryOptions(request, { fetcher: authFetch })`. The function
+  also runs outside React, so it does not read `<QubeeFetchProvider>`. It is not part of the key:
+  queries for the same request share one cache entry, whatever their fetchers.
+- **It is not a client module**, so a Server Component can build the options to prefetch a page.

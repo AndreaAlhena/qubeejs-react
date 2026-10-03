@@ -1,0 +1,74 @@
+---
+title: Next.js
+description: Lists in the URL on the Next.js App Router — the shipped adapter in the root layout, the page fetched on the server, and what needs a Suspense boundary.
+sidebar:
+  label: Next.js
+  order: 4
+---
+
+import { Code } from '@astrojs/starlight/components';
+import nextListView from '../../../../examples/next/article-list-view.tsx?raw';
+import nextLayout from '../../../../examples/next/layout.tsx?raw';
+import nextPage from '../../../../examples/next/page.tsx?raw';
+import nextProviders from '../../../../examples/next/providers.tsx?raw';
+
+The adapter for the Next.js App Router is an entry point of its own, `@qubeejs/react/next`. It
+needs Next.js 15 or later.
+
+```sh
+npm install @qubeejs/react @qubeejs/core
+```
+
+## Wrap once
+
+<Code code={nextLayout} lang="tsx" title="app/layout.tsx" />
+
+The root layout is a Server Component, and renders `<NextAdapter>` directly: the entry is a client
+module, and the provider takes only serialisable props. Every Client Component under it then
+navigates through the App Router.
+
+## A list page
+
+The page is a Server Component. It reads the URL, fetches the page and builds links with
+`@qubeejs/core` and `fetchQubeePage` — neither imports React:
+
+<Code code={nextPage} lang="tsx" title="app/articles/page.tsx" />
+
+The interactive half is a Client Component that reads the same list with `useQubeeList`:
+
+<Code code={nextListView} lang="tsx" title="app/articles/article-list-view.tsx" />
+
+When the search changes, the router navigates, Next.js renders the Server Component again with the
+new `searchParams`, and the Client Component receives the new page as a prop. `isPending` stays
+`true` until it has arrived. [Server rendering](/guide/server-rendering/) explains each call.
+
+:::caution[Bee aware]
+Declare the list — `articleList` — in a module both sides import. It holds functions, so it can never
+travel from a Server Component to a Client Component as a prop.
+:::
+
+## What remains yours
+
+- **A `<Suspense>` boundary on static routes.** A component that uses a list on a **statically
+  rendered** route needs a `<Suspense>` boundary above it, or `next build` fails: the adapter reads
+  `useSearchParams`, which Next.js cannot resolve ahead of time. A route that reads `searchParams`
+  on the server, like the one above, is dynamic and needs none. On a static route nothing is
+  fetched on the server: the Client Component fetches with [`useQubeeQuery`](/guide/fetching/).
+- **`QubeeProvider` and `QubeeFetchProvider` in a client file.** One takes a driver and the other
+  a function, which cannot cross the server–client boundary as props. Render them from a file of
+  your own that starts with `'use client'`:
+
+<Code code={nextProviders} lang="tsx" title="app/providers.tsx" />
+
+## How it works
+
+- It reads `usePathname()` and `useSearchParams()`, and navigates with `router.push` and
+  `router.replace`.
+- A list navigation does not scroll to the top; `<NextAdapter scroll>` — or
+  `useNextAdapter({ scroll: true })` — turns that scrolling back on.
+- A Server Component imports from `@qubeejs/core`, `@qubeejs/react/fetch` and
+  `@qubeejs/react/tanstack-query`, which are not client modules. What it imports from
+  `@qubeejs/react` it can render, not call.
+- A dialog or a picker inside a page keeps its list out of the URL with
+  [`<MemoryAdapter>`](/guide/in-memory-lists/): the nearest provider wins.
+- The Pages Router is not supported.

@@ -1,0 +1,183 @@
+name: CI
+
+on:
+  push:
+    branches: [master, develop]
+  pull_request:
+    branches: [master, develop]
+
+permissions:
+  contents: read
+
+concurrency:
+  cancel-in-progress: true
+  group: ci-${{ github.ref }}
+
+jobs:
+  verify:
+    name: verify (node ${{ matrix.node }}, react ${{ matrix.react }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ['22.12', '24']
+        react: ['18', '19']
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          cache: npm
+          node-version: ${{ matrix.node }}
+
+      - run: npm ci
+
+      # React Router 8 needs React 19.2 or later, so the React 18 leg tests the entry against
+      # React Router 7.
+      - name: Switch to React 18
+        if: matrix.react == '18'
+        run: npm install --no-save react@18.3 react-dom@18.3 @types/react@18 @types/react-dom@18 react-router@7
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Check formatting
+        run: npm run format:check
+
+      - name: Test with coverage
+        run: npm run test:coverage
+
+      - name: Build
+        run: npm run build
+
+      # Every entry of entries.json: both formats and their types exist and load, the client
+      # directive is on the client entries only, each entry imports nothing but react, the core
+      # and its own optional peer, and the package has no runtime dependencies.
+      - name: Check the built package
+        run: npm run check:dist
+
+      # publint checks package.json against what is published; attw checks that every entry's
+      # types resolve under node16 and bundler resolution, from ESM and from CommonJS.
+      - name: Lint the package
+        run: npm run lint:package
+
+  consumer:
+    name: consumer (react ${{ matrix.react }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    strategy:
+      fail-fast: false
+      matrix:
+        react: ['18', '19']
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          cache: npm
+          node-version: '24'
+
+      - run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      # The package as an app gets it: packed, installed from the tarball into a fresh project
+      # outside the repository, type-checked and run as ESM and as CommonJS.
+      - name: Test the packed tarball in a fresh project
+        env:
+          CONSUMER_REACT: ${{ matrix.react }}
+        run: npm run test:consumer
+
+  next:
+    name: next (${{ matrix.next }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # The oldest Next.js major the entry supports, at its latest release: the fixture app
+          # must build on it.
+          - build-only: '1'
+            next: '15'
+          # The current one: build, then drive the app in a browser.
+          - build-only: '0'
+            next: '16'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          cache: npm
+          node-version: '24'
+
+      - run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      # fixtures/next-app, built with the packed tarball: a Server Component renders the adapter
+      # and fetches the first page, a static route builds behind a Suspense boundary, and
+      # Playwright drives the result in the runner's own Chrome.
+      - name: Build the Next.js fixture app and drive it in a browser
+        env:
+          NEXT_BUILD_ONLY: ${{ matrix.build-only }}
+          NEXT_VERSION: ${{ matrix.next }}
+        run: npm run test:next
+
+  floors:
+    name: lowest supported peers (react ${{ matrix.react }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Everything at its floor: React 18.3 is the lowest React, and the newest one the
+          # lowest SWR accepts.
+          - install: react@18.3 react-dom@18.3
+            peers: react-router @tanstack/react-router @tanstack/react-query swr
+            react: '18'
+            specs: >-
+              src/hooks/use-react-router-adapter.spec.tsx
+              src/hooks/use-tanstack-router-adapter.spec.tsx
+              src/utils/qubee-query-options.spec.tsx
+              src/hooks/use-qubee-swr.spec.tsx
+          # The same floors on the React the lock file pins, SWR aside.
+          - install: ''
+            peers: react-router @tanstack/react-router @tanstack/react-query
+            react: '19'
+            specs: >-
+              src/hooks/use-react-router-adapter.spec.tsx
+              src/hooks/use-tanstack-router-adapter.spec.tsx
+              src/utils/qubee-query-options.spec.tsx
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          cache: npm
+          node-version: '24'
+
+      - run: npm ci
+
+      # The lowest release each optional peer's range admits, read from package.json: a range
+      # must not promise a release the entry does not work with.
+      - name: Install the lowest supported peers
+        run: npm install --no-save ${{ matrix.install }} $(node scripts/peer-floors.mjs ${{ matrix.peers }})
+
+      - name: Run the specs of their entries against them
+        run: npx vitest run ${{ matrix.specs }}

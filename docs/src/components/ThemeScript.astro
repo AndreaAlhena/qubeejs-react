@@ -1,0 +1,29 @@
+---
+/**
+ * Apply the reader's theme before the page paints, by Starlight's own rule: the
+ * choice stored under `starlight-theme`, else the system preference, with dark
+ * when the system states none. The standalone home and 404 pages include it, so
+ * a theme chosen anywhere on the site holds everywhere.
+ */
+---
+
+<script is:inline>
+  (() => {
+    let stored = null;
+
+    try {
+      stored = localStorage.getItem('starlight-theme');
+    } catch {
+      // Storage can be unavailable (private windows, blocked site data): use the system's.
+    }
+
+    const theme =
+      stored === 'light' || stored === 'dark'
+        ? stored
+        : matchMedia('(prefers-color-scheme: light)').matches
+          ? 'light'
+          : 'dark';
+
+    document.documentElement.dataset.theme = theme;
+  })();
+</script>

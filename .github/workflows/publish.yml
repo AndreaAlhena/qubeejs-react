@@ -1,0 +1,87 @@
+name: Publish
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+  # Required for npm trusted publishing (OIDC). No NPM_TOKEN secret is used.
+  id-token: write
+
+jobs:
+  publish:
+    name: publish to npm
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          cache: npm
+          node-version: '24'
+          registry-url: https://registry.npmjs.org
+
+      - name: Upgrade npm for trusted-publisher OIDC support
+        run: npm install -g npm@latest
+
+      - run: npm ci
+
+      - name: Verify the release tag matches package.json
+        run: |
+          TAG="${GITHUB_REF_NAME#v}"
+          PKG=$(node -p "require('./package.json').version")
+          if [ "$TAG" != "$PKG" ]; then
+            echo "tag ${GITHUB_REF_NAME} does not match package.json version ${PKG}"
+            exit 1
+          fi
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Test with coverage
+        run: npm run test:coverage
+
+      - name: Build
+        run: npm run build
+
+      # What is about to be published, checked as CI checks it: every entry loads and imports
+      # only what it may, the manifest and the types are sound, and the packed tarball works in a
+      # fresh project.
+      - name: Check the built package
+        run: npm run check:dist
+
+      - name: Lint the package
+        run: npm run lint:package
+
+      - name: Test the packed tarball in a fresh project
+        run: npm run test:consumer
+
+      - name: Skip if this version is already on npm
+        id: published
+        run: |
+          NAME=$(node -p "require('./package.json').name")
+          VERSION=$(node -p "require('./package.json').version")
+          if npm view "${NAME}@${VERSION}" version >/dev/null 2>&1; then
+            echo "already=true" >> "$GITHUB_OUTPUT"
+            echo "${NAME}@${VERSION} is already published — nothing to do."
+          else
+            echo "already=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      # A prerelease version — a `-` before any `+build` part, as in 1.0.0-rc.1 — goes out under
+      # the `next` dist-tag, so that `npm install @qubeejs/react` keeps installing the latest
+      # stable release; `@qubeejs/react@next` installs the candidate.
+      - name: Publish
+        if: steps.published.outputs.already == 'false'
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          case "${VERSION%%+*}" in
+            *-*) DIST_TAG=next ;;
+            *) DIST_TAG=latest ;;
+          esac
+          npm publish --provenance --access public --tag "$DIST_TAG"

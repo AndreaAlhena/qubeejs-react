@@ -1,0 +1,29 @@
+{
+  "devDependencies": {
+    "@astrojs/starlight": "^0.42.4",
+    "@fontsource-variable/ibm-plex-sans": "^5.3.0",
+    "@fontsource-variable/jetbrains-mono": "^5.3.0",
+    "@fontsource-variable/space-grotesk": "^5.3.0",
+    "@tanstack/react-query": "^5.104.0",
+    "@tanstack/react-router": "^1.170.40",
+    "astro": "^7.3.5",
+    "esbuild": "^0.28.2",
+    "msw": "^3.0.1",
+    "react-router": "^8.4.0",
+    "sharp": "^0.34.5",
+    "swr": "^2.5.1",
+    "typedoc": "^0.28.20",
+    "typescript": "~6.0.3"
+  },
+  "name": "@qubeejs/react-docs",
+  "private": true,
+  "scripts": {
+    "build": "npm run generate && npm run check && astro build && node scripts/check-site.mjs",
+    "check": "tsc -p examples/tsconfig.json && node ../node_modules/vitest/vitest.mjs run --config examples/vitest.config.ts",
+    "dev": "npm run generate && astro dev",
+    "generate": "node scripts/generate-api.mjs && node scripts/generate-changelog.mjs && node scripts/generate-sizes.mjs",
+    "preview": "astro preview"
+  },
+  "type": "module",
+  "version": "0.0.0"
+}

@@ -1,0 +1,240 @@
+// The README's usage samples, as a user would type them, plus a few outputs to assert on.
+import type { QubeeFetcher } from '@qubeejs/react';
+import type { ReactElement } from 'react';
+
+import { getAriaSort, STRAPI_DRIVER } from '@qubeejs/core';
+import {
+  BrowserAdapter,
+  MemoryAdapter,
+  QubeeFetchProvider,
+  QubeeProvider,
+  useBrowserAdapter,
+  useQubeeList,
+  useQubeeQuery,
+  useQubee,
+  useQubeeContext,
+} from '@qubeejs/react';
+import { useQubeeSWR } from '@qubeejs/react/swr';
+
+import { articleList, tagList } from './article-list.js';
+
+export function ArticlePicker(): ReactElement {
+  const { builder, state } = useQubee({
+    baseUrl: 'https://example.com/api',
+    driver: STRAPI_DRIVER,
+  });
+
+  return (
+    <button id="picker" onClick={() => builder.nextPage()}>
+      Page {state.page}
+    </button>
+  );
+}
+
+function ArticleFilters(): ReactElement {
+  const { builder } = useQubeeContext();
+
+  return (
+    <button id="filter" onClick={() => builder.addFilter('status', 'published')}>
+      Published
+    </button>
+  );
+}
+
+function ArticleTable(): ReactElement {
+  const { state } = useQubeeContext();
+
+  return <output id="shared">{JSON.stringify(state)}</output>;
+}
+
+export function Shared(): ReactElement {
+  return (
+    <QubeeProvider baseUrl="https://example.com/api" driver={STRAPI_DRIVER}>
+      <ArticleFilters />
+      <ArticleTable />
+    </QubeeProvider>
+  );
+}
+
+export function Orphan(): ReactElement {
+  const { state } = useQubeeContext();
+
+  return <output>{state.page}</output>;
+}
+
+export function Articles(): ReactElement {
+  const list = useQubeeList(articleList, useBrowserAdapter());
+
+  return (
+    <>
+      <input
+        id="q"
+        value={list.state.q ?? ''}
+        onChange={(e) => list.set({ q: e.target.value }, { debounce: 300, replace: true })}
+      />
+      <button id="clear" onClick={() => list.set({ q: undefined, status: undefined })}>
+        Clear filters
+      </button>
+      <table>
+        <thead>
+          <tr>
+            <th id="th" aria-sort={getAriaSort(list.state.sort, 'title')}>
+              <button id="sort" onClick={() => list.toggleSort('title')} type="button">
+                Title
+              </button>
+            </th>
+          </tr>
+        </thead>
+      </table>
+      <a id="link" href={list.href({ page: 2 })}>
+        2
+      </a>
+      <button id="page2" onClick={() => list.setPage(2)} type="button">
+        Go to page 2
+      </button>
+      <output id="uri">{list.request.uri}</output>
+      <output id="pending">{String(list.isPending)}</output>
+      <output id="state">{JSON.stringify(list.state)}</output>
+    </>
+  );
+}
+
+/**
+ * A second, independent reader of the same URL. It takes its adapter from the provider, while
+ * <Articles> passes its own: both must stay in sync.
+ */
+export function PageLabel(): ReactElement {
+  const { state } = useQubeeList(articleList);
+
+  return <output id="label">{state.page}</output>;
+}
+
+/** A second list on the same page, with its own param names. */
+export function Tags(): ReactElement {
+  const tags = useQubeeList(tagList, useBrowserAdapter());
+
+  return (
+    <button id="tagnext" onClick={() => tags.setPage(tags.state.page + 1)} type="button">
+      Tags page {tags.state.page}
+    </button>
+  );
+}
+
+/** One half of a dialog whose list lives in memory: it shares its state with <DialogLabel>. */
+function DialogPager(): ReactElement {
+  const tags = useQubeeList(tagList);
+
+  return (
+    <>
+      <button id="dialognext" onClick={() => tags.setPage(tags.state.page + 1)} type="button">
+        More tags
+      </button>
+      <button id="dialogreset" onClick={() => tags.reset()} type="button">
+        Reset
+      </button>
+    </>
+  );
+}
+
+function DialogLabel(): ReactElement {
+  const { state } = useQubeeList(tagList);
+
+  return <output id="dialoglabel">{state.page}</output>;
+}
+
+/** A list that never touches the page URL. */
+export function TagDialog(): ReactElement {
+  return (
+    <MemoryAdapter initialSearch="tagPage=3">
+      <DialogPager />
+      <DialogLabel />
+    </MemoryAdapter>
+  );
+}
+
+/** A list with neither a provider above it nor an adapter passed in. */
+export function NoAdapter(): ReactElement {
+  const { state } = useQubeeList(articleList);
+
+  return <output>{state.page}</output>;
+}
+
+/** Every address the API below was asked for, in order: the tests read it. */
+export const asked: string[] = [];
+
+/** Stands in for a Strapi API: it answers every request with one article, numbered in order. */
+export const apiFetcher: QubeeFetcher = (uri) => {
+  asked.push(uri);
+
+  return Promise.resolve(
+    new Response(
+      JSON.stringify({
+        data: [{ id: asked.length, title: `Row ${asked.length}` }],
+        meta: { pagination: { page: 1, pageCount: 3, pageSize: 20, total: 57 } },
+      })
+    )
+  );
+};
+
+/** The page the list asks for, fetched with the built-in hook through the provider's fetcher. */
+export function Rows(): ReactElement {
+  const list = useQubeeList(articleList);
+  const articles = useQubeeQuery<{ id: number; title: string }>(list.request);
+
+  return (
+    <>
+      <output id="fetching">{String(articles.isFetching)}</output>
+      <output id="rows">{articles.data?.data.map((article) => article.title).join(',')}</output>
+      <output id="lastpage">{articles.data?.lastPage}</output>
+    </>
+  );
+}
+
+/** Every address the SWR rows below asked their own API for. */
+export const swrAsked: string[] = [];
+
+/** A second stand-in API, so that what SWR fetches is told apart from what the built-in hook does. */
+export const swrFetcher: QubeeFetcher = (uri) => {
+  swrAsked.push(uri);
+
+  return Promise.resolve(
+    new Response(
+      JSON.stringify({
+        data: [{ id: 1, title: 'From SWR' }],
+        meta: { pagination: { page: 1, pageCount: 3, pageSize: 20, total: 57 } },
+      })
+    )
+  );
+};
+
+/**
+ * The same page, fetched through SWR. The hook comes from the swr entry and the provider above
+ * it from the main entry: they must share one fetcher context.
+ */
+export function SwrRows(): ReactElement {
+  const list = useQubeeList(articleList);
+  const articles = useQubeeSWR<{ id: number; title: string }>(list.request);
+
+  return (
+    <output id="swrrows">{articles.data?.data.map((article) => article.title).join(',')}</output>
+  );
+}
+
+export function App(): ReactElement {
+  return (
+    <BrowserAdapter>
+      <QubeeFetchProvider fetcher={apiFetcher}>
+        <ArticlePicker />
+        <Shared />
+        <Articles />
+        <PageLabel />
+        <Rows />
+        <QubeeFetchProvider fetcher={swrFetcher}>
+          <SwrRows />
+        </QubeeFetchProvider>
+        <Tags />
+        <TagDialog />
+      </QubeeFetchProvider>
+    </BrowserAdapter>
+  );
+}

@@ -1,0 +1,72 @@
+---
+title: Lists in memory
+description: The same list definition without a URL — for a dialog or a picker — driven by one component or shared by several.
+sidebar:
+  label: Lists in memory
+  order: 4.6
+---
+
+import { Code } from '@astrojs/starlight/components';
+import tagDialog from '../../../../examples/tag-dialog.tsx?raw';
+
+A list declared with `defineList` does not have to live in the page URL. In a dialog, a picker or
+a side panel, the URL should stay as it is while the list is searched and paged. An **in-memory
+adapter** keeps the query in React instead, and everything else about the list stays the same:
+typed `state`, `set()`, debounce, `isPending`, `href()` and `request`.
+
+## One component: `useMemoryAdapter()`
+
+Pass the adapter to the hook, and the state belongs to that component:
+
+```tsx
+const tags = useQubeeList(tagList, useMemoryAdapter());
+```
+
+Two components that each call `useMemoryAdapter()` get two separate states.
+
+A list that passes its own adapter still reads the provider's, if there is one above it: hooks
+cannot be called conditionally. Under `<NextAdapter>` that read is `useSearchParams`, which on a
+statically rendered route needs a `<Suspense>` boundary. There, wrap the list in `<MemoryAdapter>`
+instead: the nearest provider is then the in-memory one, and the App Router is not read at all.
+
+## Several components: `<MemoryAdapter>`
+
+When the search box, the table and the pager are separate components, they must see the same
+state. Wrap them in the provider, and each takes its adapter from it:
+
+<Code code={tagDialog} lang="tsx" title="src/tags/tag-dialog.tsx" />
+
+- **The state lives in the provider.** It is gone when the provider unmounts, so a dialog that
+  closes starts fresh the next time.
+- **The nearest provider wins.** A `<MemoryAdapter>` inside a page whose lists live in the URL
+  gives its subtree its own state; the page's lists are untouched.
+- **Each provider is separate.** Two dialogs, two providers, two states.
+- **The draft is per component**, as with a list in the URL. What a component typed and has not
+  committed yet — a search still inside its debounce — is its own: a change another component
+  makes in that window replaces it. When a search box and a pager must not race, call the hook
+  once in their parent and pass the result down.
+
+## Where it starts
+
+Both take an initial query — a string, a `URLSearchParams` or a record — read on the first render
+only:
+
+```tsx
+<MemoryAdapter initialSearch="q=react">…</MemoryAdapter>;
+
+const tags = useQubeeList(tagList, useMemoryAdapter({ page: '2' }));
+```
+
+## What is different from a URL
+
+- **There is no history.** `{ replace: true }` makes no difference, and there is no Back.
+- **`href()` returns only a query**, such as `?page=2`, because there is no pathname. Render
+  buttons, not links.
+- **Nothing is shared outside React.** A reload starts from `initialSearch` again.
+
+## Or the builder
+
+[`useQubee`](/guide/use-qubee/) is the other way to keep a query in memory: it gives a component
+the whole query builder, to call directly. Prefer a declared list under an in-memory adapter when
+you want typed state and a ready `request`; prefer the builder when the query is assembled step by
+step in ways a list definition does not describe.

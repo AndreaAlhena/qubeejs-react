@@ -1,0 +1,27 @@
+---
+title: Testing with MSW
+description: Answer the list's requests with a Strapi payload, and check what the list asked for.
+sidebar:
+  label: Testing with MSW
+  order: 8
+---
+
+import { Code } from '@astrojs/starlight/components';
+import mswTest from '../../../../examples/articles-page.msw.test.tsx?raw';
+
+MSW intercepts `fetch` in Node, so the component under test is the real one — router, hook, request
+and parsing included. This test renders the [Quick start](/introduction/quick-start/)'s
+`ArticlesPage`.
+
+<Code code={mswTest} lang="tsx" title="src/articles/articles-page.msw.test.tsx" />
+
+## How it works
+
+- `onUnhandledFrame: 'error'` fails the test on a request no handler answers, so a wrong URI cannot
+  pass unnoticed. (MSW 2 called this option `onUnhandledRequest`.)
+- The handler records every URL it is asked for. The second test checks that `?q=react` in the page
+  URL became `filters[title][$containsi]=react` in the request — the Strapi driver's spelling of a
+  case-insensitive "contains".
+- `<BrowserAdapter>` reads jsdom's `window.location`: set it with `history.replaceState` before
+  rendering, and reset it after each test.
+- The payload is Strapi's envelope: rows in `data`, counts in `meta.pagination`.

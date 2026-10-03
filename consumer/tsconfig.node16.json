@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "module": "Node16",
+    "moduleResolution": "node16"
+  },
+  "extends": "./tsconfig.json",
+  "include": [
+    "src/article-status.enum.ts",
+    "src/article-list.ts",
+    "src/app.tsx",
+    "src/type-checks.tsx"
+  ]
+}

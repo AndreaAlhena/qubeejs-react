@@ -1,0 +1,45 @@
+[
+  {
+    "client": false,
+    "name": "fetch",
+    "peer": null,
+    "source": "src/entries/fetch.ts",
+    "subpath": "./fetch"
+  },
+  { "client": true, "name": "index", "peer": null, "source": "src/index.ts", "subpath": "." },
+  {
+    "client": true,
+    "name": "next",
+    "peer": "next",
+    "source": "src/entries/next.ts",
+    "subpath": "./next"
+  },
+  {
+    "client": true,
+    "name": "react-router",
+    "peer": "react-router",
+    "source": "src/entries/react-router.ts",
+    "subpath": "./react-router"
+  },
+  {
+    "client": true,
+    "name": "swr",
+    "peer": "swr",
+    "source": "src/entries/swr.ts",
+    "subpath": "./swr"
+  },
+  {
+    "client": false,
+    "name": "tanstack-query",
+    "peer": "@tanstack/react-query",
+    "source": "src/entries/tanstack-query.ts",
+    "subpath": "./tanstack-query"
+  },
+  {
+    "client": true,
+    "name": "tanstack-router",
+    "peer": "@tanstack/react-router",
+    "source": "src/entries/tanstack-router.ts",
+    "subpath": "./tanstack-router"
+  }
+]

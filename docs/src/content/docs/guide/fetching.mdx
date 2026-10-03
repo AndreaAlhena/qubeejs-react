@@ -1,0 +1,171 @@
+---
+title: Fetching
+description: Fetch the page a list asks for — with the built-in hook, your own fetcher, on the server, or through TanStack Query and SWR.
+sidebar:
+  label: Fetching
+  order: 7
+---
+
+import { Code } from '@astrojs/starlight/components';
+import fetchRoot from '../../../../examples/fetch-root.tsx?raw';
+import nextPage from '../../../../examples/next/page.tsx?raw';
+import postgrestList from '../../../../examples/postgrest-list.ts?raw';
+
+A list describes the page to fetch in `list.request`. The package fetches it for you in three
+ways, all built on one function:
+
+| You want | Use |
+| --- | --- |
+| No extra dependency | [`useQubeeQuery`](/api/main/use-qubee-query/), in the main entry |
+| A cache, retries, refetch on focus | [TanStack Query](/recipes/tanstack-query/) or [SWR](/recipes/swr/) |
+| A page on the server, in a loader or a script | [`fetchQubeePage`](/api/fetch/fetch-qubee-page/), in `@qubeejs/react/fetch` |
+
+What performs the request stays yours: the global `fetch` by default, your own fetcher when the
+API wants a token.
+
+## The built-in hook
+
+```tsx
+const list = useQubeeList(articleList);
+const articles = useQubeeQuery<Article>(list.request);
+
+<ul aria-busy={list.isPending || articles.isFetching}>
+  {articles.data?.data.map((article) => (
+    <li key={article.id}>{article.title}</li>
+  ))}
+</ul>;
+```
+
+`list.request` follows the **committed** state, so the hook fetches once per navigation — after
+the debounce — and never for a half-typed search.
+
+| Member | What it is |
+| --- | --- |
+| `data` | The page: the rows in `data.data`, and `lastPage`, `total`, `from`, `to` beside them — `null` where the API reported nothing. `undefined` before the first answer and after a failure. |
+| `error` | Why the current request failed, or `undefined`. |
+| `isFetching` | A request is in flight. |
+| `isLoading` | A request is in flight and there is nothing to show. |
+| `refetch()` | Fetch the current request again. The page stays while it does, and if it fails. |
+
+How it behaves:
+
+- **A request is its address and its headers.** A new `request` object for the same page does not
+  fetch again.
+- **A new request replaces the old one.** The old one is aborted; if its answer still arrives, it
+  is ignored. An abort is never an error. Coming back to an earlier request fetches it again.
+- **The previous page stays** while the next one loads, so the table does not flash empty. Pass
+  `keepPreviousData: false` to show nothing instead.
+- **A failure discards the page**, so rows are never shown under another request's filters. Only a
+  failed `refetch()` keeps them.
+- **`isFetching` is `true` from the first render** when a fetch is due — on the server too, where
+  nothing is fetched — so the server's HTML and the first client render agree.
+- **`null` fetches nothing**, and so does `enabled: false`: no data, both flags `false`. Enabled
+  again, it fetches anew.
+
+It keeps no cache and shares nothing between components: two components that pass the same
+request fetch twice. Call it once and pass the result down — or use
+[TanStack Query](/recipes/tanstack-query/) or [SWR](/recipes/swr/), which also bring retries and
+refetching on focus.
+
+## Your own fetcher
+
+A fetcher is a function with the shape of `fetch`: it gets the address, the headers the driver
+wants and an abort signal, and returns a `Response`. Set one for a whole subtree with
+`<QubeeFetchProvider>`:
+
+<Code code={fetchRoot} lang="tsx" title="src/fetch-root.tsx" />
+
+The nearest provider wins, and `useQubeeQuery(request, { fetcher })` wins over any provider. A new
+fetcher function does not fetch again: it is used from the next request on.
+
+## Errors
+
+A response whose status is not `ok` becomes a
+[`QubeeFetchError`](/api/main/qubee-fetch-error/), with the `status`, the `uri` and the
+`response` itself — its body unread, for the message your API sent:
+
+```tsx
+if (articles.error instanceof QubeeFetchError && articles.error.status === 401) {
+  return <SignIn />;
+}
+```
+
+Anything else — the network failing, a body that is not JSON — is reported as the error it is.
+
+## On the server, or outside React
+
+`fetchQubeePage` is the function under all of the above. It lives in the entry
+`@qubeejs/react/fetch`, which is not a client module and imports nothing from React, so a Server
+Component, a route loader or a script can call it:
+
+<Code code={nextPage} lang="tsx" title="app/articles/page.tsx" />
+
+It returns a plain object, the only kind a Server Component can hand to a Client Component as a
+prop. [Server rendering](/guide/server-rendering/) has the other half of this page.
+
+It takes the same `fetcher`, and a `signal`:
+
+```ts
+const page = await fetchQubeePage<Article>(request, { fetcher: authFetch, signal });
+```
+
+### The first page from the server, the next ones in the browser
+
+When the server fetched the page of the URL it rendered, hand it to the hook as `initialData`:
+
+```tsx
+const articles = useQubeeQuery<Article>(list.request, { initialData });
+```
+
+`initialData` answers the request present on the first render: that one is not fetched, and the
+first render shows its rows — on the server and after hydration alike. Every later request is
+fetched in the browser.
+
+It needs an adapter that knows the URL on the server — a router's. Under `<BrowserAdapter>` the
+server renders the list's defaults, so the request of the first render is not the one the page
+was fetched for, and the browser fetches it again.
+
+This fits an app whose navigations stay in the browser after the first load. In the Next.js App
+Router a page that reads `searchParams` is rendered again on the server for every navigation, so
+the server would fetch each page as well: there, render the page the server fetched from its
+props, as the example above does.
+
+## The request
+
+`list.request` — and `buildListRequest()` from the core, on the server — is all a fetch needs:
+
+| Member | What it is |
+| --- | --- |
+| `uri` | The API address, `baseUrl` included — `https://example.com/api/articles?filters[title][$containsi]=react&…` |
+| `headers` | Headers the driver needs on the request, or `null`. Only header-paginated drivers set them. |
+| `paginate(body, headers?)` | Parses the response with the same driver, into a `PaginatedCollection`. |
+
+The fetching functions send `headers`, hand the response headers to `paginate`, and return
+`toPlain()`: a plain object with every field present, which can be cached, compared and
+serialised.
+
+The builder of [`useQubee`](/guide/use-qubee/) has no `request`: its paginator writes the page it
+parsed back into the instance, so there you fetch `builder.generateUri()` yourself and call
+`paginator.paginate(body, headers)`, as that guide shows.
+
+## Header-paginated APIs
+
+PostgREST in `RANGE` mode pages with headers rather than query parameters. The list is declared as
+usual, with the pagination mode in its qubee config:
+
+<Code code={postgrestList} lang="ts" title="src/articles/postgrest-list.ts" />
+
+Its `request.uri` carries no offset. `request.headers` carries `Range-Unit: items` and
+`Range: 0-19` for the first page, `Range: 20-39` for the second — which is why a request is
+identified by its headers as well as its address.
+
+## Cache keys
+
+The TanStack Query and SWR integrations key their cache on `['qubee', request.uri,
+request.headers]`. `request` is built from the committed state, so the key changes once per
+navigation, and a cache never sees the half-typed searches in between. The fetcher is not part of
+the key: two hooks that pass the same request with different fetchers share one entry, fetched by
+whichever asked first.
+
+PostgREST reports the total only when asked. Add `Prefer: count=exact` in a fetcher —
+`headers: { ...init.headers, Prefer: 'count=exact' }` — or `total` and `lastPage` stay `null`.

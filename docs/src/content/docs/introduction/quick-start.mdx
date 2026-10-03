@@ -1,0 +1,70 @@
+---
+title: Quick start
+description: A searchable, filterable, sortable article list whose query lives in the page URL — declare it, wrap once, use the hook, fetch.
+sidebar:
+  label: Quick start
+  order: 3
+---
+
+import { Code } from '@astrojs/starlight/components';
+import articleList from '../../../../examples/article-list.ts?raw';
+import browserRoot from '../../../../examples/browser-root.tsx?raw';
+import quickStart from '../../../../examples/quick-start.tsx?raw';
+
+This page builds an article list backed by a Strapi API. Its query lives in the address bar —
+`/articles?q=react&status=published&sort=title&page=2` — so a reload, a shared link and the back
+button all show the same list.
+
+## 1. Declare the list
+
+A list is declared once, with `defineList` from `@qubeejs/core`: the driver, the resource, the URL
+parameters it owns, and how its state becomes a query. Declare it at module level, in a file that
+both your pages and your components import.
+
+<Code code={articleList} lang="ts" title="src/articles/article-list.ts" />
+
+- **Values are typed from the declaration.** `page` and `sort` have defaults, so they are always a
+  `number` and a list of sorts; `q` and `status` have none, so they may be `undefined`.
+- **The order of `params` is the order in the URL.**
+- **`q` is kept exactly as typed**, because a search box shows it while the user types; `apply`
+  trims it on the way to the API. [Search, debounce & pending state](/guide/search-debounce/)
+  explains why that matters.
+
+Every param, and the rules the URL follows, are documented with the core:
+[Lists & URL state ↗](https://qubeejs.andreatantimonaco.me/guide/lists/).
+
+## 2. Wrap once
+
+A list reads and writes the URL through your router. Say which one, once, at the root:
+
+<Code code={browserRoot} lang="tsx" title="src/main.tsx" />
+
+`<BrowserAdapter>` is for an app without a router library. With one, use its adapter instead —
+[React Router](/setup/react-router/), [TanStack Router](/setup/tanstack-router/) or
+[Next.js](/setup/next/) — and the rest of this page stays the same.
+
+## 3. Use the hook, and fetch
+
+`useQubeeList` reads the URL into typed state and gives back the request for the page to show;
+`useQubeeQuery` fetches that request and parses the answer with the driver that built it.
+
+<Code code={quickStart} lang="tsx" title="src/articles/articles-page.tsx" />
+
+What happens when someone types `react` into the search box:
+
+1. `set({ q: 'react' }, { debounce: 300, replace: true })` updates `state.q` at once, so the input
+   never lags behind the typing.
+2. 300 ms after the last keystroke, the adapter navigates **once**, to `/articles?q=react`,
+   replacing the history entry instead of adding one per keystroke. The page goes back to 1: a new
+   search makes the old page number meaningless.
+3. `request` changes — its `uri` now filters on the title — and `useQubeeQuery` fetches the new
+   page. The rows of the old one stay on screen until it arrives.
+
+## Where next
+
+- [Setup](/setup/plain-react/) — the same page on your router, with its links.
+- [Lists in the URL](/guide/url-lists/) — every member of `useQubeeList`, and the three layers of
+  state behind it.
+- [Fetching](/guide/fetching/) — your own fetcher, errors, fetching on the server, and caching
+  with TanStack Query or SWR.
+- [Lists in memory](/guide/in-memory-lists/) — the same list in a dialog, without the URL.

@@ -1,0 +1,111 @@
+---
+/**
+ * SiteTitle override — the left half of the header as the mockup draws it: the
+ * bee, the `qubeejs/react` wordmark, the version chip and the section links.
+ *
+ * Search, the theme select and the GitHub link stay Starlight's own, so this
+ * override touches nothing that changes between Starlight releases. The section
+ * links hide below 72rem, where Starlight's mobile menu lists every page.
+ */
+import pkg from '../../../package.json';
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const path = Astro.url.pathname;
+
+const SECTIONS = [
+  { href: '/introduction/why-an-adapter/', label: 'Guide', matches: ['/introduction/', '/guide/'] },
+  { href: '/api/main/', label: 'API', matches: ['/api/'] },
+  { href: '/recipes/sortable-table/', label: 'Recipes', matches: ['/recipes/'] },
+];
+---
+
+<a class="site-title qb-brand" href={`${base}/`}>
+  <img alt="" height="26" src={`${base}/mark-react.png`} width="40" />
+  <span>qubeejs<span class="qb-slash">/react</span></span>
+</a>
+<span class="qb-version">v{pkg.version}</span>
+<nav aria-label="Sections" class="qb-nav">
+  {
+    SECTIONS.map((section) => (
+      <a
+        aria-current={section.matches.some((match) => path.includes(match)) ? 'page' : undefined}
+        href={`${base}${section.href}`}
+      >
+        {section.label}
+      </a>
+    ))
+  }
+  <a href="https://qubeejs.andreatantimonaco.me/" rel="noopener" target="_blank">
+    Core docs <span aria-hidden="true">↗</span>
+  </a>
+</nav>
+
+<style>
+  .qb-brand {
+    align-items: center;
+    color: var(--sl-color-white);
+    display: flex;
+    flex: none;
+    font-family: var(--qb-font-display);
+    font-size: 1.1875rem;
+    font-weight: 700;
+    gap: 0.5625rem;
+    letter-spacing: -0.02em;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .qb-brand img {
+    display: block;
+    height: 26px;
+    width: auto;
+  }
+
+  .qb-slash {
+    color: var(--qb-accent-ink);
+  }
+
+  .qb-version {
+    background: var(--qb-accent-soft);
+    border-radius: 5px;
+    color: var(--qb-accent-ink);
+    flex: none;
+    font-family: var(--qb-font-mono);
+    font-size: 0.65625rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    padding: 3px 6px;
+  }
+
+  .qb-nav {
+    align-items: center;
+    display: none;
+    gap: 0.25rem;
+    margin-inline-start: 0.5rem;
+  }
+
+  .qb-nav a {
+    border-radius: 7px;
+    color: var(--sl-color-gray-3);
+    font-size: 0.875rem;
+    font-weight: 500;
+    padding: 0.4375rem 0.6875rem;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .qb-nav a:hover {
+    background: var(--qb-hover);
+    color: var(--sl-color-white);
+  }
+
+  .qb-nav a[aria-current='page'] {
+    color: var(--sl-color-white);
+  }
+
+  @media (min-width: 72rem) {
+    .qb-nav {
+      display: flex;
+    }
+  }
+</style>

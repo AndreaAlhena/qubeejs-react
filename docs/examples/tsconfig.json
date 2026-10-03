@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "lib": ["DOM", "DOM.Iterable", "ES2022"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "noEmit": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "paths": {
+      "@qubeejs/react": ["../../dist/index.d.ts"],
+      "@qubeejs/react/*": ["../../dist/*.d.ts"],
+      // The types of the tanstack-query entry name TanStack Query's own: the examples and the
+      // build must read one copy of them, the repository's.
+      "@tanstack/react-query": ["../../node_modules/@tanstack/react-query"]
+    },
+    "skipLibCheck": true,
+    "strict": true,
+    "target": "ES2022",
+    "types": []
+  },
+  "exclude": ["next", "vitest.config.ts"],
+  "include": ["**/*.ts", "**/*.tsx"]
+}

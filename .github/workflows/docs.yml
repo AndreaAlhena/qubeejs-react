@@ -1,0 +1,91 @@
+name: Docs
+
+on:
+  pull_request:
+    branches: [develop, master]
+    paths:
+      - '.github/workflows/docs.yml'
+      - 'CHANGELOG.md'
+      - 'docs/**'
+      - 'package.json'
+      - 'src/**'
+  push:
+    branches: [develop, master]
+    paths:
+      - '.github/workflows/docs.yml'
+      - 'CHANGELOG.md'
+      - 'docs/**'
+      - 'package.json'
+      - 'src/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+  pages: write
+
+concurrency:
+  cancel-in-progress: true
+  group: docs-${{ github.ref }}
+
+jobs:
+  build:
+    name: build and check the site
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Starlight's "last updated" dates come from git history.
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            docs/package-lock.json
+          node-version: '24'
+
+      # check-site verifies links into the core docs against this checkout.
+      - name: Check out @qubeejs/core (develop)
+        run: git clone --depth 1 --branch develop https://github.com/AndreaAlhena/qubeejs-core.git ../qubeejs-core
+
+      - name: Install and build the library
+        run: |
+          npm ci
+          npm run build
+
+      - name: Install the docs dependencies
+        run: npm ci
+        working-directory: docs
+
+      - name: Build and check the site
+        run: npm run build
+        working-directory: docs
+
+      - if: github.event_name != 'pull_request' && github.ref == 'refs/heads/master'
+        uses: actions/configure-pages@v5
+
+      - if: github.event_name != 'pull_request' && github.ref == 'refs/heads/master'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs/dist
+
+  deploy:
+    name: deploy to GitHub Pages
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/master'
+    needs: build
+    runs-on: ubuntu-latest
+
+    concurrency:
+      cancel-in-progress: false
+      group: pages
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

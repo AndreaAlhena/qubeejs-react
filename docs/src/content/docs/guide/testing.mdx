@@ -1,0 +1,62 @@
+---
+title: Testing
+description: Fake routers, fake timers, a provider with a known instance, and real requests answered by MSW.
+sidebar:
+  label: Testing
+  order: 9
+---
+
+import { Code } from '@astrojs/starlight/components';
+import articleSearchTest from '../../../../examples/article-search.test.tsx?raw';
+import articlesShellTest from '../../../../examples/articles-shell.test.tsx?raw';
+
+Every test on this page runs in this site's own build, with Vitest, jsdom and Testing Library.
+
+## URL-driven components: a fake router
+
+`RouterAdapter` is a plain object type, so a test can give `useQubeeList` a router it controls: a fixed
+`pathname` and `search`, and a `navigate` spy. Fake timers step through a debounce without waiting
+for it.
+
+<Code code={articleSearchTest} lang="tsx" title="src/articles/article-search.test.tsx" />
+
+- Assert on `navigate`: the href and `{ replace }` are the whole contract between a list and its
+  router.
+- A fake router never changes its `search`, so the URL never catches up — which is what lets the test
+  see the committed navigation without a real history.
+
+## With the real History API
+
+jsdom implements `window.history`, so `<BrowserAdapter>` and `useBrowserAdapter()` work in tests as
+they do in a browser. Set the starting URL before rendering, and reset it after each test — jsdom
+keeps one `window` for a whole test file:
+
+```ts
+window.history.replaceState(null, '', '/articles?q=react');
+```
+
+## Components that take their adapter from a provider
+
+A component that calls `useQubeeList(articleList)` needs an adapter provider above it in the test
+too, or it throws `MissingRouterAdapterError`:
+
+- `<BrowserAdapter>`, with the History API as above;
+- `<MemoryAdapter initialSearch="q=react">`, when the test should not touch the URL at all;
+- your router's adapter inside its memory router — `createMemoryRouter` for React Router,
+  `createMemoryHistory` for TanStack Router.
+
+A test that mocks Next's navigation module must mock `next/navigation.js`, with the extension:
+that is the specifier the adapter imports.
+
+## Components under a provider
+
+Hand the provider an instance the test created, then assert on its store:
+
+<Code code={articlesShellTest} lang="tsx" title="src/articles/articles-shell.test.tsx" />
+
+## Requests
+
+The fetching hooks go through `fetch`, or the fetcher you gave them, so there is nothing of the
+adapter to mock: mock the API instead. The
+[Testing with MSW recipe](/recipes/testing-with-msw/) answers the list's requests with a Strapi
+payload and checks what the list asked for.

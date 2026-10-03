@@ -1,0 +1,33 @@
+---
+title: Debounced search
+description: A search box bound to the URL — responsive while typing, one navigation per pause, and tested.
+sidebar:
+  label: Debounced search
+  order: 2
+---
+
+import { Code } from '@astrojs/starlight/components';
+import articleSearch from '../../../../examples/article-search.tsx?raw';
+import articleSearchTest from '../../../../examples/article-search.test.tsx?raw';
+
+A search box whose query lives in the URL: the input follows every keystroke, the URL changes 300 ms
+after the last one, and *Clear* is immediate.
+
+<Code code={articleSearch} lang="tsx" title="src/articles/article-search.tsx" />
+
+## How it works
+
+- The input's value is `list.state.q` — the draft — so it follows every keystroke without waiting for
+  the URL.
+- `{ debounce: 300 }` holds the navigation until the typing pauses; `{ replace: true }` keeps the
+  searches out of the back button's history.
+- *Clear* calls `set` without a debounce: it goes out at once, taking any waiting keystrokes with it.
+- `articleList` keeps `q` exactly as typed and trims it in `apply`, so spaces can be typed.
+- `isPending` announces the search while it waits and while the navigation is under way (with the Next.js App Router, until the new page has arrived).
+
+## Tests
+
+<Code code={articleSearchTest} lang="tsx" title="src/articles/article-search.test.tsx" />
+
+They need nothing but a fake router: `navigate` is a spy, and `pathname` and `search` are fixed. More
+in [Testing](/guide/testing/).

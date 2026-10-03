@@ -1,0 +1,184 @@
+{
+  "author": {
+    "name": "Andrea Tantimonaco",
+    "url": "https://andreatantimonaco.me"
+  },
+  "description": "React hooks for @qubeejs/core: lists whose state lives in the URL of your router, fetched for you, and a query builder per component or per subtree",
+  "devDependencies": {
+    "@arethetypeswrong/cli": "^0.18.5",
+    "@eslint/js": "^10.0.1",
+    "@qubeejs/core": "^1.3.0",
+    "@tanstack/react-query": "^5.104.1",
+    "@tanstack/react-router": "^1.170.41",
+    "@testing-library/dom": "^10.4.2",
+    "@testing-library/react": "^16.3.3",
+    "@types/node": "^26.6.3",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitest/coverage-v8": "^5.0.2",
+    "eslint": "^10.11.0",
+    "eslint-plugin-jsdoc": "^65.0.0",
+    "eslint-plugin-perfectionist": "^5.12.1",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "jsdom": "^30.1.1",
+    "next": "^16.3.8",
+    "prettier": "^3.9.9",
+    "prettier-plugin-sort-json": "^4.2.0",
+    "publint": "^0.3.25",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "react-router": "^8.4.0",
+    "swr": "^2.5.1",
+    "tsup": "^8.5.1",
+    "typescript": "~6.0.3",
+    "typescript-eslint": "^8.71.0",
+    "vitest": "^5.0.2"
+  },
+  "engines": {
+    "node": "^22.12.0 || ^24.0.0 || >=26.0.0"
+  },
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    },
+    "./fetch": {
+      "import": {
+        "types": "./dist/fetch.d.ts",
+        "default": "./dist/fetch.js"
+      },
+      "require": {
+        "types": "./dist/fetch.d.cts",
+        "default": "./dist/fetch.cjs"
+      }
+    },
+    "./next": {
+      "import": {
+        "types": "./dist/next.d.ts",
+        "default": "./dist/next.js"
+      },
+      "require": {
+        "types": "./dist/next.d.cts",
+        "default": "./dist/next.cjs"
+      }
+    },
+    "./package.json": "./package.json",
+    "./react-router": {
+      "import": {
+        "types": "./dist/react-router.d.ts",
+        "default": "./dist/react-router.js"
+      },
+      "require": {
+        "types": "./dist/react-router.d.cts",
+        "default": "./dist/react-router.cjs"
+      }
+    },
+    "./swr": {
+      "import": {
+        "types": "./dist/swr.d.ts",
+        "default": "./dist/swr.js"
+      },
+      "require": {
+        "types": "./dist/swr.d.cts",
+        "default": "./dist/swr.cjs"
+      }
+    },
+    "./tanstack-query": {
+      "import": {
+        "types": "./dist/tanstack-query.d.ts",
+        "default": "./dist/tanstack-query.js"
+      },
+      "require": {
+        "types": "./dist/tanstack-query.d.cts",
+        "default": "./dist/tanstack-query.cjs"
+      }
+    },
+    "./tanstack-router": {
+      "import": {
+        "types": "./dist/tanstack-router.d.ts",
+        "default": "./dist/tanstack-router.js"
+      },
+      "require": {
+        "types": "./dist/tanstack-router.d.cts",
+        "default": "./dist/tanstack-router.cjs"
+      }
+    }
+  },
+  "files": ["dist"],
+  "homepage": "https://qubeejs-react.andreatantimonaco.me",
+  "keywords": [
+    "data-fetching",
+    "hooks",
+    "nextjs",
+    "pagination",
+    "qubee",
+    "query-builder",
+    "react",
+    "react-router",
+    "search-params",
+    "swr",
+    "tanstack-query",
+    "tanstack-router",
+    "url-state",
+    "use-sync-external-store"
+  ],
+  "license": "MIT",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "name": "@qubeejs/react",
+  "peerDependencies": {
+    "@qubeejs/core": "^1.3.0",
+    "@tanstack/react-query": "^5.62.0",
+    "@tanstack/react-router": "^1.49.0",
+    "next": ">=15.0.0",
+    "react": "^18.3.0 || ^19.0.0",
+    "react-router": ">=7.0.0",
+    "swr": "^2.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@tanstack/react-query": {
+      "optional": true
+    },
+    "@tanstack/react-router": {
+      "optional": true
+    },
+    "next": {
+      "optional": true
+    },
+    "react-router": {
+      "optional": true
+    },
+    "swr": {
+      "optional": true
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AndreaAlhena/qubeejs-react.git"
+  },
+  "scripts": {
+    "build": "tsup",
+    "check:dist": "node scripts/check-dist.mjs",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "lint:package": "publint && attw --pack . --profile node16",
+    "test": "vitest run",
+    "test:consumer": "node scripts/test-consumer.mjs",
+    "test:coverage": "vitest run --coverage",
+    "test:next": "node scripts/test-next.mjs",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "sideEffects": false,
+  "type": "module",
+  "types": "./dist/index.d.ts",
+  "version": "1.0.0-rc.1"
+}
