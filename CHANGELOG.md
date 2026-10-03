@@ -7,8 +7,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-The first release: `@qubeejs/core` 1.3 for React 18.3 and 19. Pick your router, wrap the app once,
-use the hook, fetch.
+## [1.0.0-rc.1] - 2026-10-03
+
+The first release candidate of 1.0.0: `@qubeejs/core` 1.3 for React 18.3 and 19. Pick your router,
+wrap the app once, use the hook, fetch.
 
 ### Added
 
@@ -71,3 +73,6 @@ use the hook, fetch.
   router, guides, recipes, and an API reference generated from JSDoc and grouped by entry point.
   Every usage sample is type-checked against the build, and the testing samples run, on each
   build (#8, #28)
+
+[unreleased]: https://github.com/AndreaAlhena/qubeejs-react/compare/v1.0.0-rc.1...HEAD
+[1.0.0-rc.1]: https://github.com/AndreaAlhena/qubeejs-react/releases/tag/v1.0.0-rc.1
