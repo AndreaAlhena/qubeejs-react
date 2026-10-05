@@ -7,6 +7,13 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- **`useQubeeSWR` shows no page while its request is `null`.** It fetched nothing before too, but
+  SWR's `keepPreviousData` went on showing the page of the request before, and showed it again
+  while the next request loaded. A page is now kept while the next request loads, never across a
+  `null` one, as `useQubeeQuery` does (#40)
+
 ## [1.0.0-rc.1] - 2026-10-03
 
 The first release candidate of 1.0.0: `@qubeejs/core` 1.3 for React 18.3 and 19. Pick your router,

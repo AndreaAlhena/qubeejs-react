@@ -33,8 +33,9 @@ const { data, error, isValidating } = useArticlesSWR(list);
   rest — except `fetcher`, which is a [`QubeeFetcher`](/api/main/qubee-fetcher/): a function with
   the shape of `fetch`, not an SWR fetcher. Without one, the hook uses the nearest
   `<QubeeFetchProvider>`'s, else the global `fetch`.
-- A `null` request fetches nothing. With `keepPreviousData` on, SWR goes on returning the page of
-  the request before; turn it off where that page must go.
+- A `null` request fetches nothing and shows no page, as with `useQubeeQuery`: `keepPreviousData`
+  keeps a page while the next request loads, never across a `null` one. The request after a `null`
+  one shows no page from before it until its own arrives.
 - The fetcher is not part of the key: two hooks with the same request share one cache entry,
   whatever their fetchers.
 - A status that is not `ok` is a [`QubeeFetchError`](/api/main/qubee-fetch-error/) in `error`.
