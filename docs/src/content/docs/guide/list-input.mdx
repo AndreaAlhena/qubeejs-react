@@ -46,8 +46,8 @@ The list then has no request: `list.request` is `null`, and the fetching hooks f
 
 - `request` is `ListRequest | null` only for a list that declares an input
   ([`QubeeListRequest`](/api/main/qubee-list-request/)): a list without one always has a request.
-- `useQubeeQuery` and `useQubeeSWR` show no page while the request is `null`, and none from before
-  it while the next request loads.
+- `useQubeeQuery` and `useQubeeSWR` show no page while the request is `null` — `useQubeeSWR` only
+  the `fallbackData` you gave it, if any — and none from before it while the next request loads.
 - With TanStack Query, `qubeeQueryOptions(null)` skips the query, but `placeholderData:
   keepPreviousData` keeps showing the last page. `placeholderData: list.request ? keepPreviousData
   : undefined` hides it while the input is `null`; TanStack still offers that page as the
@@ -63,7 +63,8 @@ The core does no I/O, so a lookup is yours: resolve the slug's id however your a
 With one argument after the list, the hook reads it as the adapter when it is an object whose
 `navigate` is a function, and as the input otherwise. An input type that could hold a function at
 `navigate` is therefore refused at compile time: the error says the input is not assignable to
-`never`. Rename that field.
+`never`. Rename that field. A type that any object fits, such as `object`, is refused for the same
+reason: give the input its fields.
 
 ## Generic code
 
