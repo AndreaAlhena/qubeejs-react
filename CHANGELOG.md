@@ -7,6 +7,11 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.0.0-rc.2] - 2026-10-05
+
+The second release candidate of 1.0.0: lists whose request needs more than the URL, on
+`@qubeejs/core` 1.4.1.
+
 ### Added
 
 - **Lists with an input.** A list whose request needs something the URL does not hold — a project
@@ -94,5 +99,6 @@ wrap the app once, use the hook, fetch.
   Every usage sample is type-checked against the build, and the testing samples run, on each
   build (#8, #28)
 
-[unreleased]: https://github.com/AndreaAlhena/qubeejs-react/compare/v1.0.0-rc.1...HEAD
+[unreleased]: https://github.com/AndreaAlhena/qubeejs-react/compare/v1.0.0-rc.2...HEAD
+[1.0.0-rc.2]: https://github.com/AndreaAlhena/qubeejs-react/compare/v1.0.0-rc.1...v1.0.0-rc.2
 [1.0.0-rc.1]: https://github.com/AndreaAlhena/qubeejs-react/releases/tag/v1.0.0-rc.1
