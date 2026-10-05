@@ -21,7 +21,7 @@ The second release candidate of 1.0.0: lists whose request needs more than the U
   then `request` is `null` and nothing is fetched — and never in the URL. An equal input keeps the
   same `request`, and a list written by hand works too, whether or not its `apply` requires its
   input. `QubeeListArgs` types the arguments for generic code, and `QubeeListRequest` the request,
-  nullable only for a list with an input (#39)
+  nullable only for a list with an input (#39, #42)
 
 ### Changed
 
@@ -30,7 +30,7 @@ The second release candidate of 1.0.0: lists whose request needs more than the U
 - **`useQubeeSWR` shows no page while its request is `null`.** It fetched nothing before too, but
   SWR's `keepPreviousData` went on showing the page of the request before, and showed it again
   while the next request loaded. A page is now kept while the next request loads, never across a
-  `null` one, as `useQubeeQuery` does (#40)
+  `null` one, as `useQubeeQuery` does — `fallbackData` included (#40, #42)
 
 ## [1.0.0-rc.1] - 2026-10-03
 
