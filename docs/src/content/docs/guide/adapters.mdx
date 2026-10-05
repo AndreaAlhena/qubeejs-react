@@ -46,7 +46,8 @@ provider around part of the tree gives that part its own adapter.
 const list = useQubeeList(articleList, useBrowserAdapter());
 ```
 
-An adapter passed as the second argument wins over the provider. Use it for the one list that must
+An adapter passed to the hook — after the list, or after its [input](/guide/list-input/) — wins
+over the provider. Use it for the one list that must
 not follow the rest of the tree. The component still re-renders when the provider's URL changes:
 hooks cannot be called conditionally, so the provider's adapter is read either way.
 

@@ -1,3 +1,5 @@
+import type { ListRequest } from '@qubeejs/core';
+
 import { createQubee, STRAPI_DRIVER } from '@qubeejs/core';
 
 import type {
@@ -8,7 +10,9 @@ import type {
   QubeeFetcher,
   QubeeFetchProviderProps,
   QubeeHandle,
+  QubeeListArgs,
   QubeeListHandle,
+  QubeeListRequest,
   QubeeProviderProps,
   QubeeQueryOptions,
   QubeeQueryResult,
@@ -46,7 +50,9 @@ describe('public API', () => {
     expectTypeOf<QubeeFetcher>().returns.toEqualTypeOf<Promise<Response>>();
     expectTypeOf<QubeeFetchProviderProps>().toHaveProperty('fetcher');
     expectTypeOf<QubeeHandle>().toHaveProperty('state');
+    expectTypeOf<QubeeListArgs<unknown>>().toEqualTypeOf<[adapter?: RouterAdapter]>();
     expectTypeOf<QubeeListHandle<unknown>>().toHaveProperty('set');
+    expectTypeOf<QubeeListRequest<unknown>>().toEqualTypeOf<ListRequest>();
     expectTypeOf<QubeeProviderProps>().toHaveProperty('children');
     expectTypeOf<QubeeQueryOptions<object>>().toHaveProperty('initialData');
     expectTypeOf<QubeeQueryResult<object>>().toHaveProperty('refetch');

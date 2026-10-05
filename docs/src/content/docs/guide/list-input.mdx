@@ -1,0 +1,89 @@
+---
+title: Lists with an input
+description: A list whose request needs more than the URL — a project id from the route path, an id looked up from a slug, a tenant — passed to useQubeeList as its input.
+sidebar:
+  label: Lists with an input
+  order: 4.7
+---
+
+import { Code } from '@astrojs/starlight/components';
+import projectTasks from '../../../../examples/project-tasks.tsx?raw';
+import taskList from '../../../../examples/task-list.ts?raw';
+
+`/projects/42/tasks?status=open` shows the tasks of project 42, but `42` is in the path, not in the
+query the list reads. A list declares what its request needs besides the URL as its **input**, by
+annotating the third parameter of `apply` — see the core's
+[Lists that need more than the URL ↗](https://qubeejs.andreatantimonaco.me/guide/lists/#lists-that-need-more-than-the-url):
+
+<Code code={taskList} lang="ts" title="src/projects/task-list.ts" />
+
+## Passing the input
+
+`useQubeeList` takes the input after the list, and the adapter, if you pass one, after the input:
+
+```tsx
+const tasks = useQubeeList(taskList, { projectId });
+const inMemory = useQubeeList(taskList, { projectId }, useMemoryAdapter());
+```
+
+- **It is required.** Leaving it out is a compile error, and so is passing one to a list that
+  declares none. An input whose fields are all optional is passed as `{}`.
+- **It goes into `request`, never into the URL.** `state`, `href()`, `set()`, `reset()`,
+  `setPage()` and `toggleSort()` work as for any list; a new input changes the request at once,
+  without navigating.
+- **An equal input keeps the same request.** `{ projectId }` written in the render is a new object
+  every time; while its values stay the same, `list.request` — and the handle — stay the same
+  object, so they are safe in a dependency array.
+- **Prefer an object**, as the core does: adding a value later breaks no call site. A bare value
+  such as a `string` works too.
+
+## Not ready yet: `null`
+
+When the input is not known yet — a lookup still in flight, a route param missing — pass `null`.
+The list then has no request: `list.request` is `null`, and the fetching hooks fetch nothing.
+
+<Code code={projectTasks} lang="tsx" title="src/projects/project-tasks.tsx" />
+
+- `request` is `ListRequest | null` only for a list that declares an input
+  ([`QubeeListRequest`](/api/main/qubee-list-request/)): a list without one always has a request.
+- `useQubeeQuery` and `useQubeeSWR` show no page while the request is `null` — `useQubeeSWR` only
+  the `fallbackData` you gave it, if any — and none from before it while the next request loads.
+- With TanStack Query, `qubeeQueryOptions(null)` skips the query, but `placeholderData:
+  keepPreviousData` keeps showing the last page. `placeholderData: list.request ? keepPreviousData
+  : undefined` hides it while the input is `null`; TanStack still offers that page as the
+  placeholder while the next request loads, so render the waiting state from
+  `list.request === null`, as above, and check `isPlaceholderData` where an old page must not show.
+- `fetchQubeePage` takes a request only: check for `null` before calling it.
+
+The core does no I/O, so a lookup is yours: resolve the slug's id however your app does, and pass
+`null` until it has.
+
+## The adapter or the input?
+
+With one argument after the list, the hook reads it as the adapter when it is an object whose
+`navigate` is a function, and as the input otherwise. An input type that could hold a function at
+`navigate` is therefore refused at compile time: the error says the input is not assignable to
+`never`. Rename that field. A type that any object fits, such as `object`, is refused for the same
+reason: give the input its fields.
+
+## Generic code
+
+A component or hook that takes any list does not know whether the list needs an input. Typed with
+[`QubeeListArgs`](/api/main/qubee-list-args/), it forwards whatever its callers pass, and they stay
+checked:
+
+```tsx
+import type { ListDefinition, ListParams } from '@qubeejs/core';
+import type { QubeeListArgs, QubeeListHandle } from '@qubeejs/react';
+
+function useTaskTable<T extends ListDefinition<ListParams>>(
+  list: T,
+  ...args: QubeeListArgs<T>
+): QubeeListHandle<T> {
+  return useQubeeList(list, ...args);
+}
+```
+
+Called with a list type it does not know yet, `useQubeeList(list)` compiles without an input: the
+list reads as one without, as it does through `ListDefinition<ListParams>` in the core. Forward
+`QubeeListArgs` so that callers cannot leave a required input out.

@@ -1,7 +1,8 @@
 import type { ListRequest, PaginatedObject, PaginatedResult } from '@qubeejs/core';
 import type { SWRResponse } from 'swr';
 
-import useSWR from 'swr';
+import { useState } from 'react';
+import useSWR, { unstable_serialize, useSWRConfig } from 'swr';
 
 import type { QubeeQueryKey } from '../types/qubee-query-key.type';
 import type { QubeeSWROptions } from '../types/qubee-swr-options.type';
@@ -20,6 +21,12 @@ import { useQubeeFetcher } from './use-qubee-fetcher';
  * changes once per navigation, never per keystroke. What performs the request is the `fetcher`
  * option, else the nearest {@link QubeeFetchProvider}'s, else the global `fetch`.
  *
+ * A `null` request fetches nothing and shows no page — or the `fallbackData` you gave it — as with
+ * {@link useQubeeQuery}: `keepPreviousData` keeps a page while the next request loads, never
+ * across a `null` one. The request that follows a `null` one shows no page from before it until
+ * it has a page of its own in SWR's cache; if it fails instead, the next request does not keep it
+ * either.
+ *
  * @typeParam T - The shape of a row
  * @param request - The page to fetch; `null` fetches nothing
  * @param options - SWR's configuration, with `fetcher` a {@link QubeeFetcher}
@@ -35,12 +42,29 @@ export function useQubeeSWR<T extends PaginatedObject>(
   request: ListRequest | null,
   options: QubeeSWROptions<T> = {}
 ): SWRResponse<PaginatedResult<T>, Error> {
-  const { fetcher: ownFetcher, ...config } = options;
+  const { fetcher: ownFetcher, keepPreviousData = true, ...config } = options;
   const fetcher = useQubeeFetcher(ownFetcher);
-
-  return useSWR<PaginatedResult<T>, Error, null | QubeeQueryKey>(
-    request ? ['qubee', request.uri, request.headers] : null,
+  const { cache } = useSWRConfig();
+  const key: null | QubeeQueryKey = request ? ['qubee', request.uri, request.headers] : null;
+  // SWR keeps the last page it showed, even across a `null` key, and shows it again for the next
+  // key until that one has data of its own. After a `null` request, the hook therefore asks for
+  // no previous page until the request that follows has a page in SWR's cache — not merely
+  // `data`, which `fallbackData` fills at once.
+  const [isAfterNull, setIsAfterNull] = useState(request === null);
+  const response = useSWR<PaginatedResult<T>, Error, null | QubeeQueryKey>(
+    key,
     request ? (): Promise<PaginatedResult<T>> => fetchQubeePage<T>(request, { fetcher }) : null,
-    { keepPreviousData: true, ...config }
+    { ...config, keepPreviousData: keepPreviousData && !isAfterNull && request !== null }
   );
+  const hasOwnPage = key !== null && cache.get(unstable_serialize(key))?.data !== undefined;
+
+  if (request === null && !isAfterNull) {
+    setIsAfterNull(true);
+  }
+
+  if (request !== null && isAfterNull && hasOwnPage) {
+    setIsAfterNull(false);
+  }
+
+  return response;
 }
