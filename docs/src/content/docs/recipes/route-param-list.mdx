@@ -1,0 +1,55 @@
+---
+title: A list under a route param
+description: /projects/[id]/tasks on the Next.js App Router — the project from the path as the list's input, the page fetched on the server, the filters in the query.
+sidebar:
+  label: A list under a route param
+  order: 4
+---
+
+import { Code } from '@astrojs/starlight/components';
+import projectTasks from '../../../../examples/project-tasks.tsx?raw';
+import projectTasksPage from '../../../../examples/next/project-tasks-page.tsx?raw';
+import projectTasksView from '../../../../examples/next/project-tasks-view.tsx?raw';
+import taskList from '../../../../examples/task-list.ts?raw';
+
+`/projects/42/tasks?status=open`: the status and the page are the list's state, in the query; the
+project is in the path, so it is the list's [input](/guide/list-input/). This recipe is for the
+Next.js App Router, set up as in [Next.js](/setup/next/).
+
+## The list
+
+<Code code={taskList} lang="ts" title="src/projects/task-list.ts" />
+
+## The page, on the server
+
+The Server Component reads the state from `searchParams` and the project from `params`, builds the
+request with both, and fetches it:
+
+<Code code={projectTasksPage} lang="tsx" title="app/projects/[id]/tasks/page.tsx" />
+
+`buildListRequest` and `readListState` come from the core and `fetchQubeePage` from
+`@qubeejs/react/fetch`; none of them imports React.
+
+## The view, in the browser
+
+The Client Component passes the same project to `useQubeeList`, taken from the route with
+`useParams()`:
+
+<Code code={projectTasksView} lang="tsx" title="app/projects/[id]/tasks/project-tasks-view.tsx" />
+
+A status button changes the query, never the path: Next.js renders the Server Component again
+with the new `searchParams` and the same `params`. `list.request` carries the project too, if you
+fetch in the browser instead.
+
+## When the project is not known yet
+
+When the path holds a slug and the API wants the project's id, the server awaits the lookup before
+it builds the request. In the browser, pass `null` until the id is known: the list has no request,
+and nothing is fetched.
+
+<Code code={projectTasks} lang="tsx" title="src/projects/project-tasks.tsx" />
+
+:::caution[Bee aware]
+Declare the list in a module both sides import. It holds functions, so it can never travel from a
+Server Component to a Client Component as a prop.
+:::

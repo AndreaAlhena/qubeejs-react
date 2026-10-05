@@ -7,8 +7,21 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **Lists with an input.** A list whose request needs something the URL does not hold — a project
+  id from the route path, an id looked up from a slug, a tenant — declares it as its input with
+  `@qubeejs/core` 1.4, and `useQubeeList(list, input, adapter?)` passes it through: required for a
+  list that declares one, refused for a list that declares none, `null` while it is not ready —
+  then `request` is `null` and nothing is fetched — and never in the URL. An equal input keeps the
+  same `request`, and a list written by hand works too, whether or not its `apply` requires its
+  input. `QubeeListArgs` types the arguments for generic code, and `QubeeListRequest` the request,
+  nullable only for a list with an input (#39)
+
 ### Changed
 
+- **`@qubeejs/core` 1.4.1 or later is required**: 1.4 brings list inputs, and 1.4.1 tells a list
+  without one apart however its type is written (#39)
 - **`useQubeeSWR` shows no page while its request is `null`.** It fetched nothing before too, but
   SWR's `keepPreviousData` went on showing the page of the request before, and showed it again
   while the next request loaded. A page is now kept while the next request loads, never across a

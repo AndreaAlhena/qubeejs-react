@@ -56,7 +56,10 @@ await queryClient.invalidateQueries({ queryKey: ['qubee'] });
 ```
 
 - **A `null` request skips the query**: the `queryFn` is TanStack's `skipToken`. Such options do
-  not fit `useSuspenseQuery`, which cannot skip — the types say so.
+  not fit `useSuspenseQuery`, which cannot skip — the types say so. A list with an
+  [input](/guide/list-input/) has a `null` request while the input is `null`; `keepPreviousData`
+  goes on showing the last page then, so pass `placeholderData: list.request ? keepPreviousData :
+  undefined` and render a waiting state from `list.request === null`.
 - **The fetcher is an argument**: `qubeeQueryOptions(request, { fetcher: authFetch })`. The function
   also runs outside React, so it does not read `<QubeeFetchProvider>`. It is not part of the key:
   queries for the same request share one cache entry, whatever their fetchers.

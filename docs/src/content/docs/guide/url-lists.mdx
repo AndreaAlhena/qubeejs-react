@@ -23,9 +23,12 @@ button all land on the same list.
   [Lists & URL state ↗](https://qubeejs.andreatantimonaco.me/guide/lists/).
 - **A router adapter**: any object with `navigate(href, { replace })`, `pathname` and `search`.
   Set it once for the whole app with a provider such as `<BrowserAdapter>`, or pass one as the
-  second argument: `useBrowserAdapter()`, or an adapter for
+  last argument: `useBrowserAdapter()`, or an adapter for
   [React Router](/setup/react-router/), [TanStack Router](/setup/tanstack-router/) or
   [Next.js](/setup/next/). [Adapters & providers](/guide/adapters/) explains both.
+- **Its input**, when the list declares one: what its request needs besides the URL, such as a
+  project id from the route path — `useQubeeList(taskList, { projectId })`, or `null` while it is
+  not known yet. [Lists with an input](/guide/list-input/) explains it.
 
 ## What it returns
 
@@ -37,7 +40,7 @@ button all land on the same list.
 | `reset(options?)` | `void` | Return every param to its default, in one navigation. |
 | `toggleSort(field, options?)` | `void` | There only when the list declares exactly one `sortParam`: sorts by the field, flipping the direction where the core's rules say so. |
 | `href(changes?)` | `string` | The URL a change would lead to — for `<a>` and `<Link>`. |
-| `request` | `ListRequest` | `{ uri, headers, paginate }` for the page to fetch. |
+| `request` | `ListRequest` | `{ uri, headers, paginate }` for the page to fetch — `null` while the input of a list that declares one is `null`. |
 | `isPending` | `boolean` | A debounced change is waiting, or a navigation is under way. |
 
 `toggleSort` follows the core's rules. On its own it leaves exactly one sort: the field, flipped
