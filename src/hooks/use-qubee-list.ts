@@ -6,7 +6,7 @@ import type {
   ToggleSortOptions,
 } from '@qubeejs/core';
 
-import { buildListHref, buildListRequest, readListState, toggleSort } from '@qubeejs/core';
+import { buildListHref, readListState, toggleSort } from '@qubeejs/core';
 import {
   useCallback,
   useEffect,
@@ -21,12 +21,15 @@ import type { ListSetOptions } from '../types/list-set-options.type';
 import type { ListStateMachine } from '../types/list-state-machine.type';
 import type { LooseChanges } from '../types/loose-changes.type';
 import type { LooseList } from '../types/loose-list.type';
+import type { QubeeListArgs } from '../types/qubee-list-args.type';
 import type { QubeeListHandle } from '../types/qubee-list-handle.type';
-import type { RouterAdapter } from '../types/router-adapter.type';
+import type { WideList } from '../types/wide-list.type';
 
+import { buildRequestFor } from '../utils/build-request-for';
 import { createDebouncer } from '../utils/create-debouncer';
 import { createLocalStore } from '../utils/create-local-store';
 import { normalizeHref, pathnameOfHref, searchOfHref } from '../utils/href';
+import { isRouterAdapter } from '../utils/is-router-adapter';
 import {
   cancelDraft,
   commitLocation,
@@ -35,6 +38,7 @@ import {
   observeLocation,
 } from '../utils/list-state-machine';
 import { useRouterAdapter } from './use-router-adapter';
+import { useStableRequest } from './use-stable-request';
 
 /**
  * The key of the list's one `sortParam`, or `undefined` when it has none or several.
@@ -74,12 +78,20 @@ function locationOf(list: LooseList, location: ListLocation): string {
  * the user follows is never overtaken by it. `toggleSort` is there when the list declares exactly
  * one `sortParam`.
  *
- * The list reads and writes the URL through a router adapter: the one passed as `adapter`, else
- * the nearest adapter provider's — {@link BrowserAdapter}, or the one for your router.
+ * A list that declares an input — what its request needs besides URL state, such as a project id
+ * from the route path — takes it after the list: `useQubeeList(taskList, { projectId })`. The input
+ * goes into `request` and never into the URL. `null` means it is not ready yet, a lookup still in
+ * flight or a route param missing: `request` is then `null`, and the fetching hooks fetch nothing.
+ * A new input object with the same values keeps the same `request`.
+ *
+ * The list reads and writes the URL through a router adapter: the one passed last, else the
+ * nearest adapter provider's — {@link BrowserAdapter}, or the one for your router.
  *
  * @param list - A list declared once with `defineList`, as a module-level constant
- * @param adapter - A router adapter that takes the place of the nearest provider's: the current
- * location and a `navigate`, rebuilt every render
+ * @param args - `[adapter?]` for a list without an input, `[input, adapter?]` for a list that
+ * declares one — see {@link QubeeListArgs}. The adapter takes the place of the nearest provider's:
+ * the current location and a `navigate`, rebuilt every render. An input must not be an object
+ * with a function `navigate`: with one argument after the list, that is read as the adapter.
  * @returns The state, request, pending flag, and the functions that change them
  * @throws {MissingRouterAdapterError} When no adapter is passed and no adapter provider is above
  *
@@ -91,16 +103,27 @@ function locationOf(list: LooseList, location: ListLocation): string {
  * <th aria-sort={getAriaSort(list.state.sort, 'title')} onClick={() => list.toggleSort('title')}>Title</th>
  * <a href={list.href({ page: 2 })}>2</a>
  * ```
+ *
+ * @example
+ * ```tsx
+ * // /projects/42/tasks?status=open — the project comes from the path, the rest from the query
+ * const { projectId } = useParams<{ projectId: string }>();
+ * const tasks = useQubeeList(taskList, projectId ? { projectId } : null);
+ * ```
  */
-export function useQubeeList<TList extends ListDefinition<ListParams>>(
+export function useQubeeList<TList extends ListDefinition<ListParams, NonNullable<unknown>>>(
   list: TList,
-  adapter?: RouterAdapter
+  ...args: QubeeListArgs<TList>
 ): QubeeListHandle<TList> {
   // `QubeeListHandle<TList>` is built on `ListState<TList>`, a conditional type the compiler
   // cannot evaluate while `TList` is generic. The hook works on the list as a `LooseList` —
-  // which every definition is — and narrows the handle once, where it returns it.
+  // which every definition is — and narrows the handle once, where it returns it. It holds the
+  // list as a `WideList` too, to pass it an input.
   const loose: LooseList = list;
-  const router = useRouterAdapter(loose, adapter);
+  const wide: WideList = list;
+  const [first, second] = args;
+  const input = isRouterAdapter(first) ? undefined : first;
+  const router = useRouterAdapter(loose, isRouterAdapter(first) ? first : second);
   const location = locationOf(loose, router);
   const [machine] = useState(() => createLocalStore(createListStateMachine(location)));
   const [debouncer] = useState(createDebouncer);
@@ -247,10 +270,11 @@ export function useQubeeList<TList extends ListDefinition<ListParams>>(
   const isPending = isNavigating || view.debouncing || view.inflight.length > 0;
   const sortKey = useMemo(() => findSortKey(loose), [loose]);
   const state = useMemo(() => readListState(loose, draftSearch), [draftSearch, loose]);
-  const request = useMemo(
-    () => buildListRequest(loose, readListState(loose, committedSearch)),
-    [committedSearch, loose]
+  const built = useMemo(
+    () => buildRequestFor(loose, wide, committedSearch, input),
+    [committedSearch, input, loose, wide]
   );
+  const request = useStableRequest(loose, built);
   const href = useCallback(
     (changes: LooseChanges = {}): string =>
       buildListHref(loose, { pathname: router.pathname, search: draftSearch }, changes),

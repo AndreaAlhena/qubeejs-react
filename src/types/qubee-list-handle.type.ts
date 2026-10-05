@@ -1,6 +1,7 @@
-import type { ListRequest, ListState } from '@qubeejs/core';
+import type { ListState } from '@qubeejs/core';
 
 import type { ListSetOptions } from './list-set-options.type';
+import type { QubeeListRequest } from './qubee-list-request.type';
 import type { SortToggle } from './sort-toggle.type';
 
 /**
@@ -19,10 +20,12 @@ export type QubeeListHandle<TList> = {
   /** A debounce is waiting, or a navigation is in flight. */
   isPending: boolean;
   /**
-   * `{ uri, headers, paginate }` for the committed state: it changes once per navigation, never
-   * per keystroke, so use it as a fetching library's cache key.
+   * `{ uri, headers, paginate }` for the committed state and the input: it changes once per
+   * navigation, never per keystroke, and keeps its identity while the input stays equal, so use it
+   * as a fetching library's cache key. `null` while the input is `null` — see
+   * {@link QubeeListRequest}.
    */
-  request: ListRequest;
+  request: QubeeListRequest<TList>;
   /**
    * Return every param of the list to its default, in one navigation. Parameters the list does
    * not own are kept; a list already at its defaults does not navigate.
