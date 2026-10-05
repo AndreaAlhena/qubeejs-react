@@ -285,7 +285,8 @@ const { data, error, isValidating } = useQubeeSWR<Article>(list.request);
 ```
 
 Its options are SWR's own, except `fetcher`, which is a `QubeeFetcher`; without one it uses the
-nearest `<QubeeFetchProvider>`'s.
+nearest `<QubeeFetchProvider>`'s. A `null` request fetches nothing and shows no page, as with
+`useQubeeQuery`.
 
 `request.headers` is `null` unless the driver pages over headers (PostgREST in `RANGE` mode);
 every fetching API sends them, and identifies a request by its address and its headers.

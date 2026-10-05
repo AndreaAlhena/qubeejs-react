@@ -156,6 +156,62 @@ describe('useQubeeSWR', () => {
     });
   });
 
+  describe('a null request', () => {
+    it('should show no page while the request is null', async () => {
+      const fetcher = createFetcher();
+      const options = { fetcher };
+      const { rerender, result } = renderSWR({ options, request: requestFor('page=1') });
+
+      await waitFor(() => expect(result.current.data).toEqual(pageOf(1)));
+      rerender({ options, request: null });
+
+      expect(result.current).toMatchObject({
+        data: undefined,
+        isLoading: false,
+        isValidating: false,
+      });
+    });
+
+    it('should show no page while the request is null, even with keepPreviousData on', async () => {
+      const fetcher = createFetcher();
+      const options = { fetcher, keepPreviousData: true };
+      const { rerender, result } = renderSWR({ options, request: requestFor('page=1') });
+
+      await waitFor(() => expect(result.current.data).toEqual(pageOf(1)));
+      rerender({ options, request: null });
+
+      expect(result.current.data).toBeUndefined();
+    });
+
+    it('should not show the page from before a null request while the next one loads', async () => {
+      const fetcher = createFetcher();
+      const options = { fetcher };
+      const { rerender, result } = renderSWR({ options, request: requestFor('page=1') });
+
+      await waitFor(() => expect(result.current.data).toEqual(pageOf(1)));
+      rerender({ options, request: null });
+      rerender({ options, request: requestFor('page=2') });
+
+      expect(result.current).toMatchObject({ data: undefined, isLoading: true });
+
+      await waitFor(() => expect(result.current.data).toEqual(pageOf(2)));
+    });
+
+    it('should keep the previous page again once the request after a null one has answered', async () => {
+      const fetcher = createFetcher();
+      const options = { fetcher };
+      const { rerender, result } = renderSWR({ options, request: null });
+
+      rerender({ options, request: requestFor('page=1') });
+      await waitFor(() => expect(result.current.data).toEqual(pageOf(1)));
+      rerender({ options, request: requestFor('page=2') });
+
+      expect(result.current).toMatchObject({ data: pageOf(1), isValidating: true });
+
+      await waitFor(() => expect(result.current.data).toEqual(pageOf(2)));
+    });
+  });
+
   describe('the fetcher', () => {
     it("should use the nearest provider's fetcher", async () => {
       const fetcher = createFetcher();
