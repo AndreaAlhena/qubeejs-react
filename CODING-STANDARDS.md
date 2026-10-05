@@ -104,6 +104,10 @@ index signatures → static props → private props → protected props → publ
 - **Rules of Hooks** and **exhaustive dependencies** **[auto — `react-hooks`]**.
 - **No side effects during render.** Subscriptions, timers, navigation and ref writes belong in
   effects or event handlers; rendering only derives values from props, state and snapshots.
+- **What a hook remembers from its previous render lives in state**, updated during render under a
+  condition that converges — React's documented way of storing information from previous renders
+  — never in a ref read or written while rendering. `useStableRequest` keeps an equal request
+  this way, and `useQubeeSWR` remembers a `null` request.
 - **External state is read through `useSyncExternalStore`** with a server snapshot, so every hook
   renders on the server.
 - **Stable identities.** Anything a hook returns that a caller may put in a dependency array — a

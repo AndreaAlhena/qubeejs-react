@@ -34,7 +34,7 @@ type SortFields<TParams, K> = K extends keyof TParams
  * exactly one `sortParam`, with `field` typed to the fields that param allows.
  */
 export type SortToggle<TList> =
-  TList extends ListDefinition<infer TParams>
+  TList extends ListDefinition<infer TParams, NonNullable<unknown>>
     ? [Single<SortKeys<TParams>>] extends [never]
       ? Record<never, never>
       : {

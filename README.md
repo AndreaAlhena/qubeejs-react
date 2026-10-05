@@ -180,11 +180,31 @@ Every component that calls the hook with the same list reads the same URL. The d
 `isPending` belong to the hook that made the change: when several components need them, call the
 hook once in their common parent and pass the handle down.
 
+### Lists that need more than the URL
+
+A list whose request needs something the query does not hold — `/projects/42/tasks` needs the
+project from the path — declares it as its input, in `apply` (see the core's
+[Lists that need more than the URL](https://qubeejs.andreatantimonaco.me/guide/lists/#lists-that-need-more-than-the-url)).
+Pass it after the list:
+
+```tsx
+const tasks = useQubeeList(taskList, { projectId });
+const waiting = useQubeeList(taskList, projectId ? { projectId } : null);
+```
+
+- The input is required, and refused for a list that declares none.
+- It goes into `request`, never into the URL; an equal input keeps the same `request`.
+- `null` means "not ready yet": `request` is `null` and the fetching hooks fetch nothing.
+
+[Lists with an input](https://qubeejs-react.andreatantimonaco.me/guide/list-input/) has the rest;
+[A list under a route param](https://qubeejs-react.andreatantimonaco.me/recipes/route-param-list/)
+builds the Next.js page.
+
 ### How a list finds its router
 
 - The nearest adapter provider supplies it. The provider hands down the adapter _hook_, so only
   the components that use a list re-render when the URL changes.
-- An adapter passed as the second argument wins over the provider:
+- An adapter passed to the hook — after the list, or after its input — wins over the provider:
   `useQubeeList(articleList, useBrowserAdapter())`. Each adapter has a hook form —
   `useReactRouterAdapter()`, `useTanStackRouterAdapter()`, `useNextAdapter()`.
 - With neither, `useQubeeList` throws `MissingRouterAdapterError`. It never falls back to browser

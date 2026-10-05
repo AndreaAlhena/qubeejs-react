@@ -144,6 +144,11 @@ The fetching functions send `headers`, hand the response headers to `paginate`, 
 `toPlain()`: a plain object with every field present, which can be cached, compared and
 serialised.
 
+For a list that declares an [input](/guide/list-input/), `list.request` is `null` while the input
+is `null`. `useQubeeQuery` and `useQubeeSWR` then fetch nothing and show no page,
+`qubeeQueryOptions` skips the query, and `fetchQubeePage` — which takes a request only — is yours
+to skip.
+
 The builder of [`useQubee`](/guide/use-qubee/) has no `request`: its paginator writes the page it
 parsed back into the instance, so there you fetch `builder.generateUri()` yourself and call
 `paginator.paginate(body, headers)`, as that guide shows.
