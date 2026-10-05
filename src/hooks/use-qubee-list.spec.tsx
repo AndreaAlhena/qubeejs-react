@@ -844,6 +844,23 @@ describe('useQubeeList', () => {
         >();
       });
 
+      it('should refuse an input type that any object fits, as an adapter does', () => {
+        type ArgsFor<TInput extends NonNullable<unknown>> = QubeeListArgs<
+          ListDefinition<ListParams, TInput>
+        >;
+        type Refused = [input: never, adapter?: RouterAdapter];
+
+        expectTypeOf<ArgsFor<object>>().toEqualTypeOf<Refused>();
+        expectTypeOf<ArgsFor<NonNullable<unknown>>>().toEqualTypeOf<Refused>();
+        expectTypeOf<ArgsFor<object | string>>().toEqualTypeOf<Refused>();
+        expectTypeOf<ArgsFor<{ tenant?: string }>>().toEqualTypeOf<
+          [input: { tenant?: string } | null, adapter?: RouterAdapter]
+        >();
+        expectTypeOf<ArgsFor<() => string>>().toEqualTypeOf<
+          [input: (() => string) | null, adapter?: RouterAdapter]
+        >();
+      });
+
       it('should keep the callers of generic code that forwards the arguments checked', () => {
         expectTypeOf(useTaskTable<typeof taskList>).toBeCallableWith(taskList, {
           projectId: '42',

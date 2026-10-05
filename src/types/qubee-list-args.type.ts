@@ -13,8 +13,8 @@ import type { RouterAdapter } from './router-adapter.type';
  *
  * With one argument after the list, the hook reads it as the adapter when it is an object whose
  * `navigate` is a function, and as the input otherwise. An input type where a function fits at
- * `navigate` is therefore refused: the error, on the input argument, says it is not assignable to
- * `never`.
+ * `navigate`, or that any object fits, such as `object`, is therefore refused: the error, on the
+ * input argument, says it is not assignable to `never`.
  *
  * Generic code cannot call `useQubeeList(list)` with a list type it does not know yet, because
  * whether the list needs an input is unknown until then. It forwards the arguments instead:
