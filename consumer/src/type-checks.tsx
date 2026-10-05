@@ -4,7 +4,9 @@ import type {
   AdapterNavigateOptions,
   AdapterProviderProps,
   RouterAdapter,
+  QubeeListArgs,
   QubeeListHandle,
+  QubeeListRequest,
   QubeeFetcher as MainQubeeFetcher,
   QubeeFetchProviderProps,
   QubeeHandle,
@@ -16,7 +18,7 @@ import type {
   SortToggle,
 } from '@qubeejs/react';
 
-import type { PaginatedResult } from '@qubeejs/core';
+import type { ListDefinition, ListParams, ListRequest, PaginatedResult } from '@qubeejs/core';
 
 import { createQubee, STRAPI_DRIVER } from '@qubeejs/core';
 import {
@@ -61,6 +63,7 @@ import { keepPreviousData, QueryClient, useQuery, useSuspenseQuery } from '@tans
 
 import { articleList, tagList } from './article-list.js';
 import { ArticleStatusEnum } from './article-status.enum.js';
+import { taskList } from './task-list.js';
 
 type Article = { id: number; title: string };
 
@@ -248,6 +251,41 @@ export function QueryChecks({ list }: { list: QubeeListHandle<typeof articleList
   useSuspenseQuery(qubeeQueryOptions<Article>(maybe));
 
   void [key, data, suspended, skipped.data, cached];
+
+  return null;
+}
+
+/** Generic code forwards the arguments, so its callers stay checked. */
+function useTaskTable<T extends ListDefinition<ListParams>>(
+  list: T,
+  ...args: QubeeListArgs<T>
+): QubeeListHandle<T> {
+  return useQubeeList(list, ...args);
+}
+
+/** A list with an input: required, `null` while not ready, and a request that may be `null`. */
+export function InputChecks({ projectId }: { projectId: string | undefined }): null {
+  const router: RouterAdapter = useBrowserAdapter();
+  const tasks = useQubeeList(taskList, { projectId: '42' });
+  const waiting = useQubeeList(taskList, projectId ? { projectId } : null, router);
+  const request: ListRequest | null = tasks.request;
+  const named: QubeeListRequest<typeof taskList> = waiting.request;
+  const always: ListRequest = useQubeeList(articleList).request;
+  const fetched = useQubeeQuery<Article>(tasks.request);
+  const swr = useQubeeSWR<Article>(waiting.request);
+  const query = useQuery(qubeeQueryOptions<Article>(tasks.request));
+  const forwarded = useTaskTable(taskList, { projectId: '42' });
+
+  // @ts-expect-error — taskList declares an input: pass it, or null while it is not ready
+  useQubeeList(taskList);
+  // @ts-expect-error — articleList declares no input
+  useQubeeList(articleList, { projectId: '42' });
+  // @ts-expect-error — the request is null while the input is: check it before fetching
+  void fetchQubeePage(tasks.request);
+  // @ts-expect-error — the wrapper requires the input too
+  useTaskTable(taskList);
+
+  void [request, named, always, fetched.data, swr.data, query.data, forwarded.state.page];
 
   return null;
 }
